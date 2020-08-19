@@ -21,7 +21,6 @@ export const Nodes: FunctionalComponent<NodesProps> = (
     camera,
     cameraPosition,
     controlsType,
-    drawingEnabled,
     fontSize,
     graphEnabled,
     nodes,
@@ -78,8 +77,8 @@ export const Nodes: FunctionalComponent<NodesProps> = (
               visible={`${selected === nodeId}`}
               id={`${nodeId}-label`}
               al-background={`
-                  text: ${node.title};
-                  boundingRadius: ${fontSize * boundingSphereRadius};
+                text: ${node.title};
+                boundingRadius: ${fontSize * boundingSphereRadius};
               `}
               scale={` ${entityScale} ${entityScale} ${entityScale};`}
             />
@@ -95,7 +94,6 @@ export const Nodes: FunctionalComponent<NodesProps> = (
             `}
             scale={` ${entityScale} ${entityScale} ${entityScale};`}
           />
-        </a-entity>
-      );
+        </a-entity>)
     });
   })();

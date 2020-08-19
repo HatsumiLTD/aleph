@@ -5,7 +5,6 @@ interface SrcProps extends FunctionalComponentProps {
   controlsType: ControlsType;
   displayMode: DisplayMode;
   dracoDecoderPath: string;
-  drawingEnabled: boolean;
   envMapPath: string;
   graphEnabled: boolean;
   orientation: Orientation;
@@ -23,7 +22,6 @@ export const Src: FunctionalComponent<SrcProps> = (
     controlsType,
     displayMode,
     dracoDecoderPath,
-    drawingEnabled,
     envMapPath,
     graphEnabled,
     orientation,
@@ -54,9 +52,6 @@ export const Src: FunctionalComponent<SrcProps> = (
               `}
               al-cube-env-map={`
                 path: ${envMapPath ? envMapPath : ""};
-              `}
-              al-drawing-tool={`
-                enabled: ${drawingEnabled}
               `}
               position="0 0 0"
               scale="1 1 1"

@@ -1,5 +1,6 @@
 export { Angles } from "./Angles";
 export { BoundingBox } from "./BoundingBox";
+export { DrawingTool } from "./DrawingTool";
 export { Edges } from "./Edges";
 export { Lights } from "./Lights";
 export { Nodes } from "./Nodes";

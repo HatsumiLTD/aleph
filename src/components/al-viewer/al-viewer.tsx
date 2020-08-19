@@ -31,6 +31,7 @@ import {
 import {
   Angles,
   BoundingBox,
+  DrawingTool,
   Edges,
   Lights,
   Nodes,
@@ -494,7 +495,6 @@ export class Aleph {
             controlsType={this.controlsType}
             displayMode={this.displayMode}
             dracoDecoderPath={this.dracoDecoderPath}
-            drawingEnabled={this.drawingEnabled}
             envMapPath={this.envMapPath}
             graphEnabled={this.graphEnabled}
             orientation={this.orientation}
@@ -519,16 +519,20 @@ export class Aleph {
             targetEntity={this._targetEntity}
           />
         </ModelContainer>
-        <Nodes
-          boundingSphereRadius={this._boundingSphereRadius}
-          camera={this._scene ? this._scene.camera : null}
-          cameraPosition={this.camera ? this.camera.position : null}
-          controlsType={this.controlsType}
-          fontSize={Constants.fontSizeMedium}
-          graphEnabled={this.graphEnabled}
-          nodes={this.nodes}
-          selected={this.selected}
-        />
+        { this.drawingEnabled ? (
+          <DrawingTool nodes={this.nodes} />
+        ) : (
+          <Nodes
+            boundingSphereRadius={this._boundingSphereRadius}
+            camera={this._scene ? this._scene.camera : null}
+            cameraPosition={this.camera ? this.camera.position : null}
+            controlsType={this.controlsType}
+            fontSize={Constants.fontSizeMedium}
+            graphEnabled={this.graphEnabled}
+            nodes={this.nodes}
+            selected={this.selected}
+          />)
+        }
         <Edges
           boundingSphereRadius={this._boundingSphereRadius}
           camera={this._scene ? this._scene.camera : null}
