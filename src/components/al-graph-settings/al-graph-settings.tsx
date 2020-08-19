@@ -13,10 +13,17 @@ export class AlSettings {
 
   @Event() public unitsChanged: EventEmitter;
   @Event() public graphEnabledChanged: EventEmitter;
+  @Event() public drawingEnabledChanged: EventEmitter;
 
   @Prop({ mutable: true }) public graphEnabled: boolean;
+  @Prop({ mutable: true }) public drawingEnabled: boolean;
   @Prop({ mutable: true }) public graphVisible: boolean;
   @Prop({ mutable: true }) public units: Units;
+
+  private _drawingEnabled(enabled: boolean) {
+    this.drawingEnabled = enabled;
+    this.drawingEnabledChanged.emit(enabled);
+  }
 
   private _graphEnabled(enabled: boolean) {
     this.graphEnabled = enabled;
@@ -44,6 +51,20 @@ export class AlSettings {
               slot="end"
               checked={this.graphEnabled}
               onIonChange={e => this._graphEnabled(e.detail.checked)}
+            />
+          </ion-item>
+          <ion-item
+            style={{
+              display: "var(--drawing-enabled-display, block)"
+            }}
+          >
+            <span title={this._contentStrings.drawingEnabled}>
+              {this._contentStrings.drawingEnabled}
+            </span>
+            <ion-toggle
+              slot="end"
+              checked={this.drawingEnabled}
+              onIonChange={e => this._drawingEnabled(e.detail.checked)}
             />
           </ion-item>
           <ion-item
@@ -77,7 +98,7 @@ export class AlSettings {
         </div>
       );
     } else {
-      return <span>hello world</span>;
+      return <span></span>;
     }
   }
 

@@ -31,6 +31,7 @@ export class AlSettings {
   @Prop({ mutable: true }) public consoleTabEnabled: boolean = true;
   @Prop({ mutable: true }) public controlsType: ControlsType;
   @Prop({ mutable: true }) public displayMode: DisplayMode;
+  @Prop({ mutable: true }) public drawingEnabled: boolean;
   @Prop({ mutable: true }) public edges: Map<string, AlEdge> | null = null;
   @Prop({ mutable: true }) public graphEnabled: boolean;
   @Prop({ mutable: true }) public graphTabEnabled: boolean = true;
@@ -167,6 +168,7 @@ export class AlSettings {
                   nodes={this.nodes}
                   angles={this.angles}
                   edges={this.edges}
+                  drawing-enabled={this.drawingEnabled}
                   graph-enabled={this.graphEnabled}
                   graph-visible={this.graphTabEnabled}
                   units={this.units}

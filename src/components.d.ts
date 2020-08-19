@@ -48,6 +48,7 @@ export namespace Components {
     'consoleTabEnabled': boolean;
     'controlsType': ControlsType;
     'displayMode': DisplayMode;
+    'drawingEnabled': boolean;
     'edges': Map<string, AlEdge> | null;
     'graphEnabled': boolean;
     'graphTabEnabled': boolean;
@@ -74,6 +75,7 @@ export namespace Components {
   }
   interface AlGraphEditor {
     'angles': Map<string, AlAngle> | null;
+    'drawingEnabled': boolean;
     'edges': Map<string, AlEdge> | null;
     'graphEnabled': boolean;
     'graphVisible': boolean;
@@ -83,6 +85,7 @@ export namespace Components {
     'units': Units;
   }
   interface AlGraphSettings {
+    'drawingEnabled': boolean;
     'graphEnabled': boolean;
     'graphVisible': boolean;
     'units': Units;
@@ -146,6 +149,7 @@ export namespace Components {
     'setControlsEnabled': (enabled: boolean) => Promise<void>;
     'setControlsType': (type: ControlsType) => Promise<void>;
     'setDisplayMode': (displayMode: DisplayMode) => Promise<void>;
+    'setDrawingEnabled': (enabled: boolean) => Promise<void>;
     /**
     * Creates or updates an edge in the graph
     */
@@ -279,6 +283,7 @@ declare namespace LocalJSX {
     'consoleTabEnabled'?: boolean;
     'controlsType'?: ControlsType;
     'displayMode'?: DisplayMode;
+    'drawingEnabled'?: boolean;
     'edges'?: Map<string, AlEdge> | null;
     'graphEnabled'?: boolean;
     'graphTabEnabled'?: boolean;
@@ -307,6 +312,7 @@ declare namespace LocalJSX {
   }
   interface AlGraphEditor extends JSXBase.HTMLAttributes<HTMLAlGraphEditorElement> {
     'angles'?: Map<string, AlAngle> | null;
+    'drawingEnabled'?: boolean;
     'edges'?: Map<string, AlEdge> | null;
     'graphEnabled'?: boolean;
     'graphVisible'?: boolean;
@@ -316,8 +322,10 @@ declare namespace LocalJSX {
     'units'?: Units;
   }
   interface AlGraphSettings extends JSXBase.HTMLAttributes<HTMLAlGraphSettingsElement> {
+    'drawingEnabled'?: boolean;
     'graphEnabled'?: boolean;
     'graphVisible'?: boolean;
+    'onDrawingEnabledChanged'?: (event: CustomEvent<any>) => void;
     'onGraphEnabledChanged'?: (event: CustomEvent<any>) => void;
     'onUnitsChanged'?: (event: CustomEvent<any>) => void;
     'units'?: Units;

@@ -13,6 +13,7 @@ export class AlGraphEditor {
   @Prop({ mutable: true }) public angles: Map<string, AlAngle> | null = null;
   @Prop({ mutable: true }) public edges: Map<string, AlEdge> | null = null;
   @Prop({ mutable: true }) public selected: string | null = null;
+  @Prop({ mutable: true }) public drawingEnabled: boolean;
   @Prop({ mutable: true }) public graphEnabled: boolean;
   @Prop({ mutable: true }) public graphVisible: boolean;
   @Prop({ mutable: true }) public units: Units;
@@ -54,11 +55,13 @@ export class AlGraphEditor {
         graph-visible={this.graphVisible}
         units={this.units}
       ></al-graph-settings>,
-      <al-node-list nodes={this.nodes} selected={this.selected}></al-node-list>,
-      <ion-item-divider></ion-item-divider>,
-      <al-node-editor node={this._getSelectedNode()}></al-node-editor>,
-      <al-edge-editor edge={this._getSelectedEdge()}></al-edge-editor>,
-      <al-angle-editor angle={this._getSelectedAngle()}></al-angle-editor>
+      !this.drawingEnabled && <div>
+        <al-node-list nodes={this.nodes} selected={this.selected}></al-node-list>
+        <ion-item-divider></ion-item-divider>
+        <al-node-editor node={this._getSelectedNode()}></al-node-editor>
+        <al-edge-editor edge={this._getSelectedEdge()}></al-edge-editor>
+        <al-angle-editor angle={this._getSelectedAngle()}></al-angle-editor>
+      </div>
     ];
   }
 }

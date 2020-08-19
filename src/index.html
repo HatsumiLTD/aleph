@@ -247,6 +247,14 @@
         );
 
         alControlPanel.addEventListener(
+          "drawingEnabledChanged",
+          function(e) {
+            alViewer.setDrawingEnabled(e.detail);
+          },
+          false
+        );
+
+        alControlPanel.addEventListener(
           "graphEnabledChanged",
           function(e) {
             alViewer.setGraphEnabled(e.detail);
@@ -406,6 +414,7 @@
         alControlPanel.consoleTabEnabled = state.consoleTabEnabled;
         alControlPanel.controlsType = state.controlsType;
         alControlPanel.displayMode = state.displayMode;
+        alControlPanel.drawingEnabled = state.drawingEnabled;
         alControlPanel.edges = state.edges;
         alControlPanel.graphEnabled = state.graphEnabled;
         alControlPanel.graphTabEnabled = state.graphTabEnabled;

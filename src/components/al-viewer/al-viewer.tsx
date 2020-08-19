@@ -56,6 +56,7 @@ import {
   appSetControlsEnabled,
   appSetControlsType,
   appSetDisplayMode,
+  appSetDrawingEnabled,
   appSetEdge,
   appSetGraphEnabled,
   appSetMaterial,
@@ -132,6 +133,7 @@ export class Aleph {
   public appSetControlsEnabled: Action;
   public appSetControlsType: Action;
   public appSetDisplayMode: Action;
+  public appSetDrawingEnabled: Action;
   public appSetEdge: Action;
   public appSetGraphEnabled: Action;
   public appSetMaterial: Action;
@@ -155,6 +157,7 @@ export class Aleph {
   @State() public controlsEnabled: boolean;
   @State() public controlsType: ControlsType;
   @State() public displayMode: DisplayMode;
+  @State() public drawingEnabled: boolean;
   @State() public edges: Map<string, AlEdge>;
   @State() public graphEnabled: boolean;
   @State() public material: Material;
@@ -273,6 +276,11 @@ export class Aleph {
   }
 
   @Method()
+  public async setDrawingEnabled(enabled: boolean): Promise<void> {
+    this._setDrawingEnabled(enabled);
+  }
+
+  @Method()
   public async setGraphEnabled(enabled: boolean): Promise<void> {
     this._setGraphEnabled(enabled);
   }
@@ -343,13 +351,14 @@ export class Aleph {
           controlsEnabled,
           controlsType,
           displayMode,
+          drawingEnabled,
           edges,
           graphEnabled,
           material,
           nodes,
           orientation,
-          selected,
           sceneDistance,
+          selected,
           slicesIndex,
           slicesMaxIndex,
           src,
@@ -368,13 +377,14 @@ export class Aleph {
         controlsEnabled,
         controlsType,
         displayMode,
+        drawingEnabled,
         edges,
         graphEnabled,
         material,
         nodes,
         orientation,
-        selected,
         sceneDistance,
+        selected,
         slicesIndex,
         slicesMaxIndex,
         src,
@@ -402,6 +412,7 @@ export class Aleph {
       appSetControlsEnabled,
       appSetControlsType,
       appSetDisplayMode,
+      appSetDrawingEnabled,
       appSetEdge,
       appSetGraphEnabled,
       appSetMaterial,
@@ -483,6 +494,7 @@ export class Aleph {
             controlsType={this.controlsType}
             displayMode={this.displayMode}
             dracoDecoderPath={this.dracoDecoderPath}
+            drawingEnabled={this.drawingEnabled}
             envMapPath={this.envMapPath}
             graphEnabled={this.graphEnabled}
             orientation={this.orientation}
@@ -945,6 +957,11 @@ export class Aleph {
     this._stateChanged();
   }
 
+  private _setDrawingEnabled(enabled: boolean): void {
+    this.appSetDrawingEnabled(enabled);
+    this._stateChanged();
+  }
+
   private _setGraphEnabled(enabled: boolean): void {
     this.appSetGraphEnabled(enabled);
     this._stateChanged();
@@ -1107,6 +1124,9 @@ export class Aleph {
 
   private _graphEntryPointerUpHandler(_event: CustomEvent): void {
     this.appSetControlsEnabled(true);
+    if (this.drawingEnabled) {
+      this._selectNode(null);
+    }
     ThreeUtils.enableControls(this._camera, true, this.controlsType);
   }
 
@@ -1177,6 +1197,11 @@ export class Aleph {
           this.nodes.has(previousSelected) // A Node is already selected
         ) {
           this._createEdge(previousSelected, nodeId);
+          this._selectNode(nodeId);
+        } else if (this.drawingEnabled) {
+          if (previousSelected) {
+            this._createEdge(previousSelected, nodeId);
+          }
           this._selectNode(nodeId);
         }
       }

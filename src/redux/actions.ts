@@ -29,6 +29,7 @@ export type ActionTypes =
   | AppSetControlsEnabledAction
   | AppSetControlsTypeAction
   | AppSetDisplayModeAction
+  | AppSetDrawingEnabledAction
   | AppSetEdgeAction
   | AppSetGraphEnabledAction
   | AppSetMaterialAction
@@ -62,6 +63,7 @@ export enum TypeKeys {
   APP_SET_CONTROLS_ENABLED = "APP_SET_CONTROLS_ENABLED",
   APP_SET_CONTROLS_TYPE = "APP_SET_CONTROLS_TYPE",
   APP_SET_DISPLAY_MODE = "APP_SET_DISPLAY_MODE",
+  APP_SET_DRAWING_ENABLED = "APP_SET_DRAWING_ENABLED",
   APP_SET_EDGE = "APP_SET_EDGE",
   APP_SET_MATERIAL = "APP_SET_MATERIAL",
   APP_SET_NODE = "APP_SET_NODE",
@@ -328,6 +330,21 @@ export const appSetDisplayMode = (payload: DisplayMode) => async (
 ) => {
   return dispatch({
     type: TypeKeys.APP_SET_DISPLAY_MODE,
+    payload
+  });
+};
+
+export interface AppSetDrawingEnabledAction {
+  type: TypeKeys.APP_SET_DRAWING_ENABLED;
+  payload: boolean;
+}
+
+export const appSetDrawingEnabled = (payload: boolean) => async (
+  dispatch,
+  _getState
+) => {
+  return dispatch({
+    type: TypeKeys.APP_SET_DRAWING_ENABLED,
     payload
   });
 };

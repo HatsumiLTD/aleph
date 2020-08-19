@@ -10,6 +10,7 @@ export interface ContentStrings extends I18nJson {
   coronal?: string;
   default?: string;
   displayMode?: string;
+  drawingEnabled?: string;
   graphEnabled?: string;
   material?: string;
   meters?: string;

@@ -17,6 +17,7 @@ export const getInitialState = () => {
     controlsEnabled: true,
     controlsType: ControlsType.TRACKBALL,
     displayMode: DisplayMode.MESH,
+    drawingEnabled: false,
     edges: new Map<string, AlEdge>(),
     material: Material.DEFAULT,
     nodes: new Map<string, AlNode>(),
@@ -242,6 +243,13 @@ export const app = (
         ...state,
         displayMode: action.payload,
         boundingBoxEnabled: action.payload === DisplayMode.SLICES ? true : false
+      };
+    }
+    case TypeKeys.APP_SET_DRAWING_ENABLED: {
+      return {
+        ...state,
+        drawingEnabled: action.payload,
+        graphEnabled: action.payload ? true : state.graphEnabled
       };
     }
     case TypeKeys.APP_SET_ORIENTATION: {

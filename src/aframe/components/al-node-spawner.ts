@@ -10,17 +10,18 @@ AFRAME.registerComponent("al-node-spawner", {
 
     this.state = {
       left: false,
-      intersecting: false
+      intersecting: false,
+      pointerDown: false
     };
   },
 
   bindMethods() {
     this.canvasMouseDown = this.canvasMouseDown.bind(this);
-    this.pointerOver = this.pointerOver.bind(this);
-    this.pointerOut = this.pointerOut.bind(this);
-    this.elClick = this.elClick.bind(this);
     this.canvasMouseUp = this.canvasMouseUp.bind(this);
+    this.elClick = this.elClick.bind(this);
     this.pointerDown = this.pointerDown.bind(this);
+    this.pointerOut = this.pointerOut.bind(this);
+    this.pointerOver = this.pointerOver.bind(this);
     this.pointerUp = this.pointerUp.bind(this);
   },
 
@@ -31,6 +32,11 @@ AFRAME.registerComponent("al-node-spawner", {
       passive: true
     });
     this.el.sceneEl.canvas.addEventListener("mouseup", this.canvasMouseUp, {
+      capture: false,
+      once: false,
+      passive: true
+    });
+    this.el.sceneEl.canvas.addEventListener("mousemove", this.canvasMouseMove, {
       capture: false,
       once: false,
       passive: true
@@ -60,6 +66,11 @@ AFRAME.registerComponent("al-node-spawner", {
       once: false,
       passive: true
     });
+    // this.el.addEventListener("mousemove", this.pointerMove, {
+    //   capture: false,
+    //   once: false,
+    //   passive: true
+    // });
   },
 
   removeEventListeners() {
@@ -68,6 +79,7 @@ AFRAME.registerComponent("al-node-spawner", {
       this.canvasMouseDown
     );
     this.el.sceneEl.canvas.removeEventListener("mouseup", this.canvasMouseUp);
+    this.el.sceneEl.canvas.removeEventListener("mousemove", this.canvasMouseMove);
     this.el.removeEventListener("raycaster-intersected", this.pointerOver);
     this.el.removeEventListener(
       "raycaster-intersected-cleared",
@@ -76,6 +88,7 @@ AFRAME.registerComponent("al-node-spawner", {
     this.el.removeEventListener("click", this.elClick);
     this.el.removeEventListener("mousedown", this.pointerDown);
     this.el.removeEventListener("mouseup", this.pointerUp);
+    //this.el.removeEventListener("mousemove", this.pointerMove);
   },
 
   canvasMouseDown(event) {
@@ -100,12 +113,14 @@ AFRAME.registerComponent("al-node-spawner", {
 
   pointerDown(_event) {
     if (this.data.graphEnabled) {
+      this.state.pointerDown =true;
       this.el.sceneEl.emit("al-graph-pointer-down", {}, false);
     }
   },
 
   pointerUp(_event) {
     if (this.data.graphEnabled) {
+      this.state.pointerDown = false;
       this.el.sceneEl.emit("al-graph-pointer-up", {}, false);
     }
   },

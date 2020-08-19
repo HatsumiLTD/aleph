@@ -6,7 +6,8 @@ const EVENTS = {
   MOUSEENTER: "mouseenter",
   MOUSEDOWN: "mousedown",
   MOUSELEAVE: "mouseleave",
-  MOUSEUP: "mouseup"
+  MOUSEUP: "mouseup",
+  MOUSEMOVE: "mousemove"
   // TOUCHSTART: 'touchstart',
   // TOUCHEND: 'touchend'
 };
@@ -45,7 +46,8 @@ AFRAME.registerComponent("al-cursor", {
     fuseTimeout: { default: 1500, min: 0 },
     mouseCursorStylesEnabled: { default: true },
     upEvents: { default: [] },
-    rayOrigin: { default: "entity", oneOf: ["mouse", "entity"] }
+    rayOrigin: { default: "entity", oneOf: ["mouse", "entity"] },
+    intersectOnMove: { default: true }
   },
 
   init: function() {
@@ -217,6 +219,10 @@ AFRAME.registerComponent("al-cursor", {
       var left;
       var point;
       var top;
+
+      // if (this.data.intersectOnMove) {
+      //   this.twoWayEmit(EVENTS.MOUSEMOVE);
+      // }
 
       camera.parent.updateMatrixWorld();
 

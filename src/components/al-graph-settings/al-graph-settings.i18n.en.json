@@ -1,4 +1,5 @@
 {
+  "drawingEnabled": "Enable Drawing",
   "graphEnabled": "Enable Nodes",
   "units": "Units",
   "meters": "Meters",

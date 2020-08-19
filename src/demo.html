@@ -245,6 +245,14 @@
         );
 
         alControlPanel.addEventListener(
+          "drawingEnabledChanged",
+          function(e) {
+            alViewer.setDrawingEnabled(e.detail);
+          },
+          false
+        );
+
+        alControlPanel.addEventListener(
           "graphEnabledChanged",
           function(e) {
             alViewer.setGraphEnabled(e.detail);

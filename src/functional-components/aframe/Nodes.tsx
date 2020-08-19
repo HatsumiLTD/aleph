@@ -21,6 +21,7 @@ export const Nodes: FunctionalComponent<NodesProps> = (
     camera,
     cameraPosition,
     controlsType,
+    drawingEnabled,
     fontSize,
     graphEnabled,
     nodes,
