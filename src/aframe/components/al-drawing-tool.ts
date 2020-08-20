@@ -9,7 +9,7 @@ const EVENTS = {
   ADD_NODE: "al-add-node"
 };
 
-AFRAME.registerComponent('al-drawing-tool', {
+AFRAME.registerComponent("al-drawing-tool", {
   schema: {
     enabled: { default: true },
     minFrameMS: { type: "number", default: 15 },
@@ -25,9 +25,11 @@ AFRAME.registerComponent('al-drawing-tool', {
     // Use events to figure out what raycaster is listening so we don't have to
     // hardcode the raycaster.
     this.el.addEventListener(EVENTS.RAYCASTER_INTERSECTED, evt => {
+      console.log("raycaster intersected");
       this.raycaster = evt.detail.el;
     });
     this.el.addEventListener(EVENTS.RAYCASTER_CLEARED, evt => {
+      console.log("raycaster cleared");
       this.raycaster = null;
     });
 
@@ -66,6 +68,7 @@ AFRAME.registerComponent('al-drawing-tool', {
   },
 
   getIntersection: function () {
+    console.log("get intersection");
     if (!this.data.enabled || !this.state.pointerDown) {
       return;
     }
@@ -93,6 +96,9 @@ AFRAME.registerComponent('al-drawing-tool', {
   },
 
   tick: function () {
+
+    // console.log("tick");
+
     if (!this.raycaster || !this.data.enabled) { return; }  // Not intersecting.
 
     this.debouncedGetIntersection();
@@ -118,7 +124,8 @@ AFRAME.registerComponent('al-drawing-tool', {
   setupMaterials: function () {
     //var materials = _BrushVariablesInput.materials.split(",");
     //var textures = _BrushVariablesInput.texture.split(",");
-    this.LineMaterial = this.materialsHolder.makeMaterial("LineTexturedMaterial", null, "LineTexturedMaterial");
+    const preset = jsonpreset.remembered.Base["0"];
+    this.LineMaterial = this.materialsHolder.makeMaterial(preset, "Brush.png", "LineTexturedMaterial");
     //ObjectsMaterial = materialsHolder.makeMaterial(_BrushVariablesInput, textures[1], materials[1]);
   },
 
@@ -143,9 +150,23 @@ const jsonpreset = {
     "Base": {
       "0": {
         "lineType": 0,
-        "mainColour": 178165,
-        "decalColour": 16777215,
-        "lineColour": 11675077,
+        "mainColour": {
+          r: 17,
+          g: 81,
+          b: 65
+        },
+        "decalColour": {
+          r: 16,
+          g: 77,
+          b: 72,
+          a: 15
+        },
+        "lineColour":  {
+          r: 11,
+          g: 67,
+          b: 50,
+          a: 77
+        },
         "paintDecals": true,
         "paintLine": false,
         "texture": "Brush.png,perlin.png",
@@ -358,14 +379,13 @@ class MaterialsHolder {
     
   makeMaterial(_BrushVariablesInput, _textureName, _materialName) {
         if (_materialName == "LineTexturedMaterial") {
-            const preset = jsonpreset.remembered.Base["0"];
             var _ShaderHolder = new ShaderHolder("LineMaterial");
             var texture = new THREE.TextureLoader().load(_textureName);
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
             texture.repeat.set(4, 4);
-            var mcolour = new THREE.Color(preset.mainColour.r, preset.mainColour.g, preset.mainColour.b);
-            var lcolour = new THREE.Color(preset.lineColour.r, preset.lineColour.g, preset.lineColour.b);
+            var mcolour = new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
+            var lcolour = new THREE.Color(_BrushVariablesInput.lineColour.r, _BrushVariablesInput.lineColour.g, _BrushVariablesInput.lineColour.b);
             mcolour.lerp (lcolour, 0.5 );
             return new MeshLineMaterial({
                 color: mcolour,
@@ -375,11 +395,11 @@ class MaterialsHolder {
                 useAlphaMap: true,
                 transparent: true,
                 opacity: 1,
-                lineWidth: preset.maxlineWidth,
+                lineWidth: _BrushVariablesInput.maxlineWidth,
                 depthTest: false,
                 depthWrite: true,
                 blending: THREE.AdditiveBlending,//NormalBlending,
-                repeat: new THREE.Vector2(preset.repeatingAmount + 1.0, 1),
+                repeat: new THREE.Vector2(_BrushVariablesInput.repeatingAmount + 1.0, 1),
                 fragmentShader: _ShaderHolder.fragmentShader
             });
         }

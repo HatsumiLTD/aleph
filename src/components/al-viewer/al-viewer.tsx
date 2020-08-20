@@ -492,6 +492,9 @@ export class Aleph {
             cb={ref => {
               this._targetEntity = ref;
             }}
+            al-drawing-tool={`
+              nodesNum: ${this.nodes.size}
+            `}
             controlsType={this.controlsType}
             displayMode={this.displayMode}
             dracoDecoderPath={this.dracoDecoderPath}
@@ -519,9 +522,9 @@ export class Aleph {
             targetEntity={this._targetEntity}
           />
         </ModelContainer>
-        { this.drawingEnabled ? (
-          <DrawingTool nodes={this.nodes} />
-        ) : (
+        {/* { this.drawingEnabled ? (
+          // <DrawingTool nodes={this.nodes} />
+        ) : ( */}
           <Nodes
             boundingSphereRadius={this._boundingSphereRadius}
             camera={this._scene ? this._scene.camera : null}
@@ -531,8 +534,9 @@ export class Aleph {
             graphEnabled={this.graphEnabled}
             nodes={this.nodes}
             selected={this.selected}
-          />)
-        }
+          />
+          {/* )
+        } */}
         <Edges
           boundingSphereRadius={this._boundingSphereRadius}
           camera={this._scene ? this._scene.camera : null}
