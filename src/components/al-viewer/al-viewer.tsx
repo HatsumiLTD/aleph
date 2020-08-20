@@ -492,14 +492,13 @@ export class Aleph {
             cb={ref => {
               this._targetEntity = ref;
             }}
-            al-drawing-tool={`
-              nodesNum: ${this.nodes.size}
-            `}
             controlsType={this.controlsType}
             displayMode={this.displayMode}
             dracoDecoderPath={this.dracoDecoderPath}
+            drawingEnabled={this.drawingEnabled}
             envMapPath={this.envMapPath}
             graphEnabled={this.graphEnabled}
+            nodes={this.nodes}
             orientation={this.orientation}
             slicesIndex={this.slicesIndex}
             src={this.src}
@@ -522,9 +521,7 @@ export class Aleph {
             targetEntity={this._targetEntity}
           />
         </ModelContainer>
-        {/* { this.drawingEnabled ? (
-          // <DrawingTool nodes={this.nodes} />
-        ) : ( */}
+        { !this.drawingEnabled && [
           <Nodes
             boundingSphereRadius={this._boundingSphereRadius}
             camera={this._scene ? this._scene.camera : null}
@@ -534,34 +531,34 @@ export class Aleph {
             graphEnabled={this.graphEnabled}
             nodes={this.nodes}
             selected={this.selected}
+          />,
+          <Edges
+            boundingSphereRadius={this._boundingSphereRadius}
+            camera={this._scene ? this._scene.camera : null}
+            cameraPosition={this.camera ? this.camera.position : null}
+            controlsType={this.controlsType}
+            displayMode={this.displayMode}
+            edges={this.edges}
+            edgeSize={Constants.edgeSize}
+            fontSize={Constants.fontSizeSmall}
+            nodes={this.nodes}
+            selected={this.selected}
+            units={this.units}
+          />,
+          <Angles
+            angles={this.angles}
+            boundingSphereRadius={this._boundingSphereRadius}
+            camera={this._scene ? this._scene.camera : null}
+            cameraPosition={this.camera ? this.camera.position : null}
+            controlsType={this.controlsType}
+            edges={this.edges}
+            edgeSize={Constants.edgeSize}
+            fontSize={Constants.fontSizeSmall}
+            nodes={this.nodes}
+            selected={this.selected}
           />
-          {/* )
-        } */}
-        <Edges
-          boundingSphereRadius={this._boundingSphereRadius}
-          camera={this._scene ? this._scene.camera : null}
-          cameraPosition={this.camera ? this.camera.position : null}
-          controlsType={this.controlsType}
-          displayMode={this.displayMode}
-          edges={this.edges}
-          edgeSize={Constants.edgeSize}
-          fontSize={Constants.fontSizeSmall}
-          nodes={this.nodes}
-          selected={this.selected}
-          units={this.units}
-        />
-        <Angles
-          angles={this.angles}
-          boundingSphereRadius={this._boundingSphereRadius}
-          camera={this._scene ? this._scene.camera : null}
-          cameraPosition={this.camera ? this.camera.position : null}
-          controlsType={this.controlsType}
-          edges={this.edges}
-          edgeSize={Constants.edgeSize}
-          fontSize={Constants.fontSizeSmall}
-          nodes={this.nodes}
-          selected={this.selected}
-        />
+          ]
+        }
         {(() => {
           switch (this.controlsType) {
             case ControlsType.TRACKBALL: {

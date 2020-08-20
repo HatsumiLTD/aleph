@@ -5,8 +5,10 @@ interface SrcProps extends FunctionalComponentProps {
   controlsType: ControlsType;
   displayMode: DisplayMode;
   dracoDecoderPath: string;
+  drawingEnabled: boolean;
   envMapPath: string;
   graphEnabled: boolean;
+  nodes: Map<string, AlNode>;
   orientation: Orientation;
   slicesIndex: number;
   src: string;
@@ -22,8 +24,10 @@ export const Src: FunctionalComponent<SrcProps> = (
     controlsType,
     displayMode,
     dracoDecoderPath,
+    drawingEnabled,
     envMapPath,
     graphEnabled,
+    nodes,
     orientation,
     slicesIndex,
     src,
@@ -38,6 +42,7 @@ export const Src: FunctionalComponent<SrcProps> = (
     if (!src) {
       return null;
     } else {
+      window.nodes = nodes;
       switch (displayMode) {
         case DisplayMode.MESH: {
           return (
@@ -52,6 +57,10 @@ export const Src: FunctionalComponent<SrcProps> = (
               `}
               al-cube-env-map={`
                 path: ${envMapPath ? envMapPath : ""};
+              `}
+              al-drawing-tool={`
+                enabled: ${drawingEnabled};
+                nodesNum: ${nodes.size}
               `}
               position="0 0 0"
               scale="1 1 1"
