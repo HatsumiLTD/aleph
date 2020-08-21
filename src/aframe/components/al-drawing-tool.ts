@@ -1,4 +1,4 @@
-import { EventUtils } from "../../utils";
+import { debounce } from "../../utils";
 import { MeshLine, MeshLineMaterial } from "threejs-meshline";
 
 const EVENTS = {
@@ -43,7 +43,7 @@ AFRAME.registerComponent("al-drawing-tool", {
       this.state.pointerDown = false;
     }, false);
 
-    this.debouncedGetIntersection = EventUtils.debounce(
+    this.debouncedGetIntersection = debounce(
       this.getIntersection,
       this.data.minFrameMS
     ).bind(this);
@@ -365,6 +365,129 @@ const jsonpreset = {
     }
   }
 }
+
+class DrawingToolManager {
+  constructor(assetsPath) {
+//     var coordinates = AFRAME.utils.coordinates;
+//     this.line;
+// var geometry;
+    /**
+     * @constructs BrushVariablesEditorInputs
+     * This holds the properties of the brush stroke(whats shown to the user), and is edited by the designers
+     * @param {Object} n The properties.
+     * @param {String} n.lineType Line, Dotted line, Multi line, Crossed line, Object line, Decaled line, Decales.
+     * @param {THREE.Color} n.mainColour the main colour.
+     * @param {THREE.Color} n.decalColour the decals colour.
+     * @param {THREE.Color} n.lineColour the line colour.
+     * @param {String[]} n.texture names of main texture.
+     * @param {String[]} n.textureAlt names of Alt texture.
+     * @param {String[]} n.materials names of materials.
+     * @param {String[]} n.objects names of objects (meshes).
+     * @param {Float} n.animationSpeed animation Speed.
+     * @param {Float} n.animationSpeedAlt animationAlt Speed.
+     * @param {Float} n.facing the direction the object faces
+     * @param {Float} n.spacing spacing of brush dots or objects.
+     * @param {Float} n.maxlineWidth Max size of the width of the line
+     * @param {Float} n.maxelementWidth Max size of the width of the elements
+     * @param {Float} n.jitter the jitter position amount of other brush elements.
+     * @param {Float} n.rotation the rotation of the main texture.
+     * @param {Float} n.rotationjitter the rotation jitter.
+     * @param {Float} n.repeatingAmount Repeating Texture Amount(0 for stretch)
+     * @param {Float} n.dynamicSpeedSize the amount speed effects size
+     * @param {Float} n.dynamicSpeedOpacity the amount speed effects opacity.
+     * @param {Float} n.dynamicSpeedSpecial the amount a special variable is effected.
+     * @param {Float} n.dynamicPressureSize the amount pressure effects size
+     * @param {Float} n.dynamicPressureOpacity the amount pressure effects opacity.
+     * @param {Float} n.dynamicPressureSpecial the amount a special variable is effected.
+     */
+
+    this.assetsPath = assetsPath;
+    this.paintLine = true;
+    this.paintDecals = true;
+    this.lineType = "null";
+    this.mainColour = new THREE.Color();
+    this.texture = "Brush.png,perlin.png";
+    this.textureAlt = "null";
+    this.materials = "LineTexturedMaterial,AnimatedMaterial";
+    this.objects = "plain";
+    this.animationSpeed = 0.05;
+    this.animationSpeedAlt = 0.0;
+    this.facing = "Camera";
+    this.spacing = 0.0;
+    this.maxlineWidth = 1.0;
+    this.maxelementWidth = 1.0;
+    this.jitter = 0.0;
+    this.rotation = 0.0;
+    this.rotationjitter = 0.0;
+    this.repeatingAmount = 0.0;
+    this.dynamicSpeedSize = 0.0;
+    this.dynamicSpeedOpacity = 0.0;
+    this.dynamicSpeedSpecial = 0.0;
+    this.dynamicPressureSize = 0.0;
+    this.dynamicPressureOpacity = 0.0;
+    this.dynamicPressureSpecial = 0.0;
+
+    this.decalColour = new THREE.Color();
+    this.lineColour = new THREE.Color();
+    this.BillboardObjects = [];
+    //---testing geometry vars----
+    this.segmentCount = 60;
+    this.radius = 2;
+    this.height = 5;
+    this.coils = 4;
+    //---testing geometry vars----
+    //----
+    this.timer = 0.0;
+    this.group = new THREE.Group();
+
+    this.refreshBrush = 2;
+    
+    this.materialsHolder = new MaterialsHolder();
+    this.shaderHolder = new ShaderHolder();
+ 
+    var materials = this.materials.split(",");
+    var textures = this.texture.split(",");
+    this.LineMaterial = this.materialsHolder.makeMaterial(this, this.assetsPath+textures[0], materials[0]);
+    this.ObjectsMaterial = this.materialsHolder.makeMaterial(this, this.assetsPath+textures[1], materials[1]);
+  }
+  
+  // reset manager
+  Reset() {
+    for (var i = this.group.children.length - 1; i >= 0; i--) {
+        this.group.remove(this.group.children[i]);
+    }
+    this.BillboardObjects = [];
+    this.refreshBrush = 2;
+
+    this.LineMaterial.dispose();
+    this.ObjectsMaterial.dispose();
+  }
+
+}
+
+//var _BrushVariablesInput = new BrushVariablesEditorInputs();//for the editor
+
+class BrushInputs {
+    /**
+     * @constructs BrushInputs
+     * This is the data passed from the user to this brushstroke
+     * @param {Object} n The properties.
+     * @param {THREE.Color} n.colour the user colour selected.
+     * @param {Float} n.size the user size selected.
+     * @param {THREE.Vector3} n.position the user painted position
+     * @param {THREE.Vector4} n.normalDistance the user painted normal and distance from body mesh
+     * @param {Float} n.speed the user painted speed
+     * @param {Float} n.presure the user painted presure
+     */
+    constructor(n = {}) {
+        this.colour = n.colour;
+        this.size = n.size;
+        this.position = n.position;
+        this.normalDistance = n.normalDistance;
+        this.speed = n.speed;
+        this.presure = n.presure;
+    }
+};
 
 /**
    * @constructs makeMaterial this should be where we create ALL materials

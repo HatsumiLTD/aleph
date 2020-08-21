@@ -76,7 +76,7 @@ import {
 import { configureStore } from "../../redux/store";
 import {
   AlGraphEvents,
-  EventUtils,
+  debounce,
   GraphUtils,
   ThreeUtils,
   Utils
@@ -470,7 +470,7 @@ export class Aleph {
     this._volumeRaycastHandler = this._volumeRaycastHandler.bind(this);
 
     // debounced event handlers
-    this._debouncedAppSetCamera = EventUtils.debounce(
+    this._debouncedAppSetCamera = debounce(
       this.appSetCamera,
       Constants.minFrameMS
     ).bind(this);

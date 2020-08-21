@@ -1,6 +1,6 @@
 import { Constants } from "../../Constants";
 import { DisplayMode, Orientation } from "../../enums";
-import { AMIUtils, EventUtils, Utils } from "../../utils";
+import { AMIUtils, debounce, Utils } from "../../utils";
 import { AlControlEvents } from "../../utils/AlControlEvents";
 import { VolumetricLoader } from "../../utils/VolumetricLoader";
 
@@ -58,7 +58,7 @@ AFRAME.registerComponent("al-volume", {
 
     this.createBufferTexture();
 
-    this.debouncedRenderBufferScene = EventUtils.debounce(
+    this.debouncedRenderBufferScene = debounce(
       this.renderBufferScene,
       this.data.minFrameMS
     ).bind(this);

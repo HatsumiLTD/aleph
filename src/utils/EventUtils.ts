@@ -1,6 +1,6 @@
-export class EventUtils {
+
   // the A-Frame debounce util doesn't work with ionic
-  static debounce(fn: any, debounceDuration: number): any {
+  export const debounce = (fn, debounceDuration) => {
     // summary:
     //      Returns a debounced function that will make sure the given
     //      function is not triggered too much.
@@ -27,4 +27,3 @@ export class EventUtils {
       return fn.lastReturnVal;
     };
   }
-}
