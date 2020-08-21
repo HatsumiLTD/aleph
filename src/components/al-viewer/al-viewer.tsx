@@ -31,7 +31,6 @@ import {
 import {
   Angles,
   BoundingBox,
-  DrawingTool,
   Edges,
   Lights,
   Nodes,
@@ -83,6 +82,7 @@ import {
 } from "../../utils";
 import { AlControlEvents } from "../../utils/AlControlEvents";
 import { ModelContainer } from "../../functional-components/aframe/ModelContainer";
+import { DrawingToolManager } from "../../aframe/components/DrawingTool/DrawingToolManager";
 
 type AEntity = import("aframe").Entity;
 type AScene = import("aframe").Scene;
@@ -108,8 +108,8 @@ export class Aleph {
   private _targetEntity: AEntity;
   private _validTarget: boolean;
   private _boundingEntity: AEntity;
-  private _previousSelectedNode: string; 
-  private _debugDraw: boolean = false;
+  private _previousSelectedNode: string;
+  private _debugDraw: boolean = true;
   //#endregion
 
   //#region props
@@ -341,6 +341,19 @@ export class Aleph {
 
   protected async componentWillLoad() {
     this._isWebGl2 = ThreeUtils.isWebGL2Available();
+
+    (window as any).drawingToolManager = new DrawingToolManager(
+      "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2F"
+    );
+
+    window.addEventListener("drawingToolManagerReset", function() {
+      console.log("drawingToolManagerReset");
+      var drawingTool = document.getElementById("al-drawing-tool");
+      if (drawingTool) {
+        drawingTool.setAttribute("al-drawing-tool", "timestamp", Date.now());
+      }
+      //drawingTool.setAttribute("al-drawing-tool", "texture", Manager.texture);
+    }, false);
 
     // redux
     this.store.setStore(configureStore({}));
@@ -1200,7 +1213,6 @@ export class Aleph {
       if (newNode) {
         //console.log("new node");
         this._previousSelectedNode = this.selected;
-        console.log("previous", this._previousSelectedNode);
         this._setNode([nodeId, newNode]);
 
         if (
@@ -1210,7 +1222,6 @@ export class Aleph {
           this._createEdge(this._previousSelectedNode, nodeId);
           this._selectNode(nodeId);
         } else if (this.drawingEnabled && this._previousSelectedNode) {
-          console.log("create edge");
           this._createEdge(this._previousSelectedNode, nodeId);
           this._selectNode(nodeId);
         }

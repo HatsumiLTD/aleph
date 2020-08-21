@@ -42,11 +42,16 @@ export const Src: FunctionalComponent<SrcProps> = (
     if (!src) {
       return null;
     } else {
-      window.nodes = nodes;
+      if (window.drawingToolManager) {
+        window.drawingToolManager.nodes = nodes;
+        window.drawingToolManager.Reset();
+      }
+
       switch (displayMode) {
         case DisplayMode.MESH: {
           return (
             <a-entity
+              id="al-drawing-tool"
               data-raycastable
               al-node-spawner={`
                 graphEnabled: ${graphEnabled};
@@ -60,7 +65,8 @@ export const Src: FunctionalComponent<SrcProps> = (
               `}
               al-drawing-tool={`
                 enabled: ${drawingEnabled};
-                nodesNum: ${nodes.size}
+                nodesNum: ${nodes.size};
+                raycasterEnabled: ${drawingEnabled}
               `}
               position="0 0 0"
               scale="1 1 1"

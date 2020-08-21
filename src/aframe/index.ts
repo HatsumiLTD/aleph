@@ -6,16 +6,16 @@ import "./components/al-child-hover-visible";
 import "./components/al-control-lights";
 import "./components/al-cube-env-map";
 import "./components/al-cursor";
-import "./components/al-drawing-tool";
 import "./components/al-edge";
 import "./components/al-gltf-model";
-import "./components/al-node-spawner";
 import "./components/al-node";
+import "./components/al-node-spawner";
 import "./components/al-orbit-control";
 import "./components/al-render-order";
 import "./components/al-render-overlaid";
 import "./components/al-trackball-control";
 import "./components/al-volume";
+import "./components/DrawingTool/al-drawing-tool";
 import "./primitives/al-a-camera";
 
 export const AlGltfModelEvents = {
