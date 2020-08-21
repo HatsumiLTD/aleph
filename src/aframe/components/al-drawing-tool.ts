@@ -25,11 +25,11 @@ AFRAME.registerComponent("al-drawing-tool", {
     // Use events to figure out what raycaster is listening so we don't have to
     // hardcode the raycaster.
     this.el.addEventListener(EVENTS.RAYCASTER_INTERSECTED, evt => {
-      console.log("raycaster intersected");
+      //console.log("raycaster intersected");
       this.raycaster = evt.detail.el;
     });
     this.el.addEventListener(EVENTS.RAYCASTER_CLEARED, evt => {
-      console.log("raycaster cleared");
+      //console.log("raycaster cleared");
       this.raycaster = null;
     });
 
@@ -52,12 +52,17 @@ AFRAME.registerComponent("al-drawing-tool", {
   },
 
   update: function (_oldData) {
-    console.log(this.data.nodesNum);
+    //console.log(this.data.nodesNum);
     this.group = new THREE.Group();
     this.setupMaterials();
     this.el.setObject3D('group', this.group);
     this.geometry = this.getGeometry();
-    this.makeLine();
+    //this.makeLine();
+
+    const linethreemesh = this.makeLine();
+    if (linethreemesh != null) {
+      this.group.add(linethreemesh);
+    }
   },
 
   makeLine: function () {
@@ -68,7 +73,6 @@ AFRAME.registerComponent("al-drawing-tool", {
   },
 
   getIntersection: function () {
-    console.log("get intersection");
     if (!this.data.enabled || !this.state.pointerDown) {
       return;
     }
@@ -102,11 +106,6 @@ AFRAME.registerComponent("al-drawing-tool", {
     if (!this.raycaster || !this.data.enabled) { return; }  // Not intersecting.
 
     this.debouncedGetIntersection();
-
-    const linethreemesh = this.makeLine();
-    if (linethreemesh != null) {
-      this.group.add(linethreemesh);
-    }
   },
 
   // loop through the points to create a line geometry

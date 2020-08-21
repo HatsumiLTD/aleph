@@ -108,6 +108,8 @@ export class Aleph {
   private _targetEntity: AEntity;
   private _validTarget: boolean;
   private _boundingEntity: AEntity;
+  private _previousSelectedNode: string; 
+  private _debugDraw: boolean = false;
   //#endregion
 
   //#region props
@@ -521,7 +523,7 @@ export class Aleph {
             targetEntity={this._targetEntity}
           />
         </ModelContainer>
-        { !this.drawingEnabled && [
+        { (this._debugDraw || !this.drawingEnabled) && [
           <Nodes
             boundingSphereRadius={this._boundingSphereRadius}
             camera={this._scene ? this._scene.camera : null}
@@ -1128,6 +1130,7 @@ export class Aleph {
   }
 
   private _graphEntryPointerUpHandler(_event: CustomEvent): void {
+    console.log("pointer up");
     this.appSetControlsEnabled(true);
     if (this.drawingEnabled) {
       this._selectNode(null);
@@ -1181,7 +1184,7 @@ export class Aleph {
           cameraPosition: this._camera.object3D.children[0].position.clone(),
           cameraDirection: this._camera.getAttribute("raycaster").direction,
           intersection,
-          type: AlVolumeCastType.CREATE
+          type: AlVolumeCastType.CREATE,
         });
       } else if (intersection) {
         newNode = {
@@ -1189,24 +1192,26 @@ export class Aleph {
           position: ThreeUtils.vector3ToString(intersection.point),
           scale: this._boundingSphereRadius / Constants.nodeSizeRatio,
           normal: ThreeUtils.vector3ToString(intersection.face.normal),
-          title: nodeId
+          title: nodeId,
+          timestamp: Date.now()
         };
       }
 
       if (newNode) {
-        const previousSelected = this.selected;
+        //console.log("new node");
+        this._previousSelectedNode = this.selected;
+        console.log("previous", this._previousSelectedNode);
         this._setNode([nodeId, newNode]);
 
         if (
           this._isShiftDown && // Shift is down
-          this.nodes.has(previousSelected) // A Node is already selected
+          this.nodes.has(this._previousSelectedNode) // A Node is already selected
         ) {
-          this._createEdge(previousSelected, nodeId);
+          this._createEdge(this._previousSelectedNode, nodeId);
           this._selectNode(nodeId);
-        } else if (this.drawingEnabled) {
-          if (previousSelected) {
-            this._createEdge(previousSelected, nodeId);
-          }
+        } else if (this.drawingEnabled && this._previousSelectedNode) {
+          console.log("create edge");
+          this._createEdge(this._previousSelectedNode, nodeId);
           this._selectNode(nodeId);
         }
       }
@@ -1235,14 +1240,14 @@ export class Aleph {
         }
 
         if (newNode) {
-          const previousSelected = this.selected;
+          this._previousSelectedNode = this.selected;
           this._setNode([nodeId, newNode]);
 
           if (
             this._isShiftDown && // Shift is down
-            this.nodes.has(previousSelected) // A Node is already selected
+            this.nodes.has(this._previousSelectedNode) // A Node is already selected
           ) {
-            this._createEdge(previousSelected, nodeId);
+            this._createEdge(this._previousSelectedNode, nodeId);
             this._selectNode(nodeId);
           }
         }
