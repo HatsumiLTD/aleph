@@ -1,5 +1,6 @@
+// tslint:disable-all: max-classes-per-file
 import { MeshLineMaterial } from "threejs-meshline";
-
+import { jsonpreset } from "./Presets";
 /**
  * @constructs ShaderHolder this should be where we load ALL shaders
  * @param {String} _name the shadername
@@ -193,7 +194,50 @@ class ShaderHolder {
         "}"
       ].join("\n");
     }
+    if (_name == "LineAnimatedLava") {
+      this.fragmentShader = [
+        THREE.ShaderChunk.baseLinefragmentVars,
+        THREE.ShaderChunk.MathNoise,
+        "uniform vec4 linecolour;",
+        "float snoise(vec3 uv, float res){ vec3 s = vec3(1e0, 1e2, 1e3);uv *= res;vec3 uv0 = floor(mod(uv, res))*s;vec3 uv1 = floor(mod(uv+vec3(1.), res))*s;vec3 f = fract(uv); f = f*f*(3.0-2.0*f);vec4 v = vec4(uv0.x+uv0.y+uv0.z, uv1.x+uv0.y+uv0.z,uv0.x+uv1.y+uv0.z, uv1.x+uv1.y+uv0.z);vec4 r = fract(sin(v*1e-1)*1e3);float r0 = mix(mix(r.x, r.y, f.x), mix(r.z, r.w, f.x), f.y);r = fract(sin((v + uv1.z - uv0.z)*1e-1)*1e3);float r1 = mix(mix(r.x, r.y, f.x), mix(r.z, r.w, f.x), f.y);return mix(r0, r1, f.z)*2.-1.;}",
+        "void main() {",
+        "",
+        THREE.ShaderChunk.logdepthbuf_fragment,
+        "",
+        " vec2 uv = vUV;",
+        " vec3 col = vec3(1.0,1.0,1.0);",
+        "    vec4 c = vec4(1.0);",
+        "    vec2 finnaluvpos = vUV * repeat ;",
+        "vec2 p = finnaluvpos - vec2(0.5, 0.5);",
+        "float rocks = pow(snoise(finnaluvpos * vec2(6.,4.0) ),4.)*4.0;",
+        "rocks = clamp(rocks, 0.0,1.0);",
+        "float power = 2.10;",
+        "float centerDist = 1.0-distance(vUV.y,0.5);",
+        "finnaluvpos.x -= time ;",
+        "finnaluvpos.y -= time ;",
+        "vec4 colourmap = texture2D( map, finnaluvpos );",
 
+        "float grey = (colourmap.r+colourmap.b+colourmap.g) ;",
+        "if( useDash == 1. ){",
+        "    c.a *= ceil(mod(vCounters + dashOffset, dashArray) - (dashArray * dashRatio));",
+        "}",
+        "float vignette = smoothstep(1.3-0.9, 1.3, centerDist);",
+        " c.rgb *= colourmap.rgb;",
+        " c.rgb *= vignette;",
+        " if( c.r+(1.0-rocks) < 0.084 ) discard;",
+        THREE.ShaderChunk.Line_pressure,
+        "float pressureRange = (1.-_pressure);",
+        // ' vec3 colourMix = mix(color.rgb, altcolor.rgb, grey);',//old way
+        " vec3 colourMix = mix(vec3(pressureRange),color.rgb, grey);",
+        " c.rgb = colourMix * (rocks/(1.3-vignette));",
+        THREE.ShaderChunk.Line_ends,
+        "    gl_FragColor = c;",
+        "    gl_FragColor.a *= step(vCounters, visibility);",
+        "",
+        THREE.ShaderChunk.fog_fragment,
+        "}"
+      ].join("\n");
+    }
     if (_name == "AnimatedWind") {
       this.fragmentShader = [
         THREE.ShaderChunk.basefragmentVars,
@@ -821,6 +865,38 @@ class MaterialsHolder {
         fragmentShader: _ShaderHolder.fragmentShader
       });
     }
+    if (_materialName == "LineMaterialAnimatedLava") {
+      var _ShaderHolder = new ShaderHolder("LineAnimatedLava");
+      var texture = new THREE.TextureLoader().load(_textureName);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(4, 4);
+      var mcolour = new THREE.Color(
+        _BrushVariablesInput.mainColour.r,
+        _BrushVariablesInput.mainColour.g,
+        _BrushVariablesInput.mainColour.b
+      );
+      var lcolour = new THREE.Color(
+        _BrushVariablesInput.lineColour.r,
+        _BrushVariablesInput.lineColour.g,
+        _BrushVariablesInput.lineColour.b
+      );
+      return new MeshLineMaterial({
+        name: _materialName,
+        color: mcolour,
+        altcolor: lcolour,
+        map: texture,
+        useMap: 1,
+        alphaTest: 0.5,
+        transparent: true,
+        lineWidth: _BrushVariablesInput.maxlineWidth,
+        repeat: new THREE.Vector2(
+          _BrushVariablesInput.repeatingAmount + 1.0,
+          1
+        ),
+        fragmentShader: _ShaderHolder.fragmentShader
+      });
+    }
     if (_materialName == "LineMaterialAnimatedWind") {
       var _ShaderHolder = new ShaderHolder("LineAnimatedWind");
       var texture = new THREE.TextureLoader().load(_textureName);
@@ -1319,6 +1395,7 @@ export class DrawingToolManager {
      * @param {Float} n.dynamicPressureSpecial the amount a special variable is effected.
      */
 
+    this.currentPreset = 0;
     this.assetsPath = assetsPath;
     this.paintLine = true;
     this.paintDecals = true;
@@ -1358,6 +1435,8 @@ export class DrawingToolManager {
     this.timer = 0.0;
     this.group = new THREE.Group();
 
+    this.nodes = [];
+
     this.refreshBrush = 2;
 
     this.materialsHolder = new MaterialsHolder();
@@ -1375,9 +1454,30 @@ export class DrawingToolManager {
       this.assetsPath + textures[1],
       materials[1]
     );
+
+    document.addEventListener("keydown", (key) => {
+      if (key.code === "KeyQ") {
+        this.NextPreset();
+      }
+    });
+
+  }
+
+  NextPreset() {
+    var presets = Object.values(jsonpreset.remembered);
+    var preset = presets[this.currentPreset]["0"];
+    this.SetPreset(preset);
+    if (this.currentPreset < presets.length - 1) {
+      this.currentPreset++;
+    } else {
+      this.currentPreset = 0;
+    }
   }
 
   GetPressure() {
+    if (!this.nodes.length) {
+      return;
+    }
     var pressureArray = [];
     var lengthRatio = this.nodes.length / 20.0;
     for (var i = 0; i <= 20; i++) {
@@ -1387,7 +1487,37 @@ export class DrawingToolManager {
       pressureArray.push(this.nodes[Math.floor(ipos)].presure);
     }
     return pressureArray;
-  };
+  }
+
+  SetPreset(preset) {
+    this.lineType = preset.lineType;
+    this.mainColour = new THREE.Color(preset.mainColor);
+    this.paintDecals = preset.decals;
+    this.paintLine = preset.paintLine;
+    this.texture = preset.texture;
+    this.textureAlt = preset.textureAlt;
+    this.materials = preset.materials;
+    this.objects = preset.objects;
+    this.animationSpeed = preset.animationSpeed;
+    this.animationSpeedAlt = preset.animationSpeedAlt;
+    this.decalColour = new THREE.Color(preset.decalColour);
+    this.facing = preset.facing;
+    this.spacing = preset.spacing
+    this.maxlineWidth = preset.maxlineWidth;
+    this.maxelementWidth = preset.maxelementWidth;
+    this.jitter = preset.jitter;
+    this.rotation = preset.rotation;
+    this.rotationjitter = preset.rotationjitter;
+    this.repeatingAmount = preset.repeatingAmount;
+    this.dynamicSpeedSize = preset.dynamicSpeedSize;
+    this.dynamicSpeedOpacity = preset.dynamicSpeedOpacity;
+    this.dynamicSpeedSpecial = preset.dynamicSpeedSpecial;
+    this.dynamicPressureSize = preset.dynamicPressureSize;
+    this.dynamicPressureOpacity = preset.dynamicPressureOpacity;
+    this.dynamicPressureSpecial = preset.dynamicPressureSpecial;
+
+    this.Reset();
+  }
 
   SetupMaterials() {
     var materials = this.materials.split(",");
@@ -1395,16 +1525,16 @@ export class DrawingToolManager {
     console.log("setup materials", textures);
     this.LineMaterial = this.materialsHolder.makeMaterial(
       this,
-      this.assetsPath +
-        textures[0],
+      this.assetsPath + textures[0],
       materials[0]
     );
-    this.ObjectsMaterial = this.materialsHolder.makeMaterial(
-      this,
-      this.assetsPath +
-        textures[1],
-      materials[1]
-    );
+    if (textures[1]) {
+      this.ObjectsMaterial = this.materialsHolder.makeMaterial(
+        this,
+        this.assetsPath + textures[1],
+        materials[1]
+      );
+    }
   }
 
   // reset manager
@@ -1446,7 +1576,7 @@ class BrushInputs {
     this.presure = n.presure;
   }
 }
-class DecalElement {
+export class DecalElement {
   constructor(_ObjectsMaterial, _node, _BrushVariablesInput) {
     this.group = new THREE.Group();
     this.type = _BrushVariablesInput.objects;
@@ -1507,7 +1637,6 @@ class DecalElement {
     this.delta = 0.0;
 
     this._BrushVariablesInput = _BrushVariablesInput;
-
 
     this.mesh = new THREE.Mesh(this.geometry, this.Material);
     var randomAmoutx =

@@ -18,6 +18,7 @@ import {
   AlVolumeCastType,
   AlVolumeEvents
 } from "../../aframe/components/al-volume";
+import { DrawingToolManager } from "../../aframe/components/DrawingTool/DrawingToolManager";
 import "../../assets/OrbitControls.js";
 import { Constants } from "../../Constants";
 import {
@@ -39,6 +40,7 @@ import {
   Src,
   TrackballCamera
 } from "../../functional-components/aframe";
+import { ModelContainer } from "../../functional-components/aframe/ModelContainer";
 import { AlAngle, AlCamera, AlEdge, AlGraph, AlNode } from "../../interfaces";
 import {
   appClearAngles,
@@ -81,8 +83,6 @@ import {
   Utils
 } from "../../utils";
 import { AlControlEvents } from "../../utils/AlControlEvents";
-import { ModelContainer } from "../../functional-components/aframe/ModelContainer";
-import { DrawingToolManager } from "../../aframe/components/DrawingTool/DrawingToolManager";
 
 type AEntity = import("aframe").Entity;
 type AScene = import("aframe").Scene;
@@ -347,12 +347,11 @@ export class Aleph {
     );
 
     window.addEventListener("drawingToolManagerReset", function() {
-      console.log("drawingToolManagerReset");
-      var drawingTool = document.getElementById("al-drawing-tool");
+      //console.log("drawingToolManagerReset");
+      let drawingTool = document.getElementById("al-drawing-tool");
       if (drawingTool) {
         drawingTool.setAttribute("al-drawing-tool", "timestamp", Date.now());
       }
-      //drawingTool.setAttribute("al-drawing-tool", "texture", Manager.texture);
     }, false);
 
     // redux
@@ -511,6 +510,7 @@ export class Aleph {
             displayMode={this.displayMode}
             dracoDecoderPath={this.dracoDecoderPath}
             drawingEnabled={this.drawingEnabled}
+            debugDraw={this._debugDraw}
             envMapPath={this.envMapPath}
             graphEnabled={this.graphEnabled}
             nodes={this.nodes}
@@ -1143,7 +1143,6 @@ export class Aleph {
   }
 
   private _graphEntryPointerUpHandler(_event: CustomEvent): void {
-    console.log("pointer up");
     this.appSetControlsEnabled(true);
     if (this.drawingEnabled) {
       this._selectNode(null);
@@ -1211,7 +1210,7 @@ export class Aleph {
       }
 
       if (newNode) {
-        //console.log("new node");
+        // console.log("new node");
         this._previousSelectedNode = this.selected;
         this._setNode([nodeId, newNode]);
 

@@ -1,5 +1,7 @@
 // import { EventUtils } from "../../utils";
 import { MeshLine } from "threejs-meshline";
+import { DecalElement } from "./DrawingToolManager";
+//import "./THREE.MeshLine";
 
 const EVENTS = {
   MOUSEDOWN: "mousedown",
@@ -16,7 +18,8 @@ AFRAME.registerComponent("al-drawing-tool", {
     minLineSegmentLength: { type: "number", default: 0.05 },
     nodesNum: { type: "number" },
     timestamp: { type: "string" },
-    raycasterEnabled: { type: "boolean" }
+    raycasterEnabled: { type: "boolean" },
+    stylingEnabled: { type: "boolean" }
   },
 
   init: function() {
@@ -58,7 +61,11 @@ AFRAME.registerComponent("al-drawing-tool", {
   },
 
   update: function(_oldData) {
-    console.log("nodeNum", this.data.nodesNum);
+    //console.log("nodeNum", this.data.nodesNum);
+    if (!this.data.stylingEnabled) {
+      console.warn("draw tool styling disabled");
+      return;
+    }
     this.group = new THREE.Group();
     this.setupMaterials();
     this.el.setObject3D("group", this.group);
@@ -146,10 +153,14 @@ AFRAME.registerComponent("al-drawing-tool", {
       if (this.LineMaterial.name != "No custom Shader") {
         // var mcolour = new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
         // this.Material.uniforms.colour.value = mcolour;//_BrushVariablesInput.mainColour;
-        if (drawingToolManager.nodes)
+        if (drawingToolManager.nodes.length &&
+          this.LineMaterial.uniforms.pressures &&
+          this.LineMaterial.uniforms.time
+          ) {
           this.LineMaterial.uniforms.pressures.value = drawingToolManager.GetPressure();
-        this.LineMaterial.uniforms.time.value = drawingToolManager.timer; //timer;
-        this.LineMaterial.needsUpdate = true;
+          this.LineMaterial.uniforms.time.value = drawingToolManager.timer; //timer;
+          this.LineMaterial.needsUpdate = true;
+        }
       }
     }
     //-------Update the line material------
@@ -165,7 +176,7 @@ AFRAME.registerComponent("al-drawing-tool", {
 
   // loop through the points to create a line geometry
   getGeometry: function() {
-    if (!drawingToolManager.nodes) {
+    if (!drawingToolManager.nodes.length) {
       return;
     }
     const nodes = drawingToolManager.nodes;
@@ -199,9 +210,17 @@ AFRAME.registerComponent("al-drawing-tool", {
       }
     } else {
       for (var j = 0; j < nodes.length; j++) {
-        var vec3 = nodes[j].position.clone();
-        var vec3target = nodes[j].position.clone();
-        if (j + 1 < nodes.length) vec3target = nodes[j + 1].position.clone();
+        var vec3 = AFRAME.utils.coordinates.parse(nodes[j].position);
+        vec3 = new THREE.Vector3(vec3.x, vec3.y, vec3.z);
+
+        var vec3target = AFRAME.utils.coordinates.parse(nodes[j].position);
+        vec3target = new THREE.Vector3(vec3target.x, vec3target.y, vec3target.z);
+
+        if (j + 1 < nodes.length) {
+          vec3target = AFRAME.utils.coordinates.parse(nodes[j + 1].position);
+          vec3target = new THREE.Vector3(vec3target.x, vec3target.y, vec3target.z);
+        }
+
         var distance = vec3.distanceTo(vec3target);
         var direction = new THREE.Vector3();
         direction.subVectors(vec3target, vec3).normalize();

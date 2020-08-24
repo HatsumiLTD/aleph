@@ -22,6 +22,7 @@ export const Src: FunctionalComponent<SrcProps> = (
   {
     cb,
     controlsType,
+    debugDraw,
     displayMode,
     dracoDecoderPath,
     drawingEnabled,
@@ -43,7 +44,7 @@ export const Src: FunctionalComponent<SrcProps> = (
       return null;
     } else {
       if (window.drawingToolManager) {
-        window.drawingToolManager.nodes = nodes;
+        window.drawingToolManager.nodes = Array.from(nodes).map(x => x[1]);
         window.drawingToolManager.Reset();
       }
 
@@ -66,7 +67,8 @@ export const Src: FunctionalComponent<SrcProps> = (
               al-drawing-tool={`
                 enabled: ${drawingEnabled};
                 nodesNum: ${nodes.size};
-                raycasterEnabled: ${drawingEnabled}
+                raycasterEnabled: ${drawingEnabled};
+                stylingEnabled: ${!debugDraw};
               `}
               position="0 0 0"
               scale="1 1 1"
