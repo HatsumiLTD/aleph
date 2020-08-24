@@ -1,5 +1,6 @@
 import { FunctionalComponent, h } from "@stencil/core";
 import { ControlsType, DisplayMode, Orientation } from "../../enums";
+import { AlNode } from "../../interfaces";
 
 interface SrcProps extends FunctionalComponentProps {
   controlsType: ControlsType;
