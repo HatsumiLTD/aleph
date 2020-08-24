@@ -127,6 +127,7 @@ AFRAME.registerComponent("al-node-spawner", {
   },
 
   elClick(event: CustomEvent) {
+    console.log("click", event);
     if ((this.state.left || this.data.vrEnabled) && this.data.graphEnabled) {
       this.el.sceneEl.emit(
         "al-add-node",
