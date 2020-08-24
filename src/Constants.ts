@@ -19,7 +19,7 @@ export class Constants {
   public static targetFrameTime = 1000 / 24; // 24 FPS
   public static titleIdName = "-title";
   public static topLayerRenderOrder = 999;
-  public static unitsDecimalPlaces = 6;
+  public static unitsDecimalPlaces = 2;
   public static zoomFactor = 3;
   public static volumeRaycastSensitivity = 0.05;
   public static volumeStepsDelay = 800;

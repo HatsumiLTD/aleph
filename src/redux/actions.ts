@@ -43,7 +43,8 @@ export type ActionTypes =
   | AppSetUnitsAction
   | AppSetVolumeStepsAction
   | AppSetVolumeWindowCenterAction
-  | AppSetVolumeWindowWidthAction;
+  | AppSetVolumeWindowWidthAction
+  | AppSetVRActiveAction;
 
 export enum TypeKeys {
   NULL = "NULL",
@@ -79,7 +80,8 @@ export enum TypeKeys {
   APP_SET_UNITS = "APP_SET_UNITS",
   APP_SET_VOLUME_STEPS = "APP_SET_VOLUME_STEPS",
   APP_SET_VOLUME_WINDOW_CENTER = "APP_SET_VOLUME_WINDOW_CENTER",
-  APP_SET_VOLUME_WINDOW_WIDTH = "APP_SET_VOLUME_WINDOW_WIDTH"
+  APP_SET_VOLUME_WINDOW_WIDTH = "APP_SET_VOLUME_WINDOW_WIDTH",
+  APP_SET_VR_ACTIVE = "APP_SET_VR_ACTIVE"
 }
 
 //#region src
@@ -550,3 +552,22 @@ export const appSetControlsType = (payload: ControlsType) => async (
 };
 
 //#endregion
+
+//#region vr
+
+export interface AppSetVRActiveAction {
+  type: TypeKeys.APP_SET_VR_ACTIVE;
+  payload: boolean;
+}
+
+export const appSetVRActive = (payload: boolean) => async (
+  dispatch,
+  _getState
+) => {
+  return dispatch({
+    type: TypeKeys.APP_SET_VR_ACTIVE,
+    payload
+  });
+};
+
+////#endregion
