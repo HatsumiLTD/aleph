@@ -3,6 +3,7 @@ import { ControlsType, DisplayMode, Orientation } from "../../enums";
 
 interface SrcProps extends FunctionalComponentProps {
   controlsType: ControlsType;
+  debugDraw: boolean;
   displayMode: DisplayMode;
   dracoDecoderPath: string;
   drawingEnabled: boolean;
