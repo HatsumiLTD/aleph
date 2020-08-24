@@ -1,4 +1,3 @@
-// tslint:disable-all: max-classes-per-file
 import { MeshLineMaterial } from "threejs-meshline";
 import { jsonpreset } from "./Presets";
 /**
