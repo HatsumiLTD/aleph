@@ -1,7 +1,8 @@
 AFRAME.registerComponent("al-node-spawner", {
   schema: {
     graphEnabled: { type: "boolean" },
-    minFrameMS: { type: "number", default: 15 }
+    minFrameMS: { type: "number", default: 15 },
+    vrEnabled: { type: "boolean" }
   },
 
   init() {
@@ -125,9 +126,13 @@ AFRAME.registerComponent("al-node-spawner", {
     }
   },
 
-  elClick(event) {
-    if (this.state.left && this.data.graphEnabled) {
-      this.el.sceneEl.emit("al-add-node", { aframeEvent: event }, false);
+  elClick(event: CustomEvent) {
+    if ((this.state.left || this.data.vrEnabled) && this.data.graphEnabled) {
+      this.el.sceneEl.emit(
+        "al-add-node",
+        { aframeEvent: event },
+        false
+      );
     }
   },
 

@@ -165,6 +165,7 @@ export namespace Components {
     'setVolumeBrightness': (brightness: number) => Promise<void>;
     'setVolumeContrast': (contrast: number) => Promise<void>;
     'setVolumeSteps': (steps: number) => Promise<void>;
+    'vrEnabled': boolean;
     'width': string;
   }
 }
@@ -399,6 +400,7 @@ declare namespace LocalJSX {
     * Fires when an object is loaded passing either the object or a stackhelper for volumetric data.
     */
     'onLoaded'?: (event: CustomEvent<any>) => void;
+    'vrEnabled'?: boolean;
     'width'?: string;
   }
 
