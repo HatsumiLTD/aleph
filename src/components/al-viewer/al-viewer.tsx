@@ -1260,6 +1260,25 @@ export class Aleph {
         this._previousSelectedNode = this.selected;
         this._setNode([nodeId, newNode]);
 
+        // var testEntity = document.createElement('a-entity');
+        // testEntity.setAttribute('position', intersection.point);
+        // testEntity.setAttribute('scale', newNode.scale);
+        // this._scene.appendChild(testEntity);
+
+        // <a-entity
+        //     data-raycastable
+        //     id={nodeId}
+        //     position={node.position}
+        //     al-node={`
+        //       scale: ${node.scale};
+        //       selected: ${selected === nodeId};
+        //       graphEnabled: ${graphEnabled};
+        //     `}
+        //     scale={` ${entityScale} ${entityScale} ${entityScale};`}
+        //   />
+
+        console.log("add test entity");
+
         if (
           this._isShiftDown && // Shift is down
           this.nodes.has(this._previousSelectedNode) // A Node is already selected
@@ -1278,7 +1297,8 @@ export class Aleph {
         //console.log("force update");
         // this.el.forceUpdate();
         // this._scene.flushToDOM();
-        // this.render();
+      const dom = this._renderScene();
+      console.log(dom);
       //}
     }
   }

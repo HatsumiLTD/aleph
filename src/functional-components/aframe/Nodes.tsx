@@ -48,7 +48,7 @@ export const Nodes: FunctionalComponent<NodesProps> = (
       );
       textOffset.multiplyScalar(node.scale);
 
-      return (
+      return  (
         <a-entity al-child-hover-visible id={nodeId + "-parent"}>
           <a-entity
             position={node.position}

@@ -104,6 +104,8 @@ export const app = (
         ...sanitisedValue
       };
 
+      console.log("set node");
+
       // if the key already exists, keep the current selected
       // otherwise select the new key.
       return {
