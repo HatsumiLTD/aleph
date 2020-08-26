@@ -1,7 +1,9 @@
-// import { EventUtils } from "../../utils";
 import { MeshLine } from "threejs-meshline";
 import { DecalElement } from "./DrawingToolManager";
 //import "./THREE.MeshLine";
+
+// import { EventUtils } from "../../utils";
+// import { MeshLine, MeshLineMaterial } from "threejs-meshline";
 
 const EVENTS = {
   MOUSEDOWN: "mousedown",
@@ -21,13 +23,11 @@ AFRAME.registerComponent("al-drawing-tool", {
     minFrameMS: { type: "number", default: 15 },
     minLineSegmentLength: { type: "number", default: 0.05 },
     nodesNum: { type: "number" },
-    timestamp: { type: "string" },
-    raycasterEnabled: { type: "boolean" },
-    stylingEnabled: { type: "boolean" }
+    preset: { type: "number" },
+    raycasterEnabled: { type: "boolean" }
   },
 
   init: function() {
-    console.log("init");
     this.state = {
       pointerDown: false
     };
@@ -60,11 +60,7 @@ AFRAME.registerComponent("al-drawing-tool", {
       },
       false
     );
-
-    //const rightController = document.getElementById("right-controller");
-
-    //console.log("right controller", rightController);
-
+    
     this.el.addEventListener(
       EVENTS.MOUSEDOWN,
       evt => {
@@ -100,12 +96,8 @@ AFRAME.registerComponent("al-drawing-tool", {
 
   update: function(_oldData) {
     //console.log("nodeNum", this.data.nodesNum);
-    if (!this.data.stylingEnabled) {
-      console.warn("draw tool styling disabled");
-      return;
-    }
+    //console.log("preset", this.data.preset);
     this.group = new THREE.Group();
-    this.setupMaterials();
     this.el.setObject3D("group", this.group);
     this.geometry = this.getGeometry();
     this.makeLine();
@@ -128,23 +120,17 @@ AFRAME.registerComponent("al-drawing-tool", {
     line.setGeometry(this.geometry, function(p) {
       return p;
     });
-    return new THREE.Mesh(line.geometry, this.LineMaterial);
+    return new THREE.Mesh(line.geometry, drawingToolManager.LineMaterial);
   },
 
   getIntersection: function() {
     //console.log("get intersection");
-
     if (!this.data.enabled || !this.state.pointerDown) {
-      //console.log("get intersection", this.state.pointerDown);
       return;
     }
-
     const intersection = this.raycaster.components.raycaster.getIntersection(
       this.el
     );
-
-    //console.log("intersection", intersection);
-    
     if (!intersection) {
       return;
     }
@@ -176,6 +162,7 @@ AFRAME.registerComponent("al-drawing-tool", {
   },
 
   tick: function() {
+    //console.log("tick");
 
     if (this.data.raycasterEnabled && this.raycaster) {
       this.debouncedGetIntersection();
@@ -186,29 +173,29 @@ AFRAME.registerComponent("al-drawing-tool", {
     var worldPos = new THREE.Vector3();
     worldPos.setFromMatrixPosition(cameraEl.matrixWorld);
     // ////get camera position--------
-
+    
     //--------run timer---------
     drawingToolManager.timer += drawingToolManager.animationSpeed;
     if (drawingToolManager.timer >= 1.0) drawingToolManager.timer -= 1.0;
     if (drawingToolManager.timer <= -1.0) drawingToolManager.timer += 1.0;
     //--------run timer---------
     //-------Update the line material------
-    if (this.LineMaterial) {
-      if (this.LineMaterial.name != "No custom Shader") {
+    if (drawingToolManager.LineMaterial) {
+      if (drawingToolManager.LineMaterial.name != "No custom Shader") {
         // var mcolour = new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
         // this.Material.uniforms.colour.value = mcolour;//_BrushVariablesInput.mainColour;
         if (drawingToolManager.nodes.length &&
-          this.LineMaterial.uniforms.pressures &&
-          this.LineMaterial.uniforms.time
+          drawingToolManager.LineMaterial.uniforms.pressures &&
+          drawingToolManager.LineMaterial.uniforms.time
           ) {
-          this.LineMaterial.uniforms.pressures.value = drawingToolManager.GetPressure();
-          this.LineMaterial.uniforms.time.value = drawingToolManager.timer; //timer;
-          this.LineMaterial.needsUpdate = true;
+          drawingToolManager.LineMaterial.uniforms.pressures.value = drawingToolManager.GetPressure();
+          drawingToolManager.LineMaterial.uniforms.time.value = drawingToolManager.timer; //timer;
+          drawingToolManager.LineMaterial.needsUpdate = true;
         }
       }
     }
     //-------Update the line material------
-
+    
     //-------Update the decal objects(BillboardObjects)------
     if (drawingToolManager.BillboardObjects.length > 0) {
       drawingToolManager.BillboardObjects.forEach(function(obj) {
@@ -220,12 +207,13 @@ AFRAME.registerComponent("al-drawing-tool", {
 
   // loop through the points to create a line geometry
   getGeometry: function() {
-    if (!drawingToolManager.nodes.length) {
+    if (!drawingToolManager.nodes) {
       return;
     }
     const nodes = drawingToolManager.nodes;
-    console.log("get geometry");
+    //console.log("get geometry");
     const geometry = new THREE.Geometry();
+    //console.log(nodes);
     nodes.forEach(function(node) {
       // console.log(node.Position);
       const position = AFRAME.utils.coordinates.parse(node.position);
@@ -233,14 +221,9 @@ AFRAME.registerComponent("al-drawing-tool", {
     });
     return geometry;
   },
-
-  setupMaterials: function() {
-    drawingToolManager.SetupMaterials();
-    this.LineMaterial = drawingToolManager.LineMaterial;
-    this.ObjectsMaterial = drawingToolManager.ObjectsMaterial;
-  },
-
+  
   addDecals: function() {
+    if(!drawingToolManager.paintDecals)return;
     const nodes = drawingToolManager.nodes;
     if (drawingToolManager.spacing < 0) {
       var counter = 0;
@@ -264,7 +247,6 @@ AFRAME.registerComponent("al-drawing-tool", {
           vec3target = AFRAME.utils.coordinates.parse(nodes[j + 1].position);
           vec3target = new THREE.Vector3(vec3target.x, vec3target.y, vec3target.z);
         }
-
         var distance = vec3.distanceTo(vec3target);
         var direction = new THREE.Vector3();
         direction.subVectors(vec3target, vec3).normalize();

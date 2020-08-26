@@ -1,5 +1,6 @@
 import { MeshLineMaterial } from "threejs-meshline";
 import { jsonpreset } from "./Presets";
+
 /**
  * @constructs ShaderHolder this should be where we load ALL shaders
  * @param {String} _name the shadername
@@ -1396,64 +1397,26 @@ export class DrawingToolManager {
 
     this.currentPreset = 0;
     this.assetsPath = assetsPath;
-    this.paintLine = true;
-    this.paintDecals = true;
-    this.lineType = "null";
-    this.mainColour = new THREE.Color();
-    this.texture = "Brush.png,perlin.png";
-    this.textureAlt = "null";
-    this.materials = "LineTexturedMaterial,AnimatedMaterial";
-    this.objects = "plain";
-    this.animationSpeed = 0.05;
-    this.animationSpeedAlt = 0.0;
-    this.facing = "Camera";
-    this.spacing = 0.0;
-    this.maxlineWidth = 1.0;
-    this.maxelementWidth = 1.0;
-    this.jitter = 0.0;
-    this.rotation = 0.0;
-    this.rotationjitter = 0.0;
-    this.repeatingAmount = 0.0;
-    this.dynamicSpeedSize = 0.0;
-    this.dynamicSpeedOpacity = 0.0;
-    this.dynamicSpeedSpecial = 0.0;
-    this.dynamicPressureSize = 0.0;
-    this.dynamicPressureOpacity = 0.0;
-    this.dynamicPressureSpecial = 0.0;
 
     this.decalColour = new THREE.Color();
     this.lineColour = new THREE.Color();
     this.BillboardObjects = [];
     //---testing geometry vars----
-    this.segmentCount = 60;
-    this.radius = 2;
-    this.height = 5;
-    this.coils = 4;
+    // this.segmentCount = 60;
+    // this.radius = 2;
+    // this.height = 5;
+    // this.coils = 4;
     //---testing geometry vars----
     //----
     this.timer = 0.0;
     this.group = new THREE.Group();
 
-    this.nodes = [];
-
-    this.refreshBrush = 2;
-
     this.materialsHolder = new MaterialsHolder();
     this.shaderHolder = new ShaderHolder();
 
-    var materials = this.materials.split(",");
-    var textures = this.texture.split(",");
-    this.LineMaterial = this.materialsHolder.makeMaterial(
-      this,
-      this.assetsPath + textures[0],
-      materials[0]
-    );
-    this.ObjectsMaterial = this.materialsHolder.makeMaterial(
-      this,
-      this.assetsPath + textures[1],
-      materials[1]
-    );
-
+    this.nodes = [];
+    this.NextPreset();
+         
     document.addEventListener("keydown", (key) => {
       if (key.code === "KeyQ") {
         this.NextPreset();
@@ -1461,7 +1424,7 @@ export class DrawingToolManager {
     });
 
   }
-
+  
   NextPreset() {
     var presets = Object.values(jsonpreset.remembered);
     var preset = presets[this.currentPreset]["0"];
@@ -1487,10 +1450,11 @@ export class DrawingToolManager {
     }
     return pressureArray;
   }
-
+  
   SetPreset(preset) {
+    console.log("set preset");
     this.lineType = preset.lineType;
-    this.mainColour = new THREE.Color(preset.mainColor);
+    this.mainColour = new THREE.Color(preset.mainColour);
     this.paintDecals = preset.decals;
     this.paintLine = preset.paintLine;
     this.texture = preset.texture;
@@ -1514,11 +1478,13 @@ export class DrawingToolManager {
     this.dynamicPressureSize = preset.dynamicPressureSize;
     this.dynamicPressureOpacity = preset.dynamicPressureOpacity;
     this.dynamicPressureSpecial = preset.dynamicPressureSpecial;
-
+    
+    this.SetupMaterials();
     this.Reset();
   }
 
   SetupMaterials() {
+    console.log("setup materials");
     var materials = this.materials.split(",");
     var textures = this.texture.split(",");
     console.log("setup materials", textures);
@@ -1543,10 +1509,12 @@ export class DrawingToolManager {
       this.group.remove(this.group.children[i]);
     }
     this.BillboardObjects = [];
-    this.refreshBrush = 2;
 
     this.LineMaterial.dispose();
-    this.ObjectsMaterial.dispose();
+    
+    if (this.ObjectsMaterial) {
+      this.ObjectsMaterial.dispose();
+    }
 
     window.dispatchEvent(new CustomEvent("drawingToolManagerReset", {}));
   }

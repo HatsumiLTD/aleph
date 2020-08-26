@@ -112,7 +112,7 @@ export class Aleph {
   private _validTarget: boolean;
   private _boundingEntity: AEntity;
   private _previousSelectedNode: string;
-  private _debugDraw: boolean = true;
+  private _debugDraw: boolean = false;
   //#endregion
 
   //#region props
@@ -504,6 +504,11 @@ export class Aleph {
       Constants.minFrameMS
     ).bind(this);
   }
+  
+  protected async componentWillUpdate() {
+    // this isn't firing in VR :-(
+    // have to quit VR for new nodes to render
+  }
 
   private _renderScene() {
     return (
@@ -555,8 +560,7 @@ export class Aleph {
             vrEnabled={this.vrEnabled}
           />
         </ModelContainer>
-        {/* { (this._debugDraw || !this.drawingEnabled) && [ */}
-          { [
+        { (this._debugDraw || !this.drawingEnabled) && [
           <Nodes
             boundingSphereRadius={this._boundingSphereRadius}
             camera={this._scene ? this._scene.camera : null}
@@ -717,7 +721,7 @@ export class Aleph {
   }
 
   public render() {
-    console.log("render");
+    //console.log("render");
     return (
       <div
         id="al-container"
