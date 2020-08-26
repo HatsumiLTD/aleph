@@ -358,7 +358,7 @@ export class Aleph {
       //console.log("drawingToolManagerReset");
       let model = document.getElementById("model");
       if (model) {
-        (model as any).setAttribute("al-drawing-tool", "timestamp", Date.now());
+        (model as any).setAttribute("al-drawing-tool", "dirty", Date.now());
       }
     }, false);
 

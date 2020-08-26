@@ -23,6 +23,7 @@ AFRAME.registerComponent("al-drawing-tool", {
     minFrameMS: { type: "number", default: 15 },
     minLineSegmentLength: { type: "number", default: 0.05 },
     nodesNum: { type: "number" },
+    dirty: { type: "string" },
     preset: { type: "number" },
     raycasterEnabled: { type: "boolean" }
   },
