@@ -5,6 +5,7 @@ import "@ionic/core";
 import {
   Component,
   Event,
+  Element,
   EventEmitter,
   h,
   Method,
@@ -85,6 +86,7 @@ import {
   Utils
 } from "../../utils";
 import { AlControlEvents } from "../../utils/AlControlEvents";
+import { HTMLStencilElement } from "@stencil/core/internal";
 type AEntity = import("aframe").Entity;
 type AScene = import("aframe").Scene;
 //#endregion
@@ -343,6 +345,8 @@ export class Aleph {
 
   //#endregion
 
+  @Element() el!: HTMLStencilElement;
+
   protected async componentWillLoad() {
     this._isWebGl2 = ThreeUtils.isWebGL2Available();
 
@@ -352,9 +356,9 @@ export class Aleph {
 
     window.addEventListener("drawingToolManagerReset", function() {
       //console.log("drawingToolManagerReset");
-      let drawingTool = document.getElementById("al-drawing-tool");
-      if (drawingTool) {
-        (drawingTool as any).setAttribute("al-drawing-tool", "timestamp", Date.now());
+      let model = document.getElementById("model");
+      if (model) {
+        (model as any).setAttribute("al-drawing-tool", "timestamp", Date.now());
       }
     }, false);
 
@@ -551,7 +555,8 @@ export class Aleph {
             vrEnabled={this.vrEnabled}
           />
         </ModelContainer>
-        { (this._debugDraw || !this.drawingEnabled) && [
+        {/* { (this._debugDraw || !this.drawingEnabled) && [ */}
+          { [
           <Nodes
             boundingSphereRadius={this._boundingSphereRadius}
             camera={this._scene ? this._scene.camera : null}
@@ -712,6 +717,7 @@ export class Aleph {
   }
 
   public render() {
+    console.log("render");
     return (
       <div
         id="al-container"
@@ -1216,6 +1222,7 @@ export class Aleph {
   }
 
   private _spawnNodeHandler(event: CustomEvent): void {
+    console.log("spawn node", event);
     // IF creating a new node and NOT intersecting an existing node
     if (
       this.graphEnabled && // Nodes are enabled
@@ -1244,7 +1251,7 @@ export class Aleph {
           scale: this._boundingSphereRadius / Constants.nodeSizeRatio,
           normal: ThreeUtils.vector3ToString(intersection.face.normal),
           title: nodeId,
-          timestamp: Date.now()
+          timestamp: event.detail.aframeEvent.timeStamp
         };
       }
 
@@ -1264,6 +1271,15 @@ export class Aleph {
           this._selectNode(nodeId);
         }
       }
+
+      // if in VR we need to force the nodes to render
+      
+      //if (this.vrActive) {
+        //console.log("force update");
+        // this.el.forceUpdate();
+        // this._scene.flushToDOM();
+        // this.render();
+      //}
     }
   }
 

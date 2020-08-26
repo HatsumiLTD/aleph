@@ -16,13 +16,13 @@ export const VRControls: FunctionalComponent<VRControlsProps> = (
         <a-entity id="controllers">
           <a-entity
             laser-controls="hand: left"
-            raycaster="objects: .collidable;"
-            id="left_hand"
+            raycaster="objects: [data-raycastable];"
+            id="left-controller"
           />
           <a-entity
             laser-controls="hand: right"
-            raycaster="objects: .collidable;"
-            id="right_hand"
+            raycaster="objects: [data-raycastable];"
+            id="right-controller"
           />
         </a-entity>
       );

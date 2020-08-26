@@ -56,7 +56,7 @@ export const Src: FunctionalComponent<SrcProps> = (
         case DisplayMode.MESH: {
           return (
             <a-entity
-              id="al-drawing-tool"
+              id="model"
               data-raycastable
               al-node-spawner={`
                 graphEnabled: ${graphEnabled};

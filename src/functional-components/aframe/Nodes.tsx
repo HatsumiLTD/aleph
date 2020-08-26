@@ -29,6 +29,7 @@ export const Nodes: FunctionalComponent<NodesProps> = (
   _children
 ) =>
   (() => {
+    console.log("render nodes");
     return Array.from(nodes).map((n: [string, AlNode]) => {
       const [nodeId, node] = n;
       const frustrumDistance = ThreeUtils.getFrustrumSpaceDistance(

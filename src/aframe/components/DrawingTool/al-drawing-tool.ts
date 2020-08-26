@@ -6,6 +6,10 @@ import { DecalElement } from "./DrawingToolManager";
 const EVENTS = {
   MOUSEDOWN: "mousedown",
   MOUSEUP: "mouseup",
+  TRIGGERDOWN: "triggerdown",
+  TRIGGERUP: "triggerup",
+  ABUTTONDOWN: "abuttondown",
+  BBUTTONDOWN: "bbuttondown",
   RAYCASTER_INTERSECTED: "raycaster-intersected",
   RAYCASTER_CLEARED: "raycaster-intersected-cleared",
   ADD_NODE: "al-add-node"
@@ -31,11 +35,11 @@ AFRAME.registerComponent("al-drawing-tool", {
     // Use events to figure out what raycaster is listening so we don't have to
     // hardcode the raycaster.
     this.el.addEventListener(EVENTS.RAYCASTER_INTERSECTED, evt => {
-      console.log("raycaster intersected");
+      //console.log("raycaster intersected");
       this.raycaster = evt.detail.el;
     });
     this.el.addEventListener(EVENTS.RAYCASTER_CLEARED, evt => {
-      console.log("raycaster cleared");
+      //console.log("raycaster cleared");
       this.raycaster = null;
     });
 
@@ -55,6 +59,40 @@ AFRAME.registerComponent("al-drawing-tool", {
         this.state.pointerDown = false;
       },
       false
+    );
+
+    //const rightController = document.getElementById("right-controller");
+
+    //console.log("right controller", rightController);
+
+    this.el.addEventListener(
+      EVENTS.MOUSEDOWN,
+      evt => {
+        //console.log("trigger down");
+        this.state.pointerDown = true;
+      }
+    );
+
+    this.el.addEventListener(
+      EVENTS.MOUSEUP,
+      evt => {
+        //console.log("trigger up");
+        this.state.pointerDown = false;
+      }
+    );
+
+    this.el.addEventListener(
+      EVENTS.ABUTTONDOWN,
+      evt => {
+        console.log("a button down");
+      }
+    );
+
+    this.el.addEventListener(
+      EVENTS.BBUTTONDOWN,
+      evt => {
+        console.log("b button down");
+      }
     );
 
     this.debouncedGetIntersection = AFRAME.utils.throttle(this.getIntersection, this.data.minFrameMS, this);
@@ -94,13 +132,19 @@ AFRAME.registerComponent("al-drawing-tool", {
   },
 
   getIntersection: function() {
-    console.log("get intersection");
+    //console.log("get intersection");
+
     if (!this.data.enabled || !this.state.pointerDown) {
+      //console.log("get intersection", this.state.pointerDown);
       return;
     }
+
     const intersection = this.raycaster.components.raycaster.getIntersection(
       this.el
     );
+
+    //console.log("intersection", intersection);
+    
     if (!intersection) {
       return;
     }
