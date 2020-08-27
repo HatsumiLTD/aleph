@@ -53,6 +53,7 @@ export class AlGraphEditor {
       <al-graph-settings
         graph-enabled={this.graphEnabled}
         graph-visible={this.graphVisible}
+        drawing-enabled={this.drawingEnabled}
         units={this.units}
       ></al-graph-settings>,
       !this.drawingEnabled && <div>

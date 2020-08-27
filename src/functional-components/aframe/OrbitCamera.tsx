@@ -44,7 +44,6 @@ export const OrbitCamera: FunctionalComponent<OrbitCameraProps> = (
   _children
 ) =>
   (() => {
-    if (graphEnabled) {
       return (
         <al-a-camera
           fov={fov}
@@ -53,7 +52,10 @@ export const OrbitCamera: FunctionalComponent<OrbitCameraProps> = (
           look-controls="enabled: false"
           far={far}
           id="mainCamera"
-          raycaster="objects: [data-raycastable]"
+          raycaster={`
+            enabled: ${graphEnabled};
+            objects: [data-raycastable];
+          `}
           al-cursor="rayOrigin: mouse"
           al-orbit-control={`
             minDistance: ${minDistance};
@@ -75,34 +77,4 @@ export const OrbitCamera: FunctionalComponent<OrbitCameraProps> = (
           ref={ref => cb(ref)}
         />
       );
-    } else {
-      return (
-        <al-a-camera
-          fov={fov}
-          near={near}
-          aspect={aspect}
-          look-controls="enabled: false"
-          far={far}
-          id="mainCamera"
-          al-orbit-control={`
-            minDistance: ${minDistance};
-            minPolarAngle: ${minPolarAngle};
-            maxDistance: ${maxDistance};
-            maxPolarAngle: ${maxPolarAngle};
-            screenSpacePanning: true;
-            rotateSpeed: ${rotateSpeed};
-            zoomSpeed: ${zoomSpeed};
-            enableDamping: true;
-            dampingFactor: ${dampingFactor};
-            controlTarget: ${controlTarget};
-            controlPosition: ${controlPosition};
-            enabled: ${enabled};
-            animating: ${animating};
-            panSpeed: ${panSpeed}
-          `}
-          al-control-lights
-          ref={ref => cb(ref)}
-        />
-      );
-    }
   })();

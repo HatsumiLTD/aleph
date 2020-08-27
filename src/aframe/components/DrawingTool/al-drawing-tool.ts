@@ -1,5 +1,5 @@
 import { MeshLine } from "threejs-meshline";
-import { DecalElement } from "./DrawingToolManager";
+import { DecalElement, DrawingToolManager } from "./DrawingToolManager";
 //import "./THREE.MeshLine";
 
 // import { EventUtils } from "../../utils";
@@ -23,6 +23,7 @@ AFRAME.registerComponent("al-drawing-tool", {
     minFrameMS: { type: "number", default: 15 },
     minLineSegmentLength: { type: "number", default: 0.05 },
     nodesNum: { type: "number" },
+    dirty: { type: "string" },
     preset: { type: "number" },
     raycasterEnabled: { type: "boolean" }
   },
@@ -61,6 +62,11 @@ AFRAME.registerComponent("al-drawing-tool", {
       false
     );
     
+    // vr controller listeners
+    const rightController = document.getElementById("right-controller");
+
+    console.log("right controller", rightController);
+
     this.el.addEventListener(
       EVENTS.MOUSEDOWN,
       evt => {
@@ -77,17 +83,10 @@ AFRAME.registerComponent("al-drawing-tool", {
       }
     );
 
-    this.el.addEventListener(
+    rightController.addEventListener(
       EVENTS.ABUTTONDOWN,
       evt => {
-        console.log("a button down");
-      }
-    );
-
-    this.el.addEventListener(
-      EVENTS.BBUTTONDOWN,
-      evt => {
-        console.log("b button down");
+        drawingToolManager.NextPreset();
       }
     );
 
@@ -97,6 +96,9 @@ AFRAME.registerComponent("al-drawing-tool", {
   update: function(_oldData) {
     //console.log("nodeNum", this.data.nodesNum);
     //console.log("preset", this.data.preset);
+    if (!this.data.enabled) {
+      return;
+    }
     this.group = new THREE.Group();
     this.el.setObject3D("group", this.group);
     this.geometry = this.getGeometry();

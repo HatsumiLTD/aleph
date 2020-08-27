@@ -42,63 +42,36 @@ export const TrackballCamera: FunctionalComponent<TrackballCameraProps> = (
   _children
 ) =>
   (() => {
-    if (graphEnabled) {
-      return (
-        <al-a-camera
-          fov={fov}
-          near={near}
-          aspect={aspect}
-          look-controls="enabled: false"
-          far={far}
-          id="mainCamera"
-          raycaster="objects: [data-raycastable]"
-          al-cursor="rayOrigin: mouse"
-          al-trackball-control={`
-            screenLeft: ${0};
-            screenTop: ${0};
-            screenWidth: ${screenWidth};
-            screenHeight: ${screenHeight};
-            rotateSpeed: ${rotateSpeed};
-            zoomSpeed: ${zoomSpeed};
-            panSpeed: ${panSpeed};
-            maxDistance: ${maxDistance};
-            dynamicDampingFactor: ${dampingFactor};
-            controlTarget: ${controlTarget};
-            controlPosition: ${controlPosition};
-            enabled: ${enabled};
-            animating: ${animating}
-          `}
-          al-control-lights
-          ref={ref => cb(ref)}
-        />
-      );
-    } else {
-      return (
-        <al-a-camera
-          fov={fov}
-          near={near}
-          aspect={aspect}
-          look-controls="enabled: false"
-          far={far}
-          id="mainCamera"
-          al-trackball-control={`
-            screenLeft: ${0};
-            screenTop: ${0};
-            screenWidth: ${screenWidth};
-            screenHeight: ${screenHeight};
-            rotateSpeed: ${rotateSpeed};
-            zoomSpeed: ${zoomSpeed};
-            panSpeed: ${panSpeed};
-            maxDistance: ${maxDistance};
-            dynamicDampingFactor: ${dampingFactor};
-            controlTarget: ${controlTarget};
-            controlPosition: ${controlPosition};
-            enabled: ${enabled};
-            animating: ${animating}
-          `}
-          al-control-lights
-          ref={ref => cb(ref)}
-        />
-      );
-    }
+    return (
+      <al-a-camera
+        fov={fov}
+        near={near}
+        aspect={aspect}
+        look-controls="enabled: false"
+        far={far}
+        id="mainCamera"
+        raycaster={`
+          enabled: ${graphEnabled};
+          objects: [data-raycastable];
+        `}
+        al-cursor="rayOrigin: mouse"
+        al-trackball-control={`
+          screenLeft: ${0};
+          screenTop: ${0};
+          screenWidth: ${screenWidth};
+          screenHeight: ${screenHeight};
+          rotateSpeed: ${rotateSpeed};
+          zoomSpeed: ${zoomSpeed};
+          panSpeed: ${panSpeed};
+          maxDistance: ${maxDistance};
+          dynamicDampingFactor: ${dampingFactor};
+          controlTarget: ${controlTarget};
+          controlPosition: ${controlPosition};
+          enabled: ${enabled};
+          animating: ${animating}
+        `}
+        al-control-lights
+        ref={ref => cb(ref)}
+      />
+    );
   })();

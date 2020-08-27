@@ -11,6 +11,7 @@ export interface AlAppState {
   controlsEnabled: boolean;
   controlsType: ControlsType;
   displayMode: DisplayMode;
+  drawingEnabled: boolean;
   edges: Map<string, AlEdge>;
   graphEnabled: boolean;
   material: Material;

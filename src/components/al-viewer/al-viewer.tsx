@@ -20,7 +20,7 @@ import {
   AlVolumeEvents
 } from "../../aframe/components/al-volume";
 import { DrawingToolManager } from "../../aframe/components/DrawingTool/DrawingToolManager";
-import "../../assets/OrbitControls.js";
+//import "../../assets/OrbitControls.js";
 import { Constants } from "../../Constants";
 import {
   AlGraphEntryType,
@@ -358,7 +358,7 @@ export class Aleph {
       //console.log("drawingToolManagerReset");
       let model = document.getElementById("model");
       if (model) {
-        (model as any).setAttribute("al-drawing-tool", "preset", drawingToolManager.currentPreset);
+        (model as any).setAttribute("al-drawing-tool", "dirty", Date.now());
       }
     }, false);
 
@@ -522,6 +522,7 @@ export class Aleph {
         isWebGl2={this._isWebGl2}
         vrModeUIEnabled={true}
       >
+        <VRControls />
         <ModelContainer>
           <Src
             cb={ref => {
@@ -544,7 +545,6 @@ export class Aleph {
             volumeWindowWidth={this.volumeWindowWidth}
             vrEnabled={this.vrEnabled}
           />
-          <VRControls enabled={this.vrEnabled} />
           <BoundingBox
             cb={ref => {
               this._boundingEntity = ref;

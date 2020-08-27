@@ -104,8 +104,6 @@ export const app = (
         ...sanitisedValue
       };
 
-      console.log("set node");
-
       // if the key already exists, keep the current selected
       // otherwise select the new key.
       return {
@@ -270,7 +268,8 @@ export const app = (
     case TypeKeys.APP_SET_NODES_ENABLED: {
       return {
         ...state,
-        graphEnabled: action.payload
+        graphEnabled: action.payload,
+        drawingEnabled: action.payload === false ? false : state.drawingEnabled
       };
     }
     case TypeKeys.APP_SET_BOUNDINGBOX_ENABLED: {

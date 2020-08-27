@@ -1,3 +1,5 @@
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
 const AlControlEvents = {
   INTERACTION: "al-control-interaction",
   INTERACTION_FINISHED: "al-control-interaction-finished",
@@ -190,7 +192,7 @@ AFRAME.registerComponent("al-orbit-control", {
       this
     );
 
-    const controls = new (THREE as any).OrbitControls(
+    const controls = new OrbitControls(
       el.getObject3D("camera"),
       el.sceneEl.renderer.domElement
     );

@@ -84,6 +84,7 @@ export class AlSettings {
   }
 
   public render() {
+
     const tabContentHeight: string =
       this.tabContentHeight || this.el.parentElement.clientHeight + "px";
 
