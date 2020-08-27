@@ -1,4 +1,4 @@
-import { MeshLine } from "threejs-meshline";
+import { DrawingToolMeshLineMaterial } from "./DrawingToolMeshLine";
 import { DecalElement, DrawingToolManager } from "./DrawingToolManager";
 //import "./THREE.MeshLine";
 
@@ -61,11 +61,9 @@ AFRAME.registerComponent("al-drawing-tool", {
       },
       false
     );
-    
+
     // vr controller listeners
     const rightController = document.getElementById("right-controller");
-
-    console.log("right controller", rightController);
 
     this.el.addEventListener(
       EVENTS.MOUSEDOWN,
@@ -94,6 +92,7 @@ AFRAME.registerComponent("al-drawing-tool", {
   },
 
   update: function(_oldData) {
+    console.log("update");
     //console.log("nodeNum", this.data.nodesNum);
     //console.log("preset", this.data.preset);
     if (!this.data.enabled) {
@@ -118,7 +117,7 @@ AFRAME.registerComponent("al-drawing-tool", {
     if (this.geometry.vertices.length <= 0) {
       return null;
     }
-    const line = new MeshLine();
+    const line = new DrawingToolMeshLine();
     line.setGeometry(this.geometry, function(p) {
       return p;
     });
@@ -175,7 +174,7 @@ AFRAME.registerComponent("al-drawing-tool", {
     var worldPos = new THREE.Vector3();
     worldPos.setFromMatrixPosition(cameraEl.matrixWorld);
     // ////get camera position--------
-    
+
     //--------run timer---------
     drawingToolManager.timer += drawingToolManager.animationSpeed;
     if (drawingToolManager.timer >= 1.0) drawingToolManager.timer -= 1.0;
@@ -197,7 +196,6 @@ AFRAME.registerComponent("al-drawing-tool", {
       }
     }
     //-------Update the line material------
-    
     //-------Update the decal objects(BillboardObjects)------
     if (drawingToolManager.BillboardObjects.length > 0) {
       drawingToolManager.BillboardObjects.forEach(function(obj) {
@@ -223,18 +221,21 @@ AFRAME.registerComponent("al-drawing-tool", {
     });
     return geometry;
   },
-  
+
   addDecals: function() {
+    console.log("add decals");
     if(!drawingToolManager.paintDecals)return;
     const nodes = drawingToolManager.nodes;
     if (drawingToolManager.spacing < 0) {
       var counter = 0;
       for (var j = 0; j < nodes.length; j++) {
         if (counter-- == 0) {
-          var _DecalElement = new DecalElement(this.ObjectsMaterial, nodes[j], drawingToolManager);//createDecal(nodes[j]);
-          this.group.add(_DecalElement.mesh);
-          drawingToolManager.BillboardObjects.push(_DecalElement);
-          counter = -drawingToolManager.spacing;
+          var _DecalElement = new DecalElement(drawingToolManager.ObjectsMaterial, nodes[j], drawingToolManager);//createDecal(nodes[j]);
+          if (DecalElement.mesh) {
+            this.group.add(_DecalElement.mesh);
+            drawingToolManager.BillboardObjects.push(_DecalElement);
+            counter = -drawingToolManager.spacing;
+          }
         }
       }
     } else {
@@ -253,6 +254,7 @@ AFRAME.registerComponent("al-drawing-tool", {
         var direction = new THREE.Vector3();
         direction.subVectors(vec3target, vec3).normalize();
         var originalPos = nodes[j].position;
+        //console.log("originalPos", originalPos);
         for (var i = 0; i <= drawingToolManager.spacing; i++) {
           var perc =
             parseFloat(i) / parseFloat(drawingToolManager.spacing + 1.0);
@@ -262,12 +264,14 @@ AFRAME.registerComponent("al-drawing-tool", {
             vec3,
             _direction.multiplyScalar(distance * perc)
           );
-          nodes[j].Position = lerpedpos;
-          var _DecalElement = new DecalElement(this.ObjectsMaterial, nodes[j], drawingToolManager);//createDecal(nnodes[j]);
-          this.group.add(_DecalElement.mesh);
-          drawingToolManager.BillboardObjects.push(_DecalElement);
+          nodes[j].position = lerpedpos;
+          var _DecalElement = new DecalElement(drawingToolManager.ObjectsMaterial, nodes[j], drawingToolManager);//createDecal(nnodes[j]);
+          if (_DecalElement.mesh) {
+            this.group.add(_DecalElement.mesh);
+            drawingToolManager.BillboardObjects.push(_DecalElement);
+          }
         }
-        nodes[j].Position = originalPos;
+        nodes[j].position = originalPos;
       }
     }
   },
@@ -281,6 +285,6 @@ AFRAME.registerComponent("al-drawing-tool", {
     // this.refreshBrush = 2;
 
     // this.LineMaterial.dispose();
-    // this.ObjectsMaterial.dispose();
+    // drawingToolManager.ObjectsMaterial.dispose();
   }
 });

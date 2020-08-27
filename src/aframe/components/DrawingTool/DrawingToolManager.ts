@@ -1,4 +1,4 @@
-import { MeshLineMaterial } from "threejs-meshline";
+import "./DrawingToolMeshLine";
 import { jsonpreset } from "./Presets";
 
 /**
@@ -592,7 +592,8 @@ class ShaderHolder {
         "float ltime =  mod( (time*4.), 1.0);",
         "vec2 uv = vUV;",
         "vec2 finnaluvpos = vUV * repeat ;",
-
+        "float flipper = mod( (time*3.), 1.0)-0.5;",
+        "if(flipper>0.0)finnaluvpos.y = 1.0-finnaluvpos.y;",
         "if(time>0.9)finnaluvpos.x -= 0.5;",
         "if(time>0.1)finnaluvpos.x += 0.5;",
         //'finnaluvpos.y -= sin((finnaluvpos.x*5.)+floor(ltime*3.141*2.0))*0.1;',
@@ -694,7 +695,7 @@ class MaterialsHolder {
       );
       // var lcolour = new THREE.Color(_BrushVariablesInput.lineColour.r, _BrushVariablesInput.lineColour.g, _BrushVariablesInput.lineColour.b);
       // mcolour.lerp(lcolour, 0.5);
-      return new MeshLineMaterial({
+      return new DrawingToolMeshLineMaterial({
         name: "No custom Shader",
         color: mcolour,
         map: texture,
@@ -727,7 +728,7 @@ class MaterialsHolder {
       );
       // var lcolour = new THREE.Color(_BrushVariablesInput.lineColour.r, _BrushVariablesInput.lineColour.g, _BrushVariablesInput.lineColour.b);
       // mcolour.lerp(lcolour, 0.5);
-      return new MeshLineMaterial({
+      return new DrawingToolMeshLineMaterial({
         name: "No custom Shader",
         color: mcolour,
         map: texture,
@@ -766,7 +767,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       mcolour.lerp(lcolour, 0.5);
-      return new MeshLineMaterial({
+      return new DrawingToolMeshLineMaterial({
         name: "No custom Shader",
         color: mcolour,
         map: texture,
@@ -804,8 +805,8 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new MeshLineMaterial({
-        // name: "No custom Shader",
+      return new DrawingToolMeshLineMaterial({
+        name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -843,8 +844,8 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new MeshLineMaterial({
-        // name: "No custom Shader",
+      return new DrawingToolMeshLineMaterial({  
+        name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -881,7 +882,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.g,
         _BrushVariablesInput.lineColour.b
       );
-      return new MeshLineMaterial({
+      return new DrawingToolMeshLineMaterial({
         name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -914,8 +915,8 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new MeshLineMaterial({
-        // name: "No custom Shader",
+      return new DrawingToolMeshLineMaterial({  
+        name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -953,8 +954,8 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new MeshLineMaterial({
-        // name: "No custom Shader",
+      return new DrawingToolMeshLineMaterial({
+          name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -988,8 +989,8 @@ class MaterialsHolder {
       );
       // var lcolour = new THREE.Color(_BrushVariablesInput.lineColour.r, _BrushVariablesInput.lineColour.g, _BrushVariablesInput.lineColour.b);
       // mcolour.lerp (lcolour, 0.5 );
-      return new MeshLineMaterial({
-        // name: "No custom Shader",
+      return new DrawingToolMeshLineMaterial({
+       name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -1027,8 +1028,8 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new MeshLineMaterial({
-        // name: "No custom Shader",
+      return new DrawingToolMeshLineMaterial({
+        name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -1068,8 +1069,8 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new MeshLineMaterial({
-        // name: "No custom Shader",
+      return new DrawingToolMeshLineMaterial({
+         name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -1117,6 +1118,7 @@ class MaterialsHolder {
         colour: { type: "c", value: mcolour }
       };
       return new THREE.ShaderMaterial({
+        name: _materialName,
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1146,7 +1148,8 @@ class MaterialsHolder {
         time: { type: "f", value: 1.0 },
         colour: { type: "c", value: mcolour }
       };
-      return new THREE.ShaderMaterial({
+      return new THREE.ShaderMaterial({  
+        name: _materialName,
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1178,6 +1181,7 @@ class MaterialsHolder {
         colour: { type: "c", value: mcolour }
       };
       return new THREE.ShaderMaterial({
+          name: _materialName,
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1202,6 +1206,7 @@ class MaterialsHolder {
       );
       //mcolour.lerp (lcolour, 0.5 );
       return new THREE.MeshBasicMaterial({
+          name: _materialName,
         color: lcolour,
         map: texture,
         name: "No custom Shader"
@@ -1267,6 +1272,7 @@ class MaterialsHolder {
         threshhold: { type: "f", value: 0.0 }
       };
       return new THREE.ShaderMaterial({
+          name: _materialName,
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1294,6 +1300,7 @@ class MaterialsHolder {
         colour: { type: "c", value: mcolour }
       };
       return new THREE.ShaderMaterial({
+        
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1354,7 +1361,8 @@ class MaterialsHolder {
         alphaMap: texture,
         depthWrite: false,
         depthTest: true,
-        transparent: true
+        transparent: true,
+        name: "No custom Shader"
       });
     }
   }
@@ -1446,7 +1454,7 @@ export class DrawingToolManager {
       var ipos = i * lengthRatio;
       if (ipos < 0) ipos = 0;
       if (ipos > this.nodes.length - 1) ipos = this.nodes.length - 1;
-      pressureArray.push(this.nodes[Math.floor(ipos)].presure);
+      pressureArray.push(this.nodes[Math.floor(ipos)].pressure);
     }
     return pressureArray;
   }
@@ -1455,7 +1463,7 @@ export class DrawingToolManager {
     console.log("set preset");
     this.lineType = preset.lineType;
     this.mainColour = new THREE.Color(preset.mainColour);
-    this.paintDecals = preset.decals;
+    this.paintDecals = preset.paintDecals;
     this.paintLine = preset.paintLine;
     this.texture = preset.texture;
     this.textureAlt = preset.textureAlt;
@@ -1515,7 +1523,7 @@ export class DrawingToolManager {
     if (this.ObjectsMaterial) {
       this.ObjectsMaterial.dispose();
     }
-
+    
     window.dispatchEvent(new CustomEvent("drawingToolManagerReset", {}));
   }
 }
@@ -1530,35 +1538,38 @@ class BrushInputs {
    * @param {THREE.Color} n.colour the user colour selected.
    * @param {Float} n.size the user size selected.
    * @param {THREE.Vector3} n.position the user painted position
-   * @param {THREE.Vector4} n.normalDistance the user painted normal and distance from body mesh
+   * @param {THREE.Vector4} n.normal the user painted normal and distance from body mesh
    * @param {Float} n.speed the user painted speed
-   * @param {Float} n.presure the user painted presure
+   * @param {Float} n.pressure the user painted pressure
    */
   constructor(n = {}) {
     this.colour = n.colour;
     this.size = n.size;
     this.position = n.position;
-    this.normalDistance = n.normalDistance;
+    this.normal = n.normal;
     this.speed = n.speed;
-    this.presure = n.presure;
+    this.pressure = n.pressure;
   }
 }
 export class DecalElement {
   constructor(_ObjectsMaterial, _node, _BrushVariablesInput) {
+    if (!_ObjectsMaterial) {
+      return;
+    }
     this.group = new THREE.Group();
     this.type = _BrushVariablesInput.objects;
     this.Node = _node;
-    this._position = _node.Position;
-    this._presure = _node.presure;
+    this._position = _node.position;
+    this._pressure = _node.pressure;
     this._speed = _node.speed;
     this.Material = _ObjectsMaterial;
-    this._scale = _BrushVariablesInput.maxelementWidth * this._presure;
+    this._scale = _BrushVariablesInput.maxelementWidth * (this._pressure ? this._pressure : 0.25);
     this._shouldCreateObject = true;
     if (this.Material.name == "AnimatedMaterialLightning") {
-      if (this._presure < 0.5) this._shouldCreateObject = false;
+      if (this._pressure < 0.5) this._shouldCreateObject = false;
     }
     // if (ObjectsMaterial.name == "ice") {
-    //     if ((Math.random()*_BrushVariablesInput.spacing)>this._presure)
+    //     if ((Math.random()*_BrushVariablesInput.spacing)>this._pressure)
     //         this._shouldCreateObject = false;
     // }
     if (!this._shouldCreateObject) return;
@@ -1636,9 +1647,9 @@ export class DecalElement {
     }
     if (this._BrushVariablesInput.facing == "Body") {
       var lookatposition = new THREE.Vector3(
-        this.Node.NormalDistance.x,
-        this.Node.NormalDistance.y,
-        this.Node.NormalDistance.z
+        this.Node.normal.x,
+        this.Node.normal.y,
+        this.Node.normal.z
       );
       this.LookAt(lookatposition);
       this.mesh.rotateZ(this.rotationZ);
@@ -1684,3 +1695,4 @@ export class DecalElement {
     this.mesh.lookAt(pos);
   }
 }
+

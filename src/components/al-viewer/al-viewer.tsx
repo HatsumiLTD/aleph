@@ -351,7 +351,7 @@ export class Aleph {
     this._isWebGl2 = ThreeUtils.isWebGL2Available();
 
     (window as any).drawingToolManager = new DrawingToolManager(
-      "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2F"
+      "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f/"
     );
 
     window.addEventListener("drawingToolManagerReset", function() {
