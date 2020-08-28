@@ -1,11 +1,9 @@
 import { FunctionalComponent, h } from "@stencil/core";
 
 interface VRControlsProps extends FunctionalComponentProps {
-  vrActive: boolean;
 }
 
 export const VRControls: FunctionalComponent<VRControlsProps> = (
-  { vrActive },
   _children
 ) =>
   (() => {

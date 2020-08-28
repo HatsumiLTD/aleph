@@ -128,7 +128,7 @@ AFRAME.registerComponent("al-angle", {
 
     const material = new THREE.MeshBasicMaterial();
     const mesh = new THREE.Mesh(geometry, material);
-    mesh.applyMatrix(this.getMatrix());
+    (mesh as any).applyMatrix(this.getMatrix());
     mesh.position.copy(this.objectToVector3(this.data.position));
 
     this.state.geometry = geometry;

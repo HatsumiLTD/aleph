@@ -1,6 +1,7 @@
 import { Constants } from "../Constants";
 import { ControlsType } from "../enums";
 import { AlCamera } from "../interfaces";
+import { Math as THREEMath } from "three";
 
 type Entity = import("aframe").Entity;
 
@@ -107,7 +108,7 @@ export class ThreeUtils {
     const p1 = end;
     let theta = p0.angleTo(p1);
     if (theta) {
-      theta = THREE.Math.clamp(theta, -0.99, 0.99);
+      theta = THREEMath.clamp(theta, -0.99, 0.99);
 
       const topP0 = Math.sin(1 - t) * theta;
       const topP1 = Math.sin(t * theta);

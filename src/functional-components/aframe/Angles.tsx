@@ -3,6 +3,7 @@ import { Constants } from "../../Constants";
 import { ControlsType } from "../../enums";
 import { AlAngle, AlEdge, AlNode } from "../../interfaces";
 import { ThreeUtils } from "../../utils";
+import { Math as THREEMath } from "three";
 
 interface AnglesProps extends FunctionalComponentProps {
   angles: Map<string, AlAngle>;
@@ -115,7 +116,7 @@ export const Angles: FunctionalComponent<AnglesProps> = (
         textOffset.multiplyScalar(scale);
 
         const textV =
-          THREE.Math.radToDeg(angl).toFixed(Constants.unitsDecimalPlaces) +
+          THREEMath.radToDeg(angl).toFixed(Constants.unitsDecimalPlaces) +
           " deg"; // todo: use i18n
 
         const frustrumDistance = ThreeUtils.getFrustrumSpaceDistance(

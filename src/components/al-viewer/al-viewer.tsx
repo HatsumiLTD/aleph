@@ -515,7 +515,7 @@ export class Aleph {
         isWebGl2={this._isWebGl2}
         vrModeUIEnabled={true}
       >
-        <VRControls vrActive={this.vrActive} />
+        <VRControls />
         <ModelContainer>
           <Src
             cb={ref => {

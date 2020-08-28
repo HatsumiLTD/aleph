@@ -1,4 +1,5 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { Math as THREEMath } from "three";
 
 const AlControlEvents = {
   INTERACTION: "al-control-interaction",
@@ -255,12 +256,12 @@ AFRAME.registerComponent("al-orbit-control", {
     controls.enableRotate = data.enableRotate;
     controls.enableZoom = data.enableZoom;
     controls.keyPanSpeed = data.keyPanSpeed;
-    controls.maxPolarAngle = THREE.Math.degToRad(data.maxPolarAngle);
-    controls.maxAzimuthAngle = THREE.Math.degToRad(data.maxAzimuthAngle);
+    controls.maxPolarAngle = THREEMath.degToRad(data.maxPolarAngle);
+    controls.maxAzimuthAngle = THREEMath.degToRad(data.maxAzimuthAngle);
     controls.maxDistance = data.maxDistance;
     controls.minDistance = data.minDistance;
-    controls.minPolarAngle = THREE.Math.degToRad(data.minPolarAngle);
-    controls.minAzimuthAngle = THREE.Math.degToRad(data.minAzimuthAngle);
+    controls.minPolarAngle = THREEMath.degToRad(data.minPolarAngle);
+    controls.minAzimuthAngle = THREEMath.degToRad(data.minAzimuthAngle);
     controls.panSpeed = data.panSpeed;
     controls.rotateSpeed = data.rotateSpeed;
     controls.screenSpacePanning = data.screenSpacePanning;
