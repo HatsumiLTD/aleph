@@ -19,6 +19,7 @@
     "build:dev": "npm run lint:all && stencil build --dev",
     "build:quick": "stencil build",
     "build": "npm run lint:all && stencil build --docs",
+    "build:netlify": "stencil build",
     "start": "stencil build --dev --watch --serve",
     "start:prod": "stencil build --serve",
     "test": "stencil test --spec --e2e",
