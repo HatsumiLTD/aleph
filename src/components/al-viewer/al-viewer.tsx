@@ -353,14 +353,6 @@ export class Aleph {
       "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f/"
     );
 
-    window.addEventListener("paintingToolManagerReset", function() {
-      //console.log("paintingToolManagerReset");
-      let model = document.getElementById("model");
-      if (model) {
-        (model as any).setAttribute("al-painting-tool", "dirty", Date.now());
-      }
-    }, false);
-
     // redux
     this.store.setStore(configureStore({}));
 
@@ -516,11 +508,6 @@ export class Aleph {
           this._scene = ref as AScene;
           this._scene.addEventListener("loaded", () => {
             this._scene.sceneEl.renderer.toneMapping = (THREE as any).ACESFilmicToneMapping;
-          });
-          this._scene.addEventListener("al-palette-option-selected", (e: any) => {
-            const optionIndex = e.detail.aframeEvent.detail.optionIndex;
-            const preset = window.paintingToolManager.GetPresetByIndex(optionIndex);
-            window.paintingToolManager.SetPreset(preset);
           });
           this._scene.addEventListener("enter-vr", this._vrEnteredHandler, false);
           this._scene.addEventListener("exit-vr", this._vrExitedHandler, false);
@@ -1222,7 +1209,7 @@ export class Aleph {
   }
 
   private _spawnNodeHandler(event: CustomEvent): void {
-    console.log("spawn node", event);
+    //console.log("spawn node", event);
     // IF creating a new node and NOT intersecting an existing node
     if (
       this.graphEnabled && // Nodes are enabled
@@ -1277,17 +1264,34 @@ export class Aleph {
         //console.log("force update");
         // this.el.forceUpdate();
         // this._scene.flushToDOM();
-      //const dom = this._renderScene();
+      //this._renderScene();
       //console.log(dom);
       //}
+
+      // todo: is there a better way to do this?
+      if (window.paintingToolManager) {
+        window.paintingToolManager.nodes = Array.from(this.nodes).map(x => x[1]);
+        window.paintingToolManager.Reset();
+      }
+
     }
   }
 
   private _vrEnteredHandler(_event: CustomEvent): void {
+
+    // can't update state at the moment when in VR
+    const controllers = document.getElementById("controllers");
+    controllers.setAttribute("visible", "true");
+
     this._setVRActive(true);
   }
 
   private _vrExitedHandler(_event: CustomEvent): void {
+
+    // can't update state at the moment when in VR
+    const controllers = document.getElementById("controllers");
+    controllers.setAttribute("visible", "false");
+
     this._setVRActive(false);
   }
 

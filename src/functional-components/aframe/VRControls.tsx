@@ -10,7 +10,7 @@ export const VRControls: FunctionalComponent<VRControlsProps> = (
 ) =>
   (() => {
     return (
-      <a-entity id="controllers">
+      <a-entity id="controllers" visible="false">
         <a-entity
           laser-controls="hand: left; model: false"
           raycaster="objects: [data-raycastable];"

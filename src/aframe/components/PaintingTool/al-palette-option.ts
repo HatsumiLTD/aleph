@@ -11,18 +11,13 @@ AFRAME.registerComponent("al-palette-option", {
     el.addEventListener(
       "mousedown",
       evt => {
-        this.el.sceneEl.emit(
-          "al-palette-option-selected",
-          {
-            aframeEvent: {
-              detail: {
-                optionIndex: this.data.optionIndex,
-                evt: evt
-              }
-            }
-          },
-          false
-        );
+        var event = new CustomEvent("al-palette-option-selected", {
+          detail: {
+            optionIndex: this.data.optionIndex,
+            evt: evt
+          }
+        });
+        document.dispatchEvent(event);
       }
     );
   }

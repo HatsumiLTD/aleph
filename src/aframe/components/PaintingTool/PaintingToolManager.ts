@@ -1424,19 +1424,24 @@ export class PaintingToolManager {
     //----
     this.timer = 0.0;
     this.group = new THREE.Group();
+    this.nodes = [];
 
     this.materialsHolder = new MaterialsHolder();
     this.shaderHolder = new ShaderHolder();
 
-    this.nodes = [];
-    this.NextPreset();
-         
     document.addEventListener("keydown", (key) => {
       if (key.code === "KeyQ") {
         this.NextPreset();
       }
     });
 
+    document.addEventListener("al-palette-option-selected", (e) => {
+      const optionIndex = e.detail.optionIndex;
+      const preset = this.GetPresetByIndex(optionIndex);
+      this.SetPreset(preset);
+    });
+
+    this.NextPreset();
   }
   
   GetPresets() {
@@ -1449,7 +1454,7 @@ export class PaintingToolManager {
   }
     
   NextPreset() {
-    var preset = this.GetPresetByIndex(this.currentPreset)
+    var preset = this.GetPresetByIndex(this.currentPreset);
     this.SetPreset(preset);
     if (this.currentPreset < this.GetPresets().length - 1) {
       this.currentPreset++;
@@ -1537,8 +1542,13 @@ export class PaintingToolManager {
     if (this.ObjectsMaterial) {
       this.ObjectsMaterial.dispose();
     }
+
+    // set painting tool dirty to force update
+    let paintingTool = document.querySelector('[al-painting-tool]');
     
-    window.dispatchEvent(new CustomEvent("paintingToolManagerReset", {}));
+    if (paintingTool) {
+      paintingTool.setAttribute("al-painting-tool", "dirty", Date.now());
+    }
   }
 }
 

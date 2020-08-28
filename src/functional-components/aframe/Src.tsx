@@ -46,12 +46,6 @@ export const Src: FunctionalComponent<SrcProps> = (
     if (!src) {
       return null;
     } else {
-      // todo: is there a better way to do this?
-      if (window.paintingToolManager) {
-        window.paintingToolManager.nodes = Array.from(nodes).map(x => x[1]);
-        window.paintingToolManager.Reset();
-      }
-
       switch (displayMode) {
         case DisplayMode.MESH: {
           return (

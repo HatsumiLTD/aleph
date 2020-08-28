@@ -95,6 +95,7 @@ AFRAME.registerComponent("al-painting-tool", {
   update: function(_oldData) {
     //console.log("nodeNum", this.data.nodesNum);
     //console.log("preset", this.data.preset);
+    console.log("update");
     if (!this.data.enabled) {
       return;
     }
