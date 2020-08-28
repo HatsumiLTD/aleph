@@ -1259,20 +1259,14 @@ export class Aleph {
         }
       }
 
-      // trying to fix issue where dom not updating in webxr
-      //if (this.vrActive) {
-        //console.log("force update");
-        // this.el.forceUpdate();
-        // this._scene.flushToDOM();
-      //this._renderScene();
-      //console.log(dom);
-      //}
-
       // todo: is there a better way to do this?
-      if (window.paintingToolManager) {
-        window.paintingToolManager.nodes = Array.from(this.nodes).map(x => x[1]);
-        window.paintingToolManager.Reset();
-      }
+      // paintingToolManager needs to be passed the nodes somehow
+      const nodeSpawnedEvent = new CustomEvent("al-node-spawned", {
+        detail: {
+          nodes: Array.from(this.nodes).map(x => x[1])
+        }
+      });
+      document.dispatchEvent(nodeSpawnedEvent);
 
     }
   }

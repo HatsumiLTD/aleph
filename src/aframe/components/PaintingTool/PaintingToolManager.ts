@@ -1441,6 +1441,11 @@ export class PaintingToolManager {
       this.SetPreset(preset);
     });
 
+    document.addEventListener("al-node-spawned", (e) => {
+      this.nodes = e.detail.nodes;
+      this.Reset();
+    });
+
     this.NextPreset();
   }
   
