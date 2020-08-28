@@ -1,6 +1,7 @@
 import "./PaintingToolMeshLine";
 import { jsonpreset } from "./Presets";
 
+
 /**
  * @constructs ShaderHolder this should be where we load ALL shaders
  * @param {String} _name the shadername
@@ -125,6 +126,8 @@ class ShaderHolder {
       "varying float vCounters;",
       "varying vec3 wrldpos;",
       "varying vec3 zdist;",
+      "varying float lwidth;",
+      
       "uniform float pressures[20];",
       ""
     ].join("\r\n");
@@ -209,7 +212,7 @@ class ShaderHolder {
         "    vec4 c = vec4(1.0);",
         "    vec2 finnaluvpos = vUV * repeat ;",
         "vec2 p = finnaluvpos - vec2(0.5, 0.5);",
-        "float rocks = pow(snoise(finnaluvpos * vec2(6.,4.0) ),4.)*4.0;",
+        "float rocks = pow(snoise(finnaluvpos * vec2(6.,4.0*lwidth) ),4.)*4.0;",
         "rocks = clamp(rocks, 0.0,1.0);",
         "float power = 2.10;",
         "float centerDist = 1.0-distance(vUV.y,0.5);",
@@ -391,7 +394,7 @@ class ShaderHolder {
         "",
         "vec2 uv = vUV;",
         "vec4 c = vec4(1.0);",
-        "vec2 finnaluvpos = vUV * repeat;",
+        "vec2 finnaluvpos = vUV * repeat+((1.0-lwidth)*30.0);",
 
         "float rtime =  mod( (time*2.)+(vUV.x*2.0), 1.0);",
 
@@ -403,7 +406,7 @@ class ShaderHolder {
 
         "float centerDist = 1.0-distance(vUV.y,0.5);",
         // 'if( vUV.y <0.5 ){ ',
-        "finnaluvpos.y += rtime ;",
+        "finnaluvpos.y -= rtime ;",
         // '}else{',
         // 'finnaluvpos.y -= rtime ;',
         // '}',
@@ -549,12 +552,13 @@ class ShaderHolder {
 
         THREE.ShaderChunk.Line_pressure,
 
-        "float pressureRange = 3.0+floor((1.-_pressure)*4.0);", //testing(normal)//.2big, .8 small
+        // "vec2 finnaluvpos = vUV * repeat+((1.0-lwidth)*30.0);",
+        "float pressureRange = 3.;//3.0+floor((1.-_pressure)*4.0);", //testing(normal)//.2big, .8 small
         " vec2 finnaluvpos = vUV * repeat *pressureRange;",
         " finnaluvpos.x -= rtime;",
         // ' finnaluvpos.y -= sin(time*3.141*2.0)*0.1*(vUV.x);',
 
-        "finnaluvpos.y -= sin((finnaluvpos.x*6.284)+(time*3.141*2.0))*0.1*_pressure;",
+        "finnaluvpos.y -= sin((finnaluvpos.x*6.284)+(time*3.141*2.0))*0.2*_pressure;",
         "vec4 colourmap = texture2D( map, finnaluvpos );",
 
         "if(colourmap.g<0.1){",
@@ -591,7 +595,9 @@ class ShaderHolder {
         "float gtime =  mod( 0.2+(time*speed), 1.0);",
         "float ltime =  mod( (time*4.), 1.0);",
         "vec2 uv = vUV;",
-        "vec2 finnaluvpos = vUV * repeat ;",
+        // "vec2 finnaluvpos = vUV * repeat ;",
+        
+        "vec2 finnaluvpos = vUV * repeat+((1.0-lwidth)*30.0);",
         "float flipper = mod( (time*3.), 1.0)-0.5;",
         "if(flipper>0.0)finnaluvpos.y = 1.0-finnaluvpos.y;",
         "if(time>0.9)finnaluvpos.x -= 0.5;",
@@ -1433,11 +1439,19 @@ export class PaintingToolManager {
 
   }
   
+  GetPresets() {
+    return Object.values(jsonpreset.remembered);
+  }
+  
+  GetPresetByIndex(index) {
+    var presets = this.GetPresets();
+    return presets[index]["0"];
+  }
+    
   NextPreset() {
-    var presets = Object.values(jsonpreset.remembered);
-    var preset = presets[this.currentPreset]["0"];
+    var preset = this.GetPresetByIndex(this.currentPreset)
     this.SetPreset(preset);
-    if (this.currentPreset < presets.length - 1) {
+    if (this.currentPreset < this.GetPresets().length - 1) {
       this.currentPreset++;
     } else {
       this.currentPreset = 0;
@@ -1460,6 +1474,7 @@ export class PaintingToolManager {
   }
   
   SetPreset(preset) {
+    console.log("set preset");
     this.lineType = preset.lineType;
     this.mainColour = new THREE.Color(preset.mainColour);
     this.paintDecals = preset.paintDecals;
@@ -1491,8 +1506,10 @@ export class PaintingToolManager {
   }
 
   SetupMaterials() {
+    console.log("setup materials");
     var materials = this.materials.split(",");
     var textures = this.texture.split(",");
+    console.log("setup materials", textures);
     this.LineMaterial = this.materialsHolder.makeMaterial(
       this,
       this.assetsPath + textures[0],
@@ -1509,6 +1526,7 @@ export class PaintingToolManager {
 
   // reset manager
   Reset() {
+    console.log("reset");
     for (var i = this.group.children.length - 1; i >= 0; i--) {
       this.group.remove(this.group.children[i]);
     }
@@ -1584,7 +1602,7 @@ export class DecalElement {
     }
     if (_BrushVariablesInput.objects == "rsphere") {
       this.geometry = new THREE.SphereBufferGeometry(
-        this._scale,
+        this._scale*0.5,
         2 + Math.random() * 3,
         2 + Math.random() * 3
       );
@@ -1691,4 +1709,3 @@ export class DecalElement {
     this.mesh.lookAt(pos);
   }
 }
-

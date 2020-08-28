@@ -1,2 +1,2 @@
 import "./al-painting-tool";
-import "./al-paint-controls";
+import "./al-palette-option";

@@ -25,7 +25,6 @@ export const Src: FunctionalComponent<SrcProps> = (
   {
     cb,
     controlsType,
-    debugDraw,
     displayMode,
     dracoDecoderPath,
     paintingEnabled,
@@ -47,6 +46,7 @@ export const Src: FunctionalComponent<SrcProps> = (
     if (!src) {
       return null;
     } else {
+      // todo: is there a better way to do this?
       if (window.paintingToolManager) {
         window.paintingToolManager.nodes = Array.from(nodes).map(x => x[1]);
         window.paintingToolManager.Reset();
@@ -74,14 +74,11 @@ export const Src: FunctionalComponent<SrcProps> = (
                 nodesNum: ${nodes.size};
                 raycasterEnabled: ${paintingEnabled};
               `}
-              al-paint-controls={`
-                enabled: ${paintingEnabled};
-              `}
               position="0 0 0"
               scale="1 1 1"
               ref={ref => cb(ref)}
             />
-          );
+          )
         }
         case DisplayMode.SLICES: {
           return (

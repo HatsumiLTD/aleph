@@ -20,7 +20,6 @@ import {
   AlVolumeEvents
 } from "../../aframe/components/al-volume";
 import { PaintingToolManager } from "../../aframe/components/PaintingTool/PaintingToolManager";
-//import "../../assets/OrbitControls.js";
 import { Constants } from "../../Constants";
 import {
   AlGraphEntryType,
@@ -517,6 +516,11 @@ export class Aleph {
           this._scene = ref as AScene;
           this._scene.addEventListener("loaded", () => {
             this._scene.sceneEl.renderer.toneMapping = (THREE as any).ACESFilmicToneMapping;
+          });
+          this._scene.addEventListener("al-palette-option-selected", (e: any) => {
+            const optionIndex = e.detail.aframeEvent.detail.optionIndex;
+            const preset = window.paintingToolManager.GetPresetByIndex(optionIndex);
+            window.paintingToolManager.SetPreset(preset);
           });
         }}
         isWebGl2={this._isWebGl2}
