@@ -1,5 +1,5 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Math as THREEMath } from "three";
+import { MathUtils as THREEMath } from "three";
 
 const AlControlEvents = {
   INTERACTION: "al-control-interaction",
