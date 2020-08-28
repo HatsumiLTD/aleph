@@ -111,7 +111,7 @@ export class Aleph {
   private _validTarget: boolean;
   private _boundingEntity: AEntity;
   private _previousSelectedNode: string;
-  private _debugDraw: boolean = false;
+  private _debugPaint: boolean = false;
   //#endregion
 
   //#region props
@@ -183,7 +183,7 @@ export class Aleph {
   @State() public volumeSteps: number;
   @State() public volumeWindowCenter: number;
   @State() public volumeWindowWidth: number;
-  @State() public vrActive: number;
+  @State() public vrActive: boolean;
   //#endregion
 
   //#region general methods
@@ -522,11 +522,13 @@ export class Aleph {
             const preset = window.paintingToolManager.GetPresetByIndex(optionIndex);
             window.paintingToolManager.SetPreset(preset);
           });
+          this._scene.addEventListener("enter-vr", this._vrEnteredHandler, false);
+          this._scene.addEventListener("exit-vr", this._vrExitedHandler, false);
         }}
         isWebGl2={this._isWebGl2}
         vrModeUIEnabled={true}
       >
-        <VRControls />
+        <VRControls vrActive={this.vrActive} />
         <ModelContainer>
           <Src
             cb={ref => {
@@ -536,7 +538,7 @@ export class Aleph {
             displayMode={this.displayMode}
             dracoDecoderPath={this.dracoDecoderPath}
             paintingEnabled={this.paintingEnabled}
-            debugDraw={this._debugDraw}
+            debugDraw={this._debugPaint}
             envMapPath={this.envMapPath}
             graphEnabled={this.graphEnabled}
             nodes={this.nodes}
@@ -564,7 +566,7 @@ export class Aleph {
             vrEnabled={this.vrEnabled}
           />
         </ModelContainer>
-        { (this._debugDraw || !this.paintingEnabled) && [
+        { (this._debugPaint || !this.paintingEnabled) && [
           <Nodes
             boundingSphereRadius={this._boundingSphereRadius}
             camera={this._scene ? this._scene.camera : null}
@@ -1067,20 +1069,10 @@ export class Aleph {
   }
 
   private _setVRActive(active: boolean): void {
-    console.log("vractive", active);
+    // state doesn't update while in vr...
     this.appSetVRActive(active);
     this._stateChanged();
   }
-
-  // private _getStackHelper(): AMI.VolumeRenderHelper | null {
-  //   let stackhelper: AMI.VolumeRenderHelper | null = null;
-
-  //   if (this.displayMode === DisplayMode.VOLUME) {
-  //     stackhelper = this._loadedObject;
-  //   }
-
-  //   return stackhelper;
-  // }
 
   private _getMesh(): THREE.Mesh | null {
     let mesh: THREE.Mesh | null = null;
@@ -1268,25 +1260,6 @@ export class Aleph {
         this._previousSelectedNode = this.selected;
         this._setNode([nodeId, newNode]);
 
-        // var testEntity = document.createElement('a-entity');
-        // testEntity.setAttribute('position', intersection.point);
-        // testEntity.setAttribute('scale', newNode.scale);
-        // this._scene.appendChild(testEntity);
-
-        // <a-entity
-        //     data-raycastable
-        //     id={nodeId}
-        //     position={node.position}
-        //     al-node={`
-        //       scale: ${node.scale};
-        //       selected: ${selected === nodeId};
-        //       graphEnabled: ${graphEnabled};
-        //     `}
-        //     scale={` ${entityScale} ${entityScale} ${entityScale};`}
-        //   />
-
-        console.log("add test entity");
-
         if (
           this._isShiftDown && // Shift is down
           this.nodes.has(this._previousSelectedNode) // A Node is already selected
@@ -1299,14 +1272,13 @@ export class Aleph {
         }
       }
 
-      // if in VR we need to force the nodes to render
-      
+      // trying to fix issue where dom not updating in webxr
       //if (this.vrActive) {
         //console.log("force update");
         // this.el.forceUpdate();
         // this._scene.flushToDOM();
-      const dom = this._renderScene();
-      console.log(dom);
+      //const dom = this._renderScene();
+      //console.log(dom);
       //}
     }
   }
@@ -1610,10 +1582,6 @@ export class Aleph {
       this._graphEntryPointerOutHandler,
       false
     );
-
-    this._scene.addEventListener("enter-vr", this._vrEnteredHandler, false);
-
-    this._scene.addEventListener("exit-vr", this._vrExitedHandler, false);
   }
   //#endregion
 

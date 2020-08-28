@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PaintingToolMeshLineMaterial } from "./PaintingToolMeshLine";
 import { DecalElement, PaintingToolManager } from "./PaintingToolManager";
 //import "./THREE.MeshLine";

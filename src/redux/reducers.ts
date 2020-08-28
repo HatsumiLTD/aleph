@@ -32,7 +32,9 @@ export const getInitialState = () => {
     volumeSteps: 0.5,
     volumeStepsHighEnabled: false,
     volumeWindowCenter: 0.5,
-    volumeWindowWidth: 1.0
+    volumeWindowWidth: 1.0,
+    vrActive: false,
+    vrEnabled: true
   } as AlAppState;
 };
 

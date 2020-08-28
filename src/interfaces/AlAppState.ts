@@ -11,12 +11,12 @@ export interface AlAppState {
   controlsEnabled: boolean;
   controlsType: ControlsType;
   displayMode: DisplayMode;
-  paintingEnabled: boolean;
   edges: Map<string, AlEdge>;
   graphEnabled: boolean;
   material: Material;
   nodes: Map<string, AlNode>;
   orientation: Orientation;
+  paintingEnabled: boolean;
   selected: string | null;
   slicesIndex: number;
   src: string | null;
@@ -26,4 +26,6 @@ export interface AlAppState {
   volumeStepsHighEnabled: boolean;
   volumeWindowCenter: number;
   volumeWindowWidth: number;
+  vrActive: boolean;
+  vrEnabled: boolean;
 }

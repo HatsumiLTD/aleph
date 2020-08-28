@@ -1,6 +1,6 @@
+// @ts-nocheck
 import "./PaintingToolMeshLine";
 import { jsonpreset } from "./Presets";
-
 
 /**
  * @constructs ShaderHolder this should be where we load ALL shaders

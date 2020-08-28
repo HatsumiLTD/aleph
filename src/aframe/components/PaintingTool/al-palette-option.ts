@@ -1,3 +1,4 @@
+// @ts-nocheck
 AFRAME.registerComponent("al-palette-option", {
   schema: {
     optionIndex: { type: "number", default: 0 },
