@@ -7,7 +7,7 @@ interface SrcProps extends FunctionalComponentProps {
   debugDraw: boolean;
   displayMode: DisplayMode;
   dracoDecoderPath: string;
-  drawingEnabled: boolean;
+  paintingEnabled: boolean;
   envMapPath: string;
   graphEnabled: boolean;
   nodes: Map<string, AlNode>;
@@ -28,7 +28,7 @@ export const Src: FunctionalComponent<SrcProps> = (
     debugDraw,
     displayMode,
     dracoDecoderPath,
-    drawingEnabled,
+    paintingEnabled,
     envMapPath,
     graphEnabled,
     nodes,
@@ -47,9 +47,9 @@ export const Src: FunctionalComponent<SrcProps> = (
     if (!src) {
       return null;
     } else {
-      if (window.drawingToolManager) {
-        window.drawingToolManager.nodes = Array.from(nodes).map(x => x[1]);
-        window.drawingToolManager.Reset();
+      if (window.paintingToolManager) {
+        window.paintingToolManager.nodes = Array.from(nodes).map(x => x[1]);
+        window.paintingToolManager.Reset();
       }
 
       switch (displayMode) {
@@ -69,10 +69,10 @@ export const Src: FunctionalComponent<SrcProps> = (
               al-cube-env-map={`
                 path: ${envMapPath ? envMapPath : ""};
               `}
-              al-drawing-tool={`
-                enabled: ${drawingEnabled};
+              al-painting-tool={`
+                enabled: ${paintingEnabled};
                 nodesNum: ${nodes.size};
-                raycasterEnabled: ${drawingEnabled};
+                raycasterEnabled: ${paintingEnabled};
               `}
               position="0 0 0"
               scale="1 1 1"

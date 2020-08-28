@@ -1,5 +1,5 @@
-import { DrawingToolMeshLineMaterial } from "./DrawingToolMeshLine";
-import { DecalElement, DrawingToolManager } from "./DrawingToolManager";
+import { PaintingToolMeshLineMaterial } from "./PaintingToolMeshLine";
+import { DecalElement, PaintingToolManager } from "./PaintingToolManager";
 //import "./THREE.MeshLine";
 
 // import { EventUtils } from "../../utils";
@@ -17,7 +17,7 @@ const EVENTS = {
   ADD_NODE: "al-add-node"
 };
 
-AFRAME.registerComponent("al-drawing-tool", {
+AFRAME.registerComponent("al-painting-tool", {
   schema: {
     enabled: { default: true },
     minFrameMS: { type: "number", default: 15 },
@@ -84,7 +84,7 @@ AFRAME.registerComponent("al-drawing-tool", {
     rightController.addEventListener(
       EVENTS.ABUTTONDOWN,
       evt => {
-        drawingToolManager.NextPreset();
+        paintingToolManager.NextPreset();
       }
     );
 
@@ -107,7 +107,7 @@ AFRAME.registerComponent("al-drawing-tool", {
       this.group.add(linethreemesh);
     }
     this.addDecals();
-    //this.el.sceneEl.emit("al-drawing-tool-needs-refresh");
+    //this.el.sceneEl.emit("al-painting-tool-needs-refresh");
   },
 
   makeLine: function() {
@@ -117,11 +117,11 @@ AFRAME.registerComponent("al-drawing-tool", {
     if (this.geometry.vertices.length <= 0) {
       return null;
     }
-    const line = new DrawingToolMeshLine();
+    const line = new PaintingToolMeshLine();
     line.setGeometry(this.geometry, function(p) {
       return p;
     });
-    return new THREE.Mesh(line.geometry, drawingToolManager.LineMaterial);
+    return new THREE.Mesh(line.geometry, paintingToolManager.LineMaterial);
   },
 
   getIntersection: function() {
@@ -176,30 +176,30 @@ AFRAME.registerComponent("al-drawing-tool", {
     // ////get camera position--------
 
     //--------run timer---------
-    drawingToolManager.timer += drawingToolManager.animationSpeed;
-    if (drawingToolManager.timer >= 1.0) drawingToolManager.timer -= 1.0;
-    if (drawingToolManager.timer <= -1.0) drawingToolManager.timer += 1.0;
+    paintingToolManager.timer += paintingToolManager.animationSpeed;
+    if (paintingToolManager.timer >= 1.0) paintingToolManager.timer -= 1.0;
+    if (paintingToolManager.timer <= -1.0) paintingToolManager.timer += 1.0;
     //--------run timer---------
     //-------Update the line material------
-    if (drawingToolManager.LineMaterial) {
-      if (drawingToolManager.LineMaterial.name != "No custom Shader") {
+    if (paintingToolManager.LineMaterial) {
+      if (paintingToolManager.LineMaterial.name != "No custom Shader") {
         // var mcolour = new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
         // this.Material.uniforms.colour.value = mcolour;//_BrushVariablesInput.mainColour;
-        if (drawingToolManager.nodes.length &&
-          drawingToolManager.LineMaterial.uniforms.pressures &&
-          drawingToolManager.LineMaterial.uniforms.time
+        if (paintingToolManager.nodes.length &&
+          paintingToolManager.LineMaterial.uniforms.pressures &&
+          paintingToolManager.LineMaterial.uniforms.time
           ) {
-          drawingToolManager.LineMaterial.uniforms.pressures.value = drawingToolManager.GetPressure();
-          drawingToolManager.LineMaterial.uniforms.time.value = drawingToolManager.timer; //timer;
-          drawingToolManager.LineMaterial.needsUpdate = true;
+          paintingToolManager.LineMaterial.uniforms.pressures.value = paintingToolManager.GetPressure();
+          paintingToolManager.LineMaterial.uniforms.time.value = paintingToolManager.timer; //timer;
+          paintingToolManager.LineMaterial.needsUpdate = true;
         }
       }
     }
     //-------Update the line material------
     //-------Update the decal objects(BillboardObjects)------
-    if (drawingToolManager.BillboardObjects.length > 0) {
-      drawingToolManager.BillboardObjects.forEach(function(obj) {
-        obj.UpdateDelta(worldPos, drawingToolManager.timer);
+    if (paintingToolManager.BillboardObjects.length > 0) {
+      paintingToolManager.BillboardObjects.forEach(function(obj) {
+        obj.UpdateDelta(worldPos, paintingToolManager.timer);
       });
     }
     //-------Update the decal objects(BillboardObjects)------
@@ -207,10 +207,10 @@ AFRAME.registerComponent("al-drawing-tool", {
 
   // loop through the points to create a line geometry
   getGeometry: function() {
-    if (!drawingToolManager.nodes) {
+    if (!paintingToolManager.nodes) {
       return;
     }
-    const nodes = drawingToolManager.nodes;
+    const nodes = paintingToolManager.nodes;
     //console.log("get geometry");
     const geometry = new THREE.Geometry();
     //console.log(nodes);
@@ -224,17 +224,17 @@ AFRAME.registerComponent("al-drawing-tool", {
 
   addDecals: function() {
     console.log("add decals");
-    if(!drawingToolManager.paintDecals)return;
-    const nodes = drawingToolManager.nodes;
-    if (drawingToolManager.spacing < 0) {
+    if(!paintingToolManager.paintDecals)return;
+    const nodes = paintingToolManager.nodes;
+    if (paintingToolManager.spacing < 0) {
       var counter = 0;
       for (var j = 0; j < nodes.length; j++) {
         if (counter-- == 0) {
-          var _DecalElement = new DecalElement(drawingToolManager.ObjectsMaterial, nodes[j], drawingToolManager);//createDecal(nodes[j]);
+          var _DecalElement = new DecalElement(paintingToolManager.ObjectsMaterial, nodes[j], paintingToolManager);//createDecal(nodes[j]);
           if (DecalElement.mesh) {
             this.group.add(_DecalElement.mesh);
-            drawingToolManager.BillboardObjects.push(_DecalElement);
-            counter = -drawingToolManager.spacing;
+            paintingToolManager.BillboardObjects.push(_DecalElement);
+            counter = -paintingToolManager.spacing;
           }
         }
       }
@@ -255,9 +255,9 @@ AFRAME.registerComponent("al-drawing-tool", {
         direction.subVectors(vec3target, vec3).normalize();
         var originalPos = nodes[j].position;
         //console.log("originalPos", originalPos);
-        for (var i = 0; i <= drawingToolManager.spacing; i++) {
+        for (var i = 0; i <= paintingToolManager.spacing; i++) {
           var perc =
-            parseFloat(i) / parseFloat(drawingToolManager.spacing + 1.0);
+            parseFloat(i) / parseFloat(paintingToolManager.spacing + 1.0);
           var lerpedpos = new THREE.Vector3();
           var _direction = direction.clone();
           lerpedpos.addVectors(
@@ -265,10 +265,10 @@ AFRAME.registerComponent("al-drawing-tool", {
             _direction.multiplyScalar(distance * perc)
           );
           nodes[j].position = lerpedpos;
-          var _DecalElement = new DecalElement(drawingToolManager.ObjectsMaterial, nodes[j], drawingToolManager);//createDecal(nnodes[j]);
+          var _DecalElement = new DecalElement(paintingToolManager.ObjectsMaterial, nodes[j], paintingToolManager);//createDecal(nnodes[j]);
           if (_DecalElement.mesh) {
             this.group.add(_DecalElement.mesh);
-            drawingToolManager.BillboardObjects.push(_DecalElement);
+            paintingToolManager.BillboardObjects.push(_DecalElement);
           }
         }
         nodes[j].position = originalPos;
@@ -285,6 +285,6 @@ AFRAME.registerComponent("al-drawing-tool", {
     // this.refreshBrush = 2;
 
     // this.LineMaterial.dispose();
-    // drawingToolManager.ObjectsMaterial.dispose();
+    // paintingToolManager.ObjectsMaterial.dispose();
   }
 });

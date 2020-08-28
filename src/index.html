@@ -252,9 +252,9 @@
         );
 
         alControlPanel.addEventListener(
-          "drawingEnabledChanged",
+          "paintingEnabledChanged",
           function(e) {
-            alViewer.setDrawingEnabled(e.detail);
+            alViewer.setpaintingEnabled(e.detail);
           },
           false
         );
@@ -419,7 +419,7 @@
         alControlPanel.consoleTabEnabled = state.consoleTabEnabled;
         alControlPanel.controlsType = state.controlsType;
         alControlPanel.displayMode = state.displayMode;
-        alControlPanel.drawingEnabled = state.drawingEnabled;
+        alControlPanel.paintingEnabled = state.paintingEnabled;
         alControlPanel.edges = state.edges;
         alControlPanel.graphEnabled = state.graphEnabled;
         alControlPanel.graphTabEnabled = state.graphTabEnabled;

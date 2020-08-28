@@ -13,7 +13,7 @@ export class AlGraphEditor {
   @Prop({ mutable: true }) public angles: Map<string, AlAngle> | null = null;
   @Prop({ mutable: true }) public edges: Map<string, AlEdge> | null = null;
   @Prop({ mutable: true }) public selected: string | null = null;
-  @Prop({ mutable: true }) public drawingEnabled: boolean;
+  @Prop({ mutable: true }) public paintingEnabled: boolean;
   @Prop({ mutable: true }) public graphEnabled: boolean;
   @Prop({ mutable: true }) public graphVisible: boolean;
   @Prop({ mutable: true }) public units: Units;
@@ -53,10 +53,10 @@ export class AlGraphEditor {
       <al-graph-settings
         graph-enabled={this.graphEnabled}
         graph-visible={this.graphVisible}
-        drawing-enabled={this.drawingEnabled}
+        painting-enabled={this.paintingEnabled}
         units={this.units}
       ></al-graph-settings>,
-      !this.drawingEnabled && <div>
+      !this.paintingEnabled && <div>
         <al-node-list nodes={this.nodes} selected={this.selected}></al-node-list>
         <ion-item-divider></ion-item-divider>
         <al-node-editor node={this._getSelectedNode()}></al-node-editor>

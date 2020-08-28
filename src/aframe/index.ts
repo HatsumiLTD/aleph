@@ -15,7 +15,7 @@ import "./components/al-render-order";
 import "./components/al-render-overlaid";
 import "./components/al-trackball-control";
 import "./components/al-volume";
-import "./components/DrawingTool/al-drawing-tool";
+import "./components/PaintingTool/al-painting-tool";
 import "./primitives/al-a-camera";
 
 export const AlGltfModelEvents = {

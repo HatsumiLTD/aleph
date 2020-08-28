@@ -17,7 +17,7 @@ export const getInitialState = () => {
     controlsEnabled: true,
     controlsType: ControlsType.TRACKBALL,
     displayMode: DisplayMode.MESH,
-    drawingEnabled: false,
+    paintingEnabled: false,
     edges: new Map<string, AlEdge>(),
     material: Material.DEFAULT,
     nodes: new Map<string, AlNode>(),
@@ -248,7 +248,7 @@ export const app = (
     case TypeKeys.APP_SET_DRAWING_ENABLED: {
       return {
         ...state,
-        drawingEnabled: action.payload,
+        paintingEnabled: action.payload,
         graphEnabled: action.payload ? true : state.graphEnabled
       };
     }
@@ -269,7 +269,7 @@ export const app = (
       return {
         ...state,
         graphEnabled: action.payload,
-        drawingEnabled: action.payload === false ? false : state.drawingEnabled
+        paintingEnabled: action.payload === false ? false : state.paintingEnabled
       };
     }
     case TypeKeys.APP_SET_BOUNDINGBOX_ENABLED: {

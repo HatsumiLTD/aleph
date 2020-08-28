@@ -48,12 +48,12 @@ export namespace Components {
     'consoleTabEnabled': boolean;
     'controlsType': ControlsType;
     'displayMode': DisplayMode;
-    'drawingEnabled': boolean;
     'edges': Map<string, AlEdge> | null;
     'graphEnabled': boolean;
     'graphTabEnabled': boolean;
     'nodes': Map<string, AlNode> | null;
     'orientation': Orientation;
+    'paintingEnabled': boolean;
     'selected': string | null;
     'settingsTabEnabled': boolean;
     'slicesBrightness': number;
@@ -75,19 +75,19 @@ export namespace Components {
   }
   interface AlGraphEditor {
     'angles': Map<string, AlAngle> | null;
-    'drawingEnabled': boolean;
     'edges': Map<string, AlEdge> | null;
     'graphEnabled': boolean;
     'graphVisible': boolean;
     'node': [string, AlNode];
     'nodes': Map<string, AlNode> | null;
+    'paintingEnabled': boolean;
     'selected': string | null;
     'units': Units;
   }
   interface AlGraphSettings {
-    'drawingEnabled': boolean;
     'graphEnabled': boolean;
     'graphVisible': boolean;
+    'paintingEnabled': boolean;
     'units': Units;
   }
   interface AlNodeEditor {
@@ -149,7 +149,6 @@ export namespace Components {
     'setControlsEnabled': (enabled: boolean) => Promise<void>;
     'setControlsType': (type: ControlsType) => Promise<void>;
     'setDisplayMode': (displayMode: DisplayMode) => Promise<void>;
-    'setDrawingEnabled': (enabled: boolean) => Promise<void>;
     /**
     * Creates or updates an edge in the graph
     */
@@ -165,6 +164,7 @@ export namespace Components {
     'setVolumeBrightness': (brightness: number) => Promise<void>;
     'setVolumeContrast': (contrast: number) => Promise<void>;
     'setVolumeSteps': (steps: number) => Promise<void>;
+    'setpaintingEnabled': (enabled: boolean) => Promise<void>;
     'vrEnabled': boolean;
     'width': string;
   }
@@ -284,12 +284,12 @@ declare namespace LocalJSX {
     'consoleTabEnabled'?: boolean;
     'controlsType'?: ControlsType;
     'displayMode'?: DisplayMode;
-    'drawingEnabled'?: boolean;
     'edges'?: Map<string, AlEdge> | null;
     'graphEnabled'?: boolean;
     'graphTabEnabled'?: boolean;
     'nodes'?: Map<string, AlNode> | null;
     'orientation'?: Orientation;
+    'paintingEnabled'?: boolean;
     'selected'?: string | null;
     'settingsTabEnabled'?: boolean;
     'slicesBrightness'?: number;
@@ -313,22 +313,22 @@ declare namespace LocalJSX {
   }
   interface AlGraphEditor extends JSXBase.HTMLAttributes<HTMLAlGraphEditorElement> {
     'angles'?: Map<string, AlAngle> | null;
-    'drawingEnabled'?: boolean;
     'edges'?: Map<string, AlEdge> | null;
     'graphEnabled'?: boolean;
     'graphVisible'?: boolean;
     'node'?: [string, AlNode];
     'nodes'?: Map<string, AlNode> | null;
+    'paintingEnabled'?: boolean;
     'selected'?: string | null;
     'units'?: Units;
   }
   interface AlGraphSettings extends JSXBase.HTMLAttributes<HTMLAlGraphSettingsElement> {
-    'drawingEnabled'?: boolean;
     'graphEnabled'?: boolean;
     'graphVisible'?: boolean;
-    'onDrawingEnabledChanged'?: (event: CustomEvent<any>) => void;
     'onGraphEnabledChanged'?: (event: CustomEvent<any>) => void;
+    'onPaintingEnabledChanged'?: (event: CustomEvent<any>) => void;
     'onUnitsChanged'?: (event: CustomEvent<any>) => void;
+    'paintingEnabled'?: boolean;
     'units'?: Units;
   }
   interface AlNodeEditor extends JSXBase.HTMLAttributes<HTMLAlNodeEditorElement> {

@@ -13,16 +13,16 @@ export class AlSettings {
 
   @Event() public unitsChanged: EventEmitter;
   @Event() public graphEnabledChanged: EventEmitter;
-  @Event() public drawingEnabledChanged: EventEmitter;
+  @Event() public paintingEnabledChanged: EventEmitter;
 
   @Prop({ mutable: true }) public graphEnabled: boolean;
-  @Prop({ mutable: true }) public drawingEnabled: boolean;
+  @Prop({ mutable: true }) public paintingEnabled: boolean;
   @Prop({ mutable: true }) public graphVisible: boolean;
   @Prop({ mutable: true }) public units: Units;
 
-  private _drawingEnabled(enabled: boolean) {
-    this.drawingEnabled = enabled;
-    this.drawingEnabledChanged.emit(enabled);
+  private _paintingEnabled(enabled: boolean) {
+    this.paintingEnabled = enabled;
+    this.paintingEnabledChanged.emit(enabled);
   }
 
   private _graphEnabled(enabled: boolean) {
@@ -55,16 +55,16 @@ export class AlSettings {
           </ion-item>
           <ion-item
             style={{
-              display: "var(--drawing-enabled-display, block)"
+              display: "var(--painting-enabled-display, block)"
             }}
           >
-            <span title={this._contentStrings.drawingEnabled}>
-              {this._contentStrings.drawingEnabled}
+            <span title={this._contentStrings.paintingEnabled}>
+              {this._contentStrings.paintingEnabled}
             </span>
             <ion-toggle
               slot="end"
-              checked={this.drawingEnabled}
-              onIonChange={e => this._drawingEnabled(e.detail.checked)}
+              checked={this.paintingEnabled}
+              onIonChange={e => this._paintingEnabled(e.detail.checked)}
             />
           </ion-item>
           <ion-item

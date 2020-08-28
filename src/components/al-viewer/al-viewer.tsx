@@ -19,7 +19,7 @@ import {
   AlVolumeCastType,
   AlVolumeEvents
 } from "../../aframe/components/al-volume";
-import { DrawingToolManager } from "../../aframe/components/DrawingTool/DrawingToolManager";
+import { PaintingToolManager } from "../../aframe/components/PaintingTool/PaintingToolManager";
 //import "../../assets/OrbitControls.js";
 import { Constants } from "../../Constants";
 import {
@@ -60,7 +60,7 @@ import {
   appSetControlsEnabled,
   appSetControlsType,
   appSetDisplayMode,
-  appSetDrawingEnabled,
+  appSetpaintingEnabled,
   appSetEdge,
   appSetGraphEnabled,
   appSetMaterial,
@@ -140,7 +140,7 @@ export class Aleph {
   public appSetControlsEnabled: Action;
   public appSetControlsType: Action;
   public appSetDisplayMode: Action;
-  public appSetDrawingEnabled: Action;
+  public appSetpaintingEnabled: Action;
   public appSetEdge: Action;
   public appSetGraphEnabled: Action;
   public appSetMaterial: Action;
@@ -165,7 +165,7 @@ export class Aleph {
   @State() public controlsEnabled: boolean;
   @State() public controlsType: ControlsType;
   @State() public displayMode: DisplayMode;
-  @State() public drawingEnabled: boolean;
+  @State() public paintingEnabled: boolean;
   @State() public edges: Map<string, AlEdge>;
   @State() public graphEnabled: boolean;
   @State() public material: Material;
@@ -285,8 +285,8 @@ export class Aleph {
   }
 
   @Method()
-  public async setDrawingEnabled(enabled: boolean): Promise<void> {
-    this._setDrawingEnabled(enabled);
+  public async setpaintingEnabled(enabled: boolean): Promise<void> {
+    this._setpaintingEnabled(enabled);
   }
 
   @Method()
@@ -350,15 +350,15 @@ export class Aleph {
   protected async componentWillLoad() {
     this._isWebGl2 = ThreeUtils.isWebGL2Available();
 
-    (window as any).drawingToolManager = new DrawingToolManager(
+    (window as any).paintingToolManager = new PaintingToolManager(
       "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f/"
     );
 
-    window.addEventListener("drawingToolManagerReset", function() {
-      //console.log("drawingToolManagerReset");
+    window.addEventListener("paintingToolManagerReset", function() {
+      //console.log("paintingToolManagerReset");
       let model = document.getElementById("model");
       if (model) {
-        (model as any).setAttribute("al-drawing-tool", "dirty", Date.now());
+        (model as any).setAttribute("al-painting-tool", "dirty", Date.now());
       }
     }, false);
 
@@ -374,7 +374,7 @@ export class Aleph {
           controlsEnabled,
           controlsType,
           displayMode,
-          drawingEnabled,
+          paintingEnabled,
           edges,
           graphEnabled,
           material,
@@ -401,7 +401,7 @@ export class Aleph {
         controlsEnabled,
         controlsType,
         displayMode,
-        drawingEnabled,
+        paintingEnabled,
         edges,
         graphEnabled,
         material,
@@ -437,7 +437,7 @@ export class Aleph {
       appSetControlsEnabled,
       appSetControlsType,
       appSetDisplayMode,
-      appSetDrawingEnabled,
+      appSetpaintingEnabled,
       appSetEdge,
       appSetGraphEnabled,
       appSetMaterial,
@@ -531,7 +531,7 @@ export class Aleph {
             controlsType={this.controlsType}
             displayMode={this.displayMode}
             dracoDecoderPath={this.dracoDecoderPath}
-            drawingEnabled={this.drawingEnabled}
+            paintingEnabled={this.paintingEnabled}
             debugDraw={this._debugDraw}
             envMapPath={this.envMapPath}
             graphEnabled={this.graphEnabled}
@@ -560,7 +560,7 @@ export class Aleph {
             vrEnabled={this.vrEnabled}
           />
         </ModelContainer>
-        { (this._debugDraw || !this.drawingEnabled) && [
+        { (this._debugDraw || !this.paintingEnabled) && [
           <Nodes
             boundingSphereRadius={this._boundingSphereRadius}
             camera={this._scene ? this._scene.camera : null}
@@ -1002,8 +1002,8 @@ export class Aleph {
     this._stateChanged();
   }
 
-  private _setDrawingEnabled(enabled: boolean): void {
-    this.appSetDrawingEnabled(enabled);
+  private _setpaintingEnabled(enabled: boolean): void {
+    this.appSetpaintingEnabled(enabled);
     this._stateChanged();
   }
 
@@ -1193,7 +1193,7 @@ export class Aleph {
 
   private _graphEntryPointerUpHandler(_event: CustomEvent): void {
     this.appSetControlsEnabled(true);
-    if (this.drawingEnabled) {
+    if (this.paintingEnabled) {
       this._selectNode(null);
     }
     ThreeUtils.enableControls(this._camera, true, this.controlsType);
@@ -1289,7 +1289,7 @@ export class Aleph {
         ) {
           this._createEdge(this._previousSelectedNode, nodeId);
           this._selectNode(nodeId);
-        } else if (this.drawingEnabled && this._previousSelectedNode) {
+        } else if (this.paintingEnabled && this._previousSelectedNode) {
           this._createEdge(this._previousSelectedNode, nodeId);
           this._selectNode(nodeId);
         }

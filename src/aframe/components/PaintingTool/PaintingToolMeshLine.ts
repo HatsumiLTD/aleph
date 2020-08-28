@@ -10,7 +10,7 @@
   if( !THREE )
     throw new Error( 'MeshLine requires three.js' )
 
-  function DrawingToolMeshLine() {
+  function PaintingToolMeshLine() {
 
     this.positions = [];
 
@@ -29,12 +29,12 @@
     this.matrixWorld = new THREE.Matrix4();
   }
 
-  DrawingToolMeshLine.prototype.setMatrixWorld = function(matrixWorld) {
+  PaintingToolMeshLine.prototype.setMatrixWorld = function(matrixWorld) {
     this.matrixWorld = matrixWorld;
   }
 
 
-  DrawingToolMeshLine.prototype.setGeometry = function( g, c ) {
+  PaintingToolMeshLine.prototype.setGeometry = function( g, c ) {
 
     this.widthCallback = c;
 
@@ -74,7 +74,7 @@
 
   }
 
-  DrawingToolMeshLine.prototype.raycast = ( function () {
+  PaintingToolMeshLine.prototype.raycast = ( function () {
 
     var inverseMatrix = new THREE.Matrix4();
     var ray = new THREE.Ray();
@@ -227,7 +227,7 @@
   }() );
 
 
-  DrawingToolMeshLine.prototype.compareV3 = function( a, b ) {
+  PaintingToolMeshLine.prototype.compareV3 = function( a, b ) {
 
     var aa = a * 6;
     var ab = b * 6;
@@ -235,14 +235,14 @@
 
   }
 
-  DrawingToolMeshLine.prototype.copyV3 = function( a ) {
+  PaintingToolMeshLine.prototype.copyV3 = function( a ) {
 
     var aa = a * 6;
     return [ this.positions[ aa ], this.positions[ aa + 1 ], this.positions[ aa + 2 ] ];
 
   }
 
-  DrawingToolMeshLine.prototype.process = function() {
+  PaintingToolMeshLine.prototype.process = function() {
 
     var l = this.positions.length / 6;
 
@@ -371,7 +371,7 @@
    * Fast method to advance the line by one position.  The oldest position is removed.
    * @param position
    */
-  DrawingToolMeshLine.prototype.advance = function(position) {
+  PaintingToolMeshLine.prototype.advance = function(position) {
 
     var positions = this.attributes.position.array;
     var previous = this.attributes.previous.array;
@@ -407,7 +407,7 @@
 
   };
 
-  THREE.ShaderChunk[ 'drawingtool_meshline_vert' ] = [
+  THREE.ShaderChunk[ 'paintingtool_meshline_vert' ] = [
     '',
     THREE.ShaderChunk.logdepthbuf_pars_vertex,
     THREE.ShaderChunk.fog_pars_vertex,
@@ -498,7 +498,7 @@
     '}'
   ].join( '\r\n' );
 
-  THREE.ShaderChunk[ 'drawingtool_meshline_frag' ] = [
+  THREE.ShaderChunk[ 'paintingtool_meshline_frag' ] = [
     '',
     THREE.ShaderChunk.fog_pars_fragment,
     THREE.ShaderChunk.logdepthbuf_pars_fragment,
@@ -538,7 +538,7 @@
     '}'
   ].join( '\r\n' );
 
-  function DrawingToolMeshLineMaterial( parameters ) {
+  function PaintingToolMeshLineMaterial( parameters ) {
 
     THREE.ShaderMaterial.call( this, {
       uniforms: Object.assign({},
@@ -565,15 +565,15 @@
           alphaTest: {value: 0 },
           time: {value: 0 },
           repeat: { value: new THREE.Vector2( 1, 1 ) },
-          vertexShader: {value: THREE.ShaderChunk.drawingtool_meshline_vert},
-          fragmentShader: {value: THREE.ShaderChunk.drawingtool_meshline_frag},
+          vertexShader: {value: THREE.ShaderChunk.paintingtool_meshline_vert},
+          fragmentShader: {value: THREE.ShaderChunk.paintingtool_meshline_frag},
         }
       ),
 
 
     } );
 
-    this.type = 'DrawingToolMeshLineMaterial';
+    this.type = 'PaintingToolMeshLineMaterial';
 
     Object.defineProperties( this, {
       vertexShader: {
@@ -780,11 +780,11 @@
     this.setValues( parameters );
   }
 
-  DrawingToolMeshLineMaterial.prototype = Object.create( THREE.ShaderMaterial.prototype );
-  DrawingToolMeshLineMaterial.prototype.constructor = DrawingToolMeshLineMaterial;
-  DrawingToolMeshLineMaterial.prototype.isMeshLineMaterial = true;
+  PaintingToolMeshLineMaterial.prototype = Object.create( THREE.ShaderMaterial.prototype );
+  PaintingToolMeshLineMaterial.prototype.constructor = PaintingToolMeshLineMaterial;
+  PaintingToolMeshLineMaterial.prototype.isMeshLineMaterial = true;
 
-  DrawingToolMeshLineMaterial.prototype.copy = function ( source ) {
+  PaintingToolMeshLineMaterial.prototype.copy = function ( source ) {
 
     THREE.ShaderMaterial.prototype.copy.call( this, source );
 
@@ -816,27 +816,27 @@
   if (typeof exports !== 'undefined') {
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports = {
-        DrawingToolMeshLine: DrawingToolMeshLine,
-        DrawingToolMeshLineMaterial: DrawingToolMeshLineMaterial
+        PaintingToolMeshLine: PaintingToolMeshLine,
+        PaintingToolMeshLineMaterial: PaintingToolMeshLineMaterial
       }
     }
-    exports.DrawingToolMeshLine = DrawingToolMeshLine
-    exports.DrawingToolMeshLineMaterial = DrawingToolMeshLineMaterial
+    exports.PaintingToolMeshLine = PaintingToolMeshLine
+    exports.PaintingToolMeshLineMaterial = PaintingToolMeshLineMaterial
   } else {
-    root.DrawingToolMeshLine = DrawingToolMeshLine
-    root.DrawingToolMeshLineMaterial = DrawingToolMeshLineMaterial
+    root.PaintingToolMeshLine = PaintingToolMeshLine
+    root.PaintingToolMeshLineMaterial = PaintingToolMeshLineMaterial
   }
 
   // if( typeof exports !== 'undefined' ) {
   //   if( typeof module !== 'undefined' && module.exports ) {
-  //     exports = module.exports = { DrawingToolMeshLine: DrawingToolMeshLine, DrawingToolMeshLineMaterial: DrawingToolMeshLineMaterial };
+  //     exports = module.exports = { PaintingToolMeshLine: PaintingToolMeshLine, PaintingToolMeshLineMaterial: PaintingToolMeshLineMaterial };
   //   }
-  //   exports.DrawingToolMeshLine = DrawingToolMeshLine;
-  //   exports.DrawingToolMeshLineMaterial = DrawingToolMeshLineMaterial;
+  //   exports.PaintingToolMeshLine = PaintingToolMeshLine;
+  //   exports.PaintingToolMeshLineMaterial = PaintingToolMeshLineMaterial;
   // }
   // else {
-  //   root.DrawingToolMeshLine = DrawingToolMeshLine;
-  //   root.DrawingToolMeshLineMaterial = DrawingToolMeshLineMaterial;
+  //   root.PaintingToolMeshLine = PaintingToolMeshLine;
+  //   root.PaintingToolMeshLineMaterial = PaintingToolMeshLineMaterial;
   // }
 
   }).call(window);

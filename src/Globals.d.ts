@@ -2,10 +2,10 @@ declare global {
   const THREE: typeof import("three");
   const MeshLineMaterial: any;
   const MeshLine: any;
-  // const DrawingToolMeshLine: any;
-  // const DrawingToolMeshLineMaterial: any;
+  // const PaintingToolMeshLine: any;
+  // const PaintingToolMeshLineMaterial: any;
   interface Window {
-    drawingToolManager: any;
+    paintingToolManager: any;
   }
 }
 export {};

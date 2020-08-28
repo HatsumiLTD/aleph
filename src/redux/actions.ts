@@ -29,7 +29,7 @@ export type ActionTypes =
   | AppSetControlsEnabledAction
   | AppSetControlsTypeAction
   | AppSetDisplayModeAction
-  | AppSetDrawingEnabledAction
+  | AppSetpaintingEnabledAction
   | AppSetEdgeAction
   | AppSetGraphEnabledAction
   | AppSetMaterialAction
@@ -336,12 +336,12 @@ export const appSetDisplayMode = (payload: DisplayMode) => async (
   });
 };
 
-export interface AppSetDrawingEnabledAction {
+export interface AppSetpaintingEnabledAction {
   type: TypeKeys.APP_SET_DRAWING_ENABLED;
   payload: boolean;
 }
 
-export const appSetDrawingEnabled = (payload: boolean) => async (
+export const appSetpaintingEnabled = (payload: boolean) => async (
   dispatch,
   _getState
 ) => {

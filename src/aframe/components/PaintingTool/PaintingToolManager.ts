@@ -1,4 +1,4 @@
-import "./DrawingToolMeshLine";
+import "./PaintingToolMeshLine";
 import { jsonpreset } from "./Presets";
 
 /**
@@ -695,7 +695,7 @@ class MaterialsHolder {
       );
       // var lcolour = new THREE.Color(_BrushVariablesInput.lineColour.r, _BrushVariablesInput.lineColour.g, _BrushVariablesInput.lineColour.b);
       // mcolour.lerp(lcolour, 0.5);
-      return new DrawingToolMeshLineMaterial({
+      return new PaintingToolMeshLineMaterial({
         name: "No custom Shader",
         color: mcolour,
         map: texture,
@@ -728,7 +728,7 @@ class MaterialsHolder {
       );
       // var lcolour = new THREE.Color(_BrushVariablesInput.lineColour.r, _BrushVariablesInput.lineColour.g, _BrushVariablesInput.lineColour.b);
       // mcolour.lerp(lcolour, 0.5);
-      return new DrawingToolMeshLineMaterial({
+      return new PaintingToolMeshLineMaterial({
         name: "No custom Shader",
         color: mcolour,
         map: texture,
@@ -767,7 +767,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       mcolour.lerp(lcolour, 0.5);
-      return new DrawingToolMeshLineMaterial({
+      return new PaintingToolMeshLineMaterial({
         name: "No custom Shader",
         color: mcolour,
         map: texture,
@@ -805,7 +805,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new DrawingToolMeshLineMaterial({
+      return new PaintingToolMeshLineMaterial({
         name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -844,7 +844,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new DrawingToolMeshLineMaterial({  
+      return new PaintingToolMeshLineMaterial({  
         name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -882,7 +882,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.g,
         _BrushVariablesInput.lineColour.b
       );
-      return new DrawingToolMeshLineMaterial({
+      return new PaintingToolMeshLineMaterial({
         name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -915,7 +915,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new DrawingToolMeshLineMaterial({  
+      return new PaintingToolMeshLineMaterial({  
         name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -954,7 +954,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new DrawingToolMeshLineMaterial({
+      return new PaintingToolMeshLineMaterial({
           name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -989,7 +989,7 @@ class MaterialsHolder {
       );
       // var lcolour = new THREE.Color(_BrushVariablesInput.lineColour.r, _BrushVariablesInput.lineColour.g, _BrushVariablesInput.lineColour.b);
       // mcolour.lerp (lcolour, 0.5 );
-      return new DrawingToolMeshLineMaterial({
+      return new PaintingToolMeshLineMaterial({
        name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -1028,7 +1028,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new DrawingToolMeshLineMaterial({
+      return new PaintingToolMeshLineMaterial({
         name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -1069,7 +1069,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new DrawingToolMeshLineMaterial({
+      return new PaintingToolMeshLineMaterial({
          name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -1368,7 +1368,7 @@ class MaterialsHolder {
   }
 }
 
-export class DrawingToolManager {
+export class PaintingToolManager {
   constructor(assetsPath) {
     //     var coordinates = AFRAME.utils.coordinates;
     //     this.line;
@@ -1524,7 +1524,7 @@ export class DrawingToolManager {
       this.ObjectsMaterial.dispose();
     }
     
-    window.dispatchEvent(new CustomEvent("drawingToolManagerReset", {}));
+    window.dispatchEvent(new CustomEvent("paintingToolManagerReset", {}));
   }
 }
 
