@@ -49,7 +49,7 @@ export const Src: FunctionalComponent<SrcProps> = (
     } else {
       if (window.drawingToolManager) {
         window.drawingToolManager.nodes = Array.from(nodes).map(x => x[1]);
-        //window.drawingToolManager.Reset();
+        window.drawingToolManager.Reset();
       }
 
       switch (displayMode) {
