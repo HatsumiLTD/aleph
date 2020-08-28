@@ -1460,7 +1460,6 @@ export class PaintingToolManager {
   }
   
   SetPreset(preset) {
-    console.log("set preset");
     this.lineType = preset.lineType;
     this.mainColour = new THREE.Color(preset.mainColour);
     this.paintDecals = preset.paintDecals;
@@ -1492,10 +1491,8 @@ export class PaintingToolManager {
   }
 
   SetupMaterials() {
-    console.log("setup materials");
     var materials = this.materials.split(",");
     var textures = this.texture.split(",");
-    console.log("setup materials", textures);
     this.LineMaterial = this.materialsHolder.makeMaterial(
       this,
       this.assetsPath + textures[0],
@@ -1512,7 +1509,6 @@ export class PaintingToolManager {
 
   // reset manager
   Reset() {
-    console.log("reset");
     for (var i = this.group.children.length - 1; i >= 0; i--) {
       this.group.remove(this.group.children[i]);
     }
@@ -1563,7 +1559,7 @@ export class DecalElement {
     this._pressure = _node.pressure;
     this._speed = _node.speed;
     this.Material = _ObjectsMaterial;
-    this._scale = _BrushVariablesInput.maxelementWidth * (this._pressure ? this._pressure : 0.25);
+    this._scale = _BrushVariablesInput.maxelementWidth * (this._pressure ? this._pressure : 0.1);
     this._shouldCreateObject = true;
     if (this.Material.name == "AnimatedMaterialLightning") {
       if (this._pressure < 0.5) this._shouldCreateObject = false;

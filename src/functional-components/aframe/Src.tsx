@@ -74,6 +74,9 @@ export const Src: FunctionalComponent<SrcProps> = (
                 nodesNum: ${nodes.size};
                 raycasterEnabled: ${paintingEnabled};
               `}
+              al-paint-controls={`
+                enabled: ${paintingEnabled};
+              `}
               position="0 0 0"
               scale="1 1 1"
               ref={ref => cb(ref)}

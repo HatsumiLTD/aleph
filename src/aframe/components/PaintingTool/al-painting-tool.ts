@@ -92,7 +92,6 @@ AFRAME.registerComponent("al-painting-tool", {
   },
 
   update: function(_oldData) {
-    console.log("update");
     //console.log("nodeNum", this.data.nodesNum);
     //console.log("preset", this.data.preset);
     if (!this.data.enabled) {
@@ -223,7 +222,6 @@ AFRAME.registerComponent("al-painting-tool", {
   },
 
   addDecals: function() {
-    console.log("add decals");
     if(!paintingToolManager.paintDecals)return;
     const nodes = paintingToolManager.nodes;
     if (paintingToolManager.spacing < 0) {
