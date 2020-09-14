@@ -125,6 +125,7 @@ class ShaderHolder {
       "varying float vCounters;",
       "varying vec3 wrldpos;",
       "varying vec3 zdist;",
+      "varying float lwidth;",
       "uniform float pressures[20];",
       ""
     ].join("\r\n");
@@ -225,8 +226,8 @@ class ShaderHolder {
         " c.rgb *= colourmap.rgb;",
         " c.rgb *= vignette;",
         " if( c.r+(1.0-rocks) < 0.084 ) discard;",
-        THREE.ShaderChunk.Line_pressure,
-        "float pressureRange = (1.-_pressure);",
+        //THREE.ShaderChunk.Line_pressure,
+        "float pressureRange = 1.0;//(1.-_pressure);",
         // ' vec3 colourMix = mix(color.rgb, altcolor.rgb, grey);',//old way
         " vec3 colourMix = mix(vec3(pressureRange),color.rgb, grey);",
         " c.rgb = colourMix * (rocks/(1.3-vignette));",
@@ -285,8 +286,6 @@ class ShaderHolder {
       this.fragmentShader = [
         THREE.ShaderChunk.baseLinefragmentVars,
         "uniform vec4 linecolour;",
-        "float snoise(vec3 uv, float res){ vec3 s = vec3(1e0, 1e2, 1e3);uv *= res;vec3 uv0 = floor(mod(uv, res))*s;vec3 uv1 = floor(mod(uv+vec3(1.), res))*s;vec3 f = fract(uv); f = f*f*(3.0-2.0*f);vec4 v = vec4(uv0.x+uv0.y+uv0.z, uv1.x+uv0.y+uv0.z,uv0.x+uv1.y+uv0.z, uv1.x+uv1.y+uv0.z);vec4 r = fract(sin(v*1e-1)*1e3);float r0 = mix(mix(r.x, r.y, f.x), mix(r.z, r.w, f.x), f.y);r = fract(sin((v + uv1.z - uv0.z)*1e-1)*1e3);float r1 = mix(mix(r.x, r.y, f.x), mix(r.z, r.w, f.x), f.y);return mix(r0, r1, f.z)*2.-1.;}",
-
         "void main() {",
         "",
         THREE.ShaderChunk.logdepthbuf_fragment,
@@ -309,6 +308,37 @@ class ShaderHolder {
         THREE.ShaderChunk.Line_ends,
         "    gl_FragColor = c;",
         // '    gl_FragColor.a *= step(vCounters, colourmap.a);',
+        "",
+        THREE.ShaderChunk.fog_fragment,
+        "}"
+      ].join("\n");
+    }
+    if (_name == "LineAnimatedClouds") {
+      this.fragmentShader = [
+        THREE.ShaderChunk.baseLinefragmentVars,
+        THREE.ShaderChunk.MathNoise,
+        "uniform vec4 linecolour;",
+
+        "void main() {",
+        "",
+        THREE.ShaderChunk.logdepthbuf_fragment,
+        "",
+        " vec2 uv = vUV;",
+        " vec3 col = vec3(1.0,1.0,1.0);",
+        "    vec4 c = vec4(1.0);",
+        "    vec2 finnaluvpos = vUV * repeat ;",
+        "    finnaluvpos.y -= sin((finnaluvpos.x*6.284)+(time*6.284))*0.1;",
+        "float loopgtime = sin((time-0.5)*6.284);",
+        "float _noise = snoise( vec2((loopgtime*2.0)+(finnaluvpos.x*5.0),(loopgtime*2.0)+finnaluvpos.y*2.0) );",
+
+        //   '    if(_noise < 0.1)discard;',
+        "    finnaluvpos.x += time ;",
+        "    vec4 colourmap = texture2D( map, finnaluvpos );",
+        "    colourmap.a *= _noise;",
+        "    if(colourmap.a < 0.05)discard;",
+        "   c = colourmap * vec4(color.rgb,1.0);",
+        THREE.ShaderChunk.Line_ends,
+        "    gl_FragColor = c;",
         "",
         THREE.ShaderChunk.fog_fragment,
         "}"
@@ -391,7 +421,7 @@ class ShaderHolder {
         "",
         "vec2 uv = vUV;",
         "vec4 c = vec4(1.0);",
-        "vec2 finnaluvpos = vUV * repeat;",
+        "vec2 finnaluvpos = vUV * repeat+((1.0-lwidth)*30.0);",
 
         "float rtime =  mod( (time*2.)+(vUV.x*2.0), 1.0);",
 
@@ -479,14 +509,13 @@ class ShaderHolder {
         THREE.ShaderChunk.baseLinefragmentVars,
         THREE.ShaderChunk.MathRand,
         "uniform vec4 linecolour;",
-        "float snoise(vec3 uv, float res){ vec3 s = vec3(1e0, 1e2, 1e3);uv *= res;vec3 uv0 = floor(mod(uv, res))*s;vec3 uv1 = floor(mod(uv+vec3(1.), res))*s;vec3 f = fract(uv); f = f*f*(3.0-2.0*f);vec4 v = vec4(uv0.x+uv0.y+uv0.z, uv1.x+uv0.y+uv0.z,uv0.x+uv1.y+uv0.z, uv1.x+uv1.y+uv0.z);vec4 r = fract(sin(v*1e-1)*1e3);float r0 = mix(mix(r.x, r.y, f.x), mix(r.z, r.w, f.x), f.y);r = fract(sin((v + uv1.z - uv0.z)*1e-1)*1e3);float r1 = mix(mix(r.x, r.y, f.x), mix(r.z, r.w, f.x), f.y);return mix(r0, r1, f.z)*2.-1.;}",
 
         "void main() {",
         "",
         THREE.ShaderChunk.logdepthbuf_fragment,
         "",
         // 'float randPos = Rand(vec2(wrldpos.z,wrldpos.y), vec2(0.002, 0.001));',
-        "float rtime =  mod( time+(vUV.x*2.0), 1.0);",
+        "float rtime =  mod( time+(vUV.x*1.0), 1.0);",
         " vec2 uv = vUV;",
         " vec3 col = color.rgb;",
 
@@ -537,8 +566,6 @@ class ShaderHolder {
         THREE.ShaderChunk.baseLinefragmentVars,
         THREE.ShaderChunk.MathRand,
         "uniform vec4 linecolour;",
-        "float snoise(vec3 uv, float res){ vec3 s = vec3(1e0, 1e2, 1e3);uv *= res;vec3 uv0 = floor(mod(uv, res))*s;vec3 uv1 = floor(mod(uv+vec3(1.), res))*s;vec3 f = fract(uv); f = f*f*(3.0-2.0*f);vec4 v = vec4(uv0.x+uv0.y+uv0.z, uv1.x+uv0.y+uv0.z,uv0.x+uv1.y+uv0.z, uv1.x+uv1.y+uv0.z);vec4 r = fract(sin(v*1e-1)*1e3);float r0 = mix(mix(r.x, r.y, f.x), mix(r.z, r.w, f.x), f.y);r = fract(sin((v + uv1.z - uv0.z)*1e-1)*1e3);float r1 = mix(mix(r.x, r.y, f.x), mix(r.z, r.w, f.x), f.y);return mix(r0, r1, f.z)*2.-1.;}",
-
         "void main() {",
         "",
         THREE.ShaderChunk.logdepthbuf_fragment,
@@ -546,15 +573,15 @@ class ShaderHolder {
         "float rtime =  mod( (time*2.0), 1.0);",
         " vec2 uv = vUV;",
         " vec3 col = color.rgb;",
-
-        THREE.ShaderChunk.Line_pressure,
-
-        "float pressureRange = 3.0+floor((1.-_pressure)*4.0);", //testing(normal)//.2big, .8 small
-        " vec2 finnaluvpos = vUV * repeat *pressureRange;",
+        //THREE.ShaderChunk.Line_pressure,
+        // "vec2 finnaluvpos = vUV * repeat+((1.0-lwidth)*30.0);",
+        //"float pressureRange = 3.;//3.0+floor((1.-_pressure)*4.0);", //testing(normal)//.2big, .8 small
+        " vec2 finnaluvpos = vUV * repeat;// *pressureRange;",
         " finnaluvpos.x -= rtime;",
         // ' finnaluvpos.y -= sin(time*3.141*2.0)*0.1*(vUV.x);',
 
-        "finnaluvpos.y -= sin((finnaluvpos.x*6.284)+(time*3.141*2.0))*0.1*_pressure;",
+        "finnaluvpos.y -= sin((finnaluvpos.x*6.284)+(time*3.141*2.0))*0.062;//*_pressure;",
+        " finnaluvpos.y *= 2.0;",
         "vec4 colourmap = texture2D( map, finnaluvpos );",
 
         "if(colourmap.g<0.1){",
@@ -586,15 +613,17 @@ class ShaderHolder {
         "void main() {",
         "",
         THREE.ShaderChunk.logdepthbuf_fragment,
-        THREE.ShaderChunk.Line_pressure,
+        // THREE.ShaderChunk.Line_pressure,
         "float speed = 2.0;",
         "float gtime =  mod( 0.2+(time*speed), 1.0);",
         "float ltime =  mod( (time*4.), 1.0);",
         "vec2 uv = vUV;",
-        "vec2 finnaluvpos = vUV * repeat ;",
+        // "vec2 finnaluvpos = vUV * repeat ;",
+
+        "vec2 finnaluvpos = vUV * repeat+((1.0-lwidth)*30.0);",
         "float flipper = mod( (time*3.), 1.0)-0.5;",
         "if(flipper>0.0)finnaluvpos.y = 1.0-finnaluvpos.y;",
-        "if(time>0.9)finnaluvpos.x -= 0.5;",
+        "if(time>0.8)finnaluvpos.x -= 0.5;",
         "if(time>0.1)finnaluvpos.x += 0.5;",
         //'finnaluvpos.y -= sin((finnaluvpos.x*5.)+floor(ltime*3.141*2.0))*0.1;',
         "vec4 colourmap = texture2D( map, finnaluvpos );",
@@ -602,12 +631,14 @@ class ShaderHolder {
         "float rdistcol = colourmap.r;",
         "float gdistcol = colourmap.g;",
         "float bdistcol = colourmap.b;",
-        "float light = rdistcol*ltime*gtime;",
-        "if(_pressure>0.4)light = mix(light,gdistcol,ltime);",
-        "if(_pressure>0.7)light = mix(light,bdistcol,gtime);",
-        "if(grey<0.001) discard;",
+        "float light = rdistcol;",
+        // "if(_pressure>0.4)light = mix(light,gdistcol,ltime);",
+        // "if(_pressure>0.7)light = mix(light,bdistcol,gtime);",
+        "light = mix(light,gdistcol,ltime);",
+        "light = mix(light,bdistcol,gtime);",
+        "if(grey<0.1) discard;",
         // '}',
-        "vec4 c =  vec4(color.rgb, light *20.0*_pressure);",
+        "vec4 c =  vec4(color.rgb, light *3.0);//*_pressure);",
         THREE.ShaderChunk.Line_ends,
         "gl_FragColor = c;",
         "",
@@ -626,6 +657,8 @@ class ShaderHolder {
         "float ltime =  mod((wrldpos.y/5.0) + (time*4.), 1.0);",
         "vec2 uv = vUV;",
         "vec2 finnaluvpos = vUV;",
+        "float flipper = mod( (time*3.), 1.0)-0.5;",
+        "if(flipper>0.0)finnaluvpos.y = 1.0-finnaluvpos.y;",
         // 'if(timeww>0.9)finnaluvpos.xy *= 0.1;',
         // 'fwinnaluvpos.y -= sin((finnaluvpos.x*5.)+floor(ltime*3.141*2.0))*0.01;',
         "vec4 colourmap = texture2D( map, finnaluvpos );",
@@ -639,7 +672,7 @@ class ShaderHolder {
         "light = mix(light,bdistcol,gtime);",
         "float camdis = 1.0 - abs(zdist.z*0.25);",
         // '}',
-        "gl_FragColor = vec4(colour.rgb, light * 20.0 * camdis);",
+        "gl_FragColor = vec4(colour.rgb, light * 2.0 * camdis);",
         "",
         "}"
       ].join("\n");
@@ -652,7 +685,7 @@ class ShaderHolder {
         "uniform vec4 linecolour;",
         "void main() {",
         "",
-        THREE.ShaderChunk.Line_pressure,
+        //THREE.ShaderChunk.Line_pressure,
         THREE.ShaderChunk.logdepthbuf_fragment,
         "",
         "float gtime = mod(+(time*1.0), 1.0);",
@@ -665,9 +698,11 @@ class ShaderHolder {
         // 'if(_static<0.4)discard;',
         "float centerDist = 1.0-distance(vUV.y,0.5);",
         "float vignette = smoothstep(1.3-0.9, 1.3, centerDist);",
-        "float finStatic = vignette * _static * _pressure;",
+        "float finStatic = vignette * _static;// * _pressure;",
         "if(finStatic<0.05)discard;",
+
         "c.rgb *= _static;",
+        "c.a = _static;",
         THREE.ShaderChunk.Line_ends,
         "gl_FragColor = c;",
         "",
@@ -705,8 +740,8 @@ class MaterialsHolder {
         transparent: true,
         opacity: 1,
         lineWidth: _BrushVariablesInput.maxlineWidth,
-        depthTest: false,
-        depthWrite: true,
+        // depthTest: false,
+        // depthWrite: true,
         // blending: THREE.AdditiveBlending,//NormalBlending,
         repeat: new THREE.Vector2(
           _BrushVariablesInput.repeatingAmount + 1.0,
@@ -844,7 +879,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new PaintingToolMeshLineMaterial({  
+      return new PaintingToolMeshLineMaterial({
         name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -898,6 +933,39 @@ class MaterialsHolder {
         fragmentShader: _ShaderHolder.fragmentShader
       });
     }
+    if (_materialName == "LineCloud") {
+      var _ShaderHolder = new ShaderHolder("LineAnimatedClouds");
+      var texture = new THREE.TextureLoader().load(_textureName);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(4, 4);
+      var mcolour = new THREE.Color(
+        _BrushVariablesInput.mainColour.r,
+        _BrushVariablesInput.mainColour.g,
+        _BrushVariablesInput.mainColour.b
+      );
+      // var lcolour = new THREE.Color(_BrushVariablesInput.lineColour.r, _BrushVariablesInput.lineColour.g, _BrushVariablesInput.lineColour.b);
+      // mcolour.lerp(lcolour, 0.5);
+      return new PaintingToolMeshLineMaterial({
+        name: _materialName,
+        color: mcolour,
+        map: texture,
+        useMap: 1,
+        alphaMap: texture,
+        useAlphaMap: true,
+        transparent: true,
+        opacity: 1,
+        lineWidth: _BrushVariablesInput.maxlineWidth,
+        // depthTest: false,
+        // depthWrite: true,
+        // blending: THREE.AdditiveBlending,//NormalBlending,
+        repeat: new THREE.Vector2(
+          _BrushVariablesInput.repeatingAmount + 1.0,
+          1
+        ),
+        fragmentShader: _ShaderHolder.fragmentShader
+      });
+    }
     if (_materialName == "LineMaterialAnimatedWind") {
       var _ShaderHolder = new ShaderHolder("LineAnimatedWind");
       var texture = new THREE.TextureLoader().load(_textureName);
@@ -915,7 +983,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new PaintingToolMeshLineMaterial({  
+      return new PaintingToolMeshLineMaterial({
         name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -955,7 +1023,7 @@ class MaterialsHolder {
       );
       // mcolour.lerp (lcolour, 0.5 );
       return new PaintingToolMeshLineMaterial({
-          name: _materialName,
+        name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -990,7 +1058,7 @@ class MaterialsHolder {
       // var lcolour = new THREE.Color(_BrushVariablesInput.lineColour.r, _BrushVariablesInput.lineColour.g, _BrushVariablesInput.lineColour.b);
       // mcolour.lerp (lcolour, 0.5 );
       return new PaintingToolMeshLineMaterial({
-       name: _materialName,
+        name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -1001,8 +1069,8 @@ class MaterialsHolder {
         transparent: true,
         // opacity: 1,
         lineWidth: _BrushVariablesInput.maxlineWidth,
-        depthTest: false,
-        depthWrite: true,
+        // depthTest: false,
+        // depthWrite: true,
         blending: THREE.AdditiveBlending, //NormalBlending,
         repeat: new THREE.Vector2(
           _BrushVariablesInput.repeatingAmount + 1.0,
@@ -1070,7 +1138,7 @@ class MaterialsHolder {
       );
       // mcolour.lerp (lcolour, 0.5 );
       return new PaintingToolMeshLineMaterial({
-         name: _materialName,
+        name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -1148,7 +1216,7 @@ class MaterialsHolder {
         time: { type: "f", value: 1.0 },
         colour: { type: "c", value: mcolour }
       };
-      return new THREE.ShaderMaterial({  
+      return new THREE.ShaderMaterial({
         name: _materialName,
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
@@ -1181,7 +1249,7 @@ class MaterialsHolder {
         colour: { type: "c", value: mcolour }
       };
       return new THREE.ShaderMaterial({
-          name: _materialName,
+        name: _materialName,
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1206,7 +1274,7 @@ class MaterialsHolder {
       );
       //mcolour.lerp (lcolour, 0.5 );
       return new THREE.MeshBasicMaterial({
-          name: _materialName,
+        name: _materialName,
         color: lcolour,
         map: texture,
         name: "No custom Shader"
@@ -1272,7 +1340,7 @@ class MaterialsHolder {
         threshhold: { type: "f", value: 0.0 }
       };
       return new THREE.ShaderMaterial({
-          name: _materialName,
+
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1300,7 +1368,6 @@ class MaterialsHolder {
         colour: { type: "c", value: mcolour }
       };
       return new THREE.ShaderMaterial({
-        
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1424,15 +1491,14 @@ export class PaintingToolManager {
 
     this.nodes = [];
     this.NextPreset();
-         
-    document.addEventListener("keydown", (key) => {
+
+    document.addEventListener("keydown", key => {
       if (key.code === "KeyQ") {
         this.NextPreset();
       }
     });
-
   }
-  
+
   NextPreset() {
     var presets = Object.values(jsonpreset.remembered);
     var preset = presets[this.currentPreset]["0"];
@@ -1458,7 +1524,7 @@ export class PaintingToolManager {
     }
     return pressureArray;
   }
-  
+
   SetPreset(preset) {
     console.log("set preset");
     this.lineType = preset.lineType;
@@ -1473,7 +1539,7 @@ export class PaintingToolManager {
     this.animationSpeedAlt = preset.animationSpeedAlt;
     this.decalColour = new THREE.Color(preset.decalColour);
     this.facing = preset.facing;
-    this.spacing = preset.spacing
+    this.spacing = preset.spacing;
     this.maxlineWidth = preset.maxlineWidth;
     this.maxelementWidth = preset.maxelementWidth;
     this.jitter = preset.jitter;
@@ -1486,9 +1552,9 @@ export class PaintingToolManager {
     this.dynamicPressureSize = preset.dynamicPressureSize;
     this.dynamicPressureOpacity = preset.dynamicPressureOpacity;
     this.dynamicPressureSpecial = preset.dynamicPressureSpecial;
-    
+
     this.SetupMaterials();
-    this.Reset();
+    this.Reset(true);
   }
 
   SetupMaterials() {
@@ -1511,19 +1577,25 @@ export class PaintingToolManager {
   }
 
   // reset manager
-  Reset() {
+  Reset(_force = false) {
     console.log("reset");
+    if(this.nodes){
+      if(this.oldnodeslegnth == this.nodes.length && !_force)return;
+      this.oldnodeslegnth = this.nodes.length;
+    }else{
+      this.oldnodeslegnth = -1;
+    }
     for (var i = this.group.children.length - 1; i >= 0; i--) {
       this.group.remove(this.group.children[i]);
     }
     this.BillboardObjects = [];
 
     this.LineMaterial.dispose();
-    
+
     if (this.ObjectsMaterial) {
       this.ObjectsMaterial.dispose();
     }
-    
+
     window.dispatchEvent(new CustomEvent("paintingToolManagerReset", {}));
   }
 }
@@ -1560,10 +1632,13 @@ export class DecalElement {
     this.type = _BrushVariablesInput.objects;
     this.Node = _node;
     this._position = _node.position;
-    this._pressure = _node.pressure;
+    this._pressure = 1.0;//_node.pressure;
     this._speed = _node.speed;
     this.Material = _ObjectsMaterial;
-    this._scale = _BrushVariablesInput.maxelementWidth * (this._pressure ? this._pressure : 0.25);
+    this._scale = _BrushVariablesInput.maxelementWidth*.4;
+      // _BrushVariablesInput.maxelementWidth *
+      // (this._pressure ? this._pressure : 0.25);
+
     this._shouldCreateObject = true;
     if (this.Material.name == "AnimatedMaterialLightning") {
       if (this._pressure < 0.5) this._shouldCreateObject = false;
@@ -1640,47 +1715,56 @@ export class DecalElement {
   }
 
   UpdateDelta(_CameraworldPos, _delta) {
+    if(!this.mesh)return;
     if (!this._shouldCreateObject) return;
+
+    var cameraworldPos = AFRAME.utils.coordinates.parse(_CameraworldPos);
+    //console.log("_CameraworldPos: " + vec3.x);
+    // var vec3 = AFRAME.utils.coordinates.parse(_CameraworldPos);
+    // console.log("_CameraworldPos: " + _CameraworldPos);
+    this._BrushVariablesInput.facing = "Camera";//temp for now
     if (this._BrushVariablesInput.facing == "Camera") {
-      this.LookAt(_CameraworldPos);
+      this.LookAt(cameraworldPos);
       this.mesh.rotateZ(this.rotationZ);
     }
+
     if (this._BrushVariablesInput.facing == "Body") {
       var lookatposition = new THREE.Vector3(
         this.Node.normal.x,
         this.Node.normal.y,
         this.Node.normal.z
-      );
+      );//undefiended, why???
       this.LookAt(lookatposition);
-      this.mesh.rotateZ(this.rotationZ);
-    }
-    if (this._BrushVariablesInput.facing == "Line") {
-      var meshPosition = this.mesh.position;
-      //  meshPosition.transformDirection( this.mesh.matrixWorld );
-      var _position = this._position.clone();
-      //  _position.transformDirection( this.mesh.matrixWorld );
-
-      this.mesh.getWorldPosition(_position);
-      var direction = new THREE.Vector3();
-      direction.subVectors(_position, meshPosition);
-      // direction.transformDirection( this.mesh.matrixWorld );
-      this.LookAt(direction);
-      this.mesh.rotateZ(this.rotationZ);
-    }
-    if (this._BrushVariablesInput.facing == "LineRight") {
-      var meshPosition = this.mesh.position;
-      //  meshPosition.transformDirection( this.mesh.matrixWorld );
-      var _position = this._position.clone();
-      //  _position.transformDirection( this.mesh.matrixWorld );
-
-      this.mesh.getWorldPosition(_position);
-      var direction = new THREE.Vector3();
-      direction.subVectors(_position, meshPosition);
-      // direction.transformDirection( this.mesh.matrixWorld );
-      this.LookAt(direction);
       this.mesh.rotateX(this.rotationZ);
       this.mesh.rotateY(1.571);
     }
+    // if (this._BrushVariablesInput.facing == "Line") {
+    //   var meshPosition =  AFRAME.utils.coordinates.parse(this.mesh.position);//this.mesh.position;
+    //   //  meshPosition.transformDirection( this.mesh.matrixWorld );
+    //   var position = AFRAME.utils.coordinates.parse(this._position);//this._position.clone();
+    //   //  _position.transformDirection( this.mesh.matrixWorld );
+
+    //   this.mesh.getWorldPosition(position);
+    //   var direction = new THREE.Vector3();
+    //   direction.subVectors(position, meshPosition);
+    //   // direction.transformDirection( this.mesh.matrixWorld );
+    //   this.LookAt(direction);
+    //   this.mesh.rotateZ(this.rotationZ);
+    // }
+    // if (this._BrushVariablesInput.facing == "LineRight") {
+    //   var meshPosition =  AFRAME.utils.coordinates.parse(this.mesh.position);//this.mesh.position;
+    //   //  meshPosition.transformDirection( this.mesh.matrixWorld );
+    //   var position = AFRAME.utils.coordinates.parse(this._position);//this._position;//.clone();
+    //   //  _position.transformDirection( this.mesh.matrixWorld );
+
+    //   this.mesh.getWorldPosition(position);
+    //   var direction = new THREE.Vector3();
+    //   direction.subVectors(position, meshPosition);
+    //   // direction.transformDirection( this.mesh.matrixWorld );
+    //   this.LookAt(direction);
+    //   this.mesh.rotateX(this.rotationZ);
+    //   this.mesh.rotateY(1.571);
+    // }
     this.delta = _delta;
     if (this.Material) {
       if (this.Material.name != "No custom Shader") {
@@ -1695,4 +1779,3 @@ export class DecalElement {
     this.mesh.lookAt(pos);
   }
 }
-

@@ -30,7 +30,8 @@ AFRAME.registerComponent("al-painting-tool", {
 
   init: function() {
     this.state = {
-      pointerDown: false
+      pointerDown: false,
+      firstpointerDownIntersection: 0
     };
 
     // Use events to figure out what raycaster is listening so we don't have to
@@ -50,6 +51,7 @@ AFRAME.registerComponent("al-painting-tool", {
       EVENTS.MOUSEDOWN,
       evt => {
         this.state.pointerDown = true;
+        this.state.firstpointerDownIntersection = 0;
       },
       false
     );
@@ -58,6 +60,7 @@ AFRAME.registerComponent("al-painting-tool", {
       EVENTS.MOUSEUP,
       evt => {
         this.state.pointerDown = false;
+        this.state.firstpointerDownIntersection = 0;
       },
       false
     );
@@ -65,43 +68,38 @@ AFRAME.registerComponent("al-painting-tool", {
     // vr controller listeners
     const rightController = document.getElementById("right-controller");
 
-    this.el.addEventListener(
-      EVENTS.MOUSEDOWN,
-      evt => {
-        //console.log("trigger down");
-        this.state.pointerDown = true;
-      }
-    );
+    this.el.addEventListener(EVENTS.MOUSEDOWN, evt => {
+      //console.log("trigger down");
+      this.state.pointerDown = true;
+      this.state.firstpointerDownIntersection = -999;
+    });
 
-    this.el.addEventListener(
-      EVENTS.MOUSEUP,
-      evt => {
-        //console.log("trigger up");
-        this.state.pointerDown = false;
-      }
-    );
+    this.el.addEventListener(EVENTS.MOUSEUP, evt => {
+      //console.log("trigger up");
+      this.state.pointerDown = false;
+      this.state.firstpointerDownIntersection = -999;
+    });
 
-    rightController.addEventListener(
-      EVENTS.ABUTTONDOWN,
-      evt => {
-        paintingToolManager.NextPreset();
-      }
-    );
+    rightController.addEventListener(EVENTS.ABUTTONDOWN, evt => {
+      paintingToolManager.NextPreset();
+    });
 
-    this.debouncedGetIntersection = AFRAME.utils.throttle(this.getIntersection, this.data.minFrameMS, this);
+    this.debouncedGetIntersection = AFRAME.utils.throttle(
+      this.getIntersection,
+      this.data.minFrameMS,
+      this
+    );
   },
 
   update: function(_oldData) {
     console.log("update");
-    //console.log("nodeNum", this.data.nodesNum);
-    //console.log("preset", this.data.preset);
     if (!this.data.enabled) {
       return;
     }
     this.group = new THREE.Group();
     this.el.setObject3D("group", this.group);
     this.geometry = this.getGeometry();
-    this.makeLine();
+    //this.makeLine();
     const linethreemesh = this.makeLine();
     if (linethreemesh != null) {
       this.group.add(linethreemesh);
@@ -125,7 +123,6 @@ AFRAME.registerComponent("al-painting-tool", {
   },
 
   getIntersection: function() {
-    //console.log("get intersection");
     if (!this.data.enabled || !this.state.pointerDown) {
       return;
     }
@@ -135,6 +132,7 @@ AFRAME.registerComponent("al-painting-tool", {
     if (!intersection) {
       return;
     }
+
 
     if (this.state.lastIntersection) {
       const distance = this.state.lastIntersection.point.distanceTo(
@@ -165,8 +163,10 @@ AFRAME.registerComponent("al-painting-tool", {
   tick: function() {
     //console.log("tick");
 
-    if (this.data.raycasterEnabled && this.raycaster) {
+    if (this.data.raycasterEnabled && this.raycaster && this.state.firstpointerDownIntersection<2) {
       this.debouncedGetIntersection();
+    }else{
+      if(this.state.firstpointerDownIntersection>-999)this.state.firstpointerDownIntersection ++;
     } // Not intersecting.
     ////get camera position--------
     var scene = this.el.sceneEl;
@@ -185,12 +185,14 @@ AFRAME.registerComponent("al-painting-tool", {
       if (paintingToolManager.LineMaterial.name != "No custom Shader") {
         // var mcolour = new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
         // this.Material.uniforms.colour.value = mcolour;//_BrushVariablesInput.mainColour;
-        if (paintingToolManager.nodes.length &&
+        if (
+          paintingToolManager.nodes.length &&
           paintingToolManager.LineMaterial.uniforms.pressures &&
           paintingToolManager.LineMaterial.uniforms.time
-          ) {
+        ) {
           paintingToolManager.LineMaterial.uniforms.pressures.value = paintingToolManager.GetPressure();
-          paintingToolManager.LineMaterial.uniforms.time.value = paintingToolManager.timer; //timer;
+          paintingToolManager.LineMaterial.uniforms.time.value =
+            paintingToolManager.timer; //timer;
           paintingToolManager.LineMaterial.needsUpdate = true;
         }
       }
@@ -224,18 +226,26 @@ AFRAME.registerComponent("al-painting-tool", {
 
   addDecals: function() {
     console.log("add decals");
-    if(!paintingToolManager.paintDecals)return;
+    if (!paintingToolManager.paintDecals) return;
     const nodes = paintingToolManager.nodes;
     if (paintingToolManager.spacing < 0) {
       var counter = 0;
       for (var j = 0; j < nodes.length; j++) {
         if (counter-- == 0) {
-          var _DecalElement = new DecalElement(paintingToolManager.ObjectsMaterial, nodes[j], paintingToolManager);//createDecal(nodes[j]);
-          if (DecalElement.mesh) {
+          var vec3 = AFRAME.utils.coordinates.parse(nodes[j].position);
+          var originalPos = nodes[j].position;
+          nodes[j].position = vec3;
+          var _DecalElement = new DecalElement(
+            paintingToolManager.ObjectsMaterial,
+            nodes[j],
+            paintingToolManager
+          );
+          if (_DecalElement.mesh) {
             this.group.add(_DecalElement.mesh);
             paintingToolManager.BillboardObjects.push(_DecalElement);
-            counter = -paintingToolManager.spacing;
           }
+          counter = -paintingToolManager.spacing;
+          nodes[j].position = originalPos;
         }
       }
     } else {
@@ -244,11 +254,19 @@ AFRAME.registerComponent("al-painting-tool", {
         vec3 = new THREE.Vector3(vec3.x, vec3.y, vec3.z);
 
         var vec3target = AFRAME.utils.coordinates.parse(nodes[j].position);
-        vec3target = new THREE.Vector3(vec3target.x, vec3target.y, vec3target.z);
+        vec3target = new THREE.Vector3(
+          vec3target.x,
+          vec3target.y,
+          vec3target.z
+        );
 
         if (j + 1 < nodes.length) {
           vec3target = AFRAME.utils.coordinates.parse(nodes[j + 1].position);
-          vec3target = new THREE.Vector3(vec3target.x, vec3target.y, vec3target.z);
+          vec3target = new THREE.Vector3(
+            vec3target.x,
+            vec3target.y,
+            vec3target.z
+          );
         }
         var distance = vec3.distanceTo(vec3target);
         var direction = new THREE.Vector3();
@@ -265,7 +283,11 @@ AFRAME.registerComponent("al-painting-tool", {
             _direction.multiplyScalar(distance * perc)
           );
           nodes[j].position = lerpedpos;
-          var _DecalElement = new DecalElement(paintingToolManager.ObjectsMaterial, nodes[j], paintingToolManager);//createDecal(nnodes[j]);
+          var _DecalElement = new DecalElement(
+            paintingToolManager.ObjectsMaterial,
+            nodes[j],
+            paintingToolManager
+          ); //createDecal(nnodes[j]);
           if (_DecalElement.mesh) {
             this.group.add(_DecalElement.mesh);
             paintingToolManager.BillboardObjects.push(_DecalElement);
