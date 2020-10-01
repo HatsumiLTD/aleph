@@ -5,7 +5,7 @@ import { jsonpreset } from "./Presets";
  * @constructs ShaderHolder this should be where we load ALL shaders
  * @param {String} _name the shadername
  */
-class ShaderHolder {
+export class ShaderHolder {
   constructor(_name) {
     THREE.ShaderChunk["MathRand"] = [
       "float Rand(vec2 co, vec2 amount){return fract(sin(dot(co.xy ,vec2(122.78, 118.92)*amount.x)) + cos(dot(co.xy ,vec2(122.78, 118.92)*amount.y)  ));}"
@@ -37,12 +37,17 @@ class ShaderHolder {
       "_pressure += pressures[i]*(arryDist);",
       "}"
     ].join("\r\n");
+
     THREE.ShaderChunk["Line_ends"] = [
-      "float lineEnds = smoothstep(1.0, 0.95, vUV.x);",
-      "lineEnds *= smoothstep(0.05, 0.1, vUV.x);",
+      "float lineEnds = smoothstep(0.0,0.1, vUV.x);", //start of line
+      "lineEnds *= smoothstep( 1.,0.8, clamp(vUV.x/lengthNormal, 0.0, 1.));", //end of line
       "c.a *= lineEnds;"
     ].join("\r\n");
-
+    THREE.ShaderChunk["Line_Width_ends"] = [
+      "float lineEnds = smoothstep(0.0,0.05, vUV.x);", //start of line
+      "lineEnds *= smoothstep( 1.,0.8, clamp(vUV.x/lengthNormal, 0.0, 1.));", //end of line
+      "float endswidth = lineEnds;"
+    ].join("\r\n");
     THREE.ShaderChunk["basevertext"] = [
       "varying vec2 vUV;",
       "varying vec3 zdist;",
@@ -94,6 +99,7 @@ class ShaderHolder {
       "varying vec3 wrldpos;",
       "varying vec3 _normal;",
       "uniform float time;",
+      "uniform float lengthNormal;",
       "varying vec3 _wrldNormal;",
       " "
     ].join("\r\n");
@@ -115,6 +121,7 @@ class ShaderHolder {
       "uniform float alphaTest;",
       "uniform vec2 repeat;",
       "uniform float time;",
+      "uniform float lengthNormal;",
       "uniform float speed;",
       "uniform float pressure;",
       "uniform vec3 color;",
@@ -211,7 +218,11 @@ class ShaderHolder {
         "    vec2 finnaluvpos = vUV * repeat ;",
         "vec2 p = finnaluvpos - vec2(0.5, 0.5);",
         "float rocks = pow(snoise(finnaluvpos * vec2(6.,4.0) ),4.)*4.0;",
-        "rocks = clamp(rocks, 0.0,1.0);",
+        THREE.ShaderChunk.Line_Width_ends,//endswidth
+
+        "if( distance(vUV.y,0.5)*2.0 > endswidth ) discard;",
+        "rocks = clamp(rocks+(1.0-endswidth), 0.0,1.0);",
+
         "float power = 2.10;",
         "float centerDist = 1.0-distance(vUV.y,0.5);",
         "finnaluvpos.x -= time ;",
@@ -231,7 +242,7 @@ class ShaderHolder {
         // ' vec3 colourMix = mix(color.rgb, altcolor.rgb, grey);',//old way
         " vec3 colourMix = mix(vec3(pressureRange),color.rgb, grey);",
         " c.rgb = colourMix * (rocks/(1.3-vignette));",
-        THREE.ShaderChunk.Line_ends,
+        // THREE.ShaderChunk.Line_ends,
         "    gl_FragColor = c;",
         "    gl_FragColor.a *= step(vCounters, visibility);",
         "",
@@ -330,7 +341,6 @@ class ShaderHolder {
         "    finnaluvpos.y -= sin((finnaluvpos.x*6.284)+(time*6.284))*0.1;",
         "float loopgtime = sin((time-0.5)*6.284);",
         "float _noise = snoise( vec2((loopgtime*2.0)+(finnaluvpos.x*5.0),(loopgtime*2.0)+finnaluvpos.y*2.0) );",
-
         //   '    if(_noise < 0.1)discard;',
         "    finnaluvpos.x += time ;",
         "    vec4 colourmap = texture2D( map, finnaluvpos );",
@@ -374,9 +384,43 @@ class ShaderHolder {
         THREE.ShaderChunk.logdepthbuf_fragment,
         "",
         "    vec4 c = vColor;",
-        "    if( useMap == 1. ) c *= texture2D( map, vUV * repeat );",
-        "    if( useAlphaMap == 1. ) c.a *= texture2D( alphaMap, vUV * repeat ).a;",
+        THREE.ShaderChunk.Line_Width_ends,//endswidth
+        "    vec2 finnaluvpos = vUV * repeat * vec2(endswidth,1.0) ;",
+        // "    if( distance(vUV.y,0.5)*2.0 > endswidth ) discard;",
+        "    if( useMap == 1. ) c *= texture2D( map, finnaluvpos );",
+        "    if( useAlphaMap == 1. ) c.a *= texture2D( alphaMap, finnaluvpos ).a;",
+
         "    if( c.a < alphaTest ) discard;",
+
+        "    c.a = 1.0;",
+        "    if( useDash == 1. ){",
+        "        c.a *= ceil(mod(vCounters + dashOffset, dashArray) - (dashArray * dashRatio));",
+        "    }",
+        // THREE.ShaderChunk.Line_ends,
+        "    gl_FragColor = c;",
+        "    gl_FragColor.a *= step(vCounters, visibility);",
+        "",
+        THREE.ShaderChunk.fog_fragment,
+        "}"
+      ].join("\n");
+    }
+    if (_name == "VineLine") {
+      this.fragmentShader = [
+        THREE.ShaderChunk.baseLinefragmentVars,
+        "void main() {",
+        "",
+        THREE.ShaderChunk.logdepthbuf_fragment,
+        "",
+        "    vec4 c = vColor;",
+        THREE.ShaderChunk.Line_Width_ends,//endswidth
+        "    if( distance(vUV.y,0.5)*2.0 > endswidth ) discard;",
+        "    vec2 finnaluvpos = vUV * repeat;",
+        "    if( useMap == 1. ) c *= texture2D( map, finnaluvpos );",
+        "    if( useAlphaMap == 1. ) c.a *= texture2D( alphaMap, finnaluvpos ).a;",
+
+        "    if( c.a < alphaTest ) discard;",
+
+        "    c.a = 1.0;",
         "    if( useDash == 1. ){",
         "        c.a *= ceil(mod(vCounters + dashOffset, dashArray) - (dashArray * dashRatio));",
         "    }",
@@ -672,7 +716,9 @@ class ShaderHolder {
         "light = mix(light,bdistcol,gtime);",
         "float camdis = 1.0 - abs(zdist.z*0.25);",
         // '}',
-        "gl_FragColor = vec4(colour.rgb, light * 2.0 * camdis);",
+        'floay finAlph = light * 2.0 * camdis;',
+        'if(finAlph < 0.06)discard;',
+        "gl_FragColor = vec4(colour.rgb, finAlph);",
         "",
         "}"
       ].join("\n");
@@ -710,6 +756,70 @@ class ShaderHolder {
         "}"
       ].join("\n");
     }
+    if (_name == "ShadedDot") {
+      this.fragmentShader = [
+        "",
+        THREE.ShaderChunk.fog_pars_fragment,
+        THREE.ShaderChunk.logdepthbuf_pars_fragment,
+        "",
+        "uniform sampler2D map;",
+        "uniform sampler2D alphaMap;",
+        "uniform float useMap;",
+        "uniform float useAlphaMap;",
+        "uniform float useDash;",
+        "uniform float dashArray;",
+        "uniform float dashOffset;",
+        "uniform float dashRatio;",
+        "uniform float visibility;",
+        "uniform float alphaTest;",
+        "uniform vec2 repeat;",
+        "uniform vec3 color;",
+        "uniform float opacity;",
+        "varying vec2 vUV;",
+        "float dist_circ(vec2 cent, float r, vec2 uv ){",
+        "float d = distance( cent, uv ) - r;",
+        "return d;",
+        "}",
+        "void main() {",
+        "",
+        THREE.ShaderChunk.logdepthbuf_fragment,
+        "",
+        "vec4 bg = vec4(0.,0.,0.,0.); ",
+        " vec3 obc = color; ",
+        " float dc1 = dist_circ(vec2(0.5,0.5),0.08,vUV); ",
+        "vec4 shape = vec4(obc,1.0 - smoothstep(0.0,0.49,dc1)); ",
+        "shape.a *= opacity;",
+        "gl_FragColor = mix(bg,shape,shape.a);",
+        "",
+        "}"
+      ].join("\n");
+
+      this.vertexShader = [
+        "varying vec2 vUV;",
+        "void main(void) {",
+        "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);",
+        "  vUV = uv;",
+        "}"
+      ].join("\r\n");
+    }
+  }
+}
+
+class MaterialsCache {
+  constructor() {
+    this.textureName;
+    this.materialName;
+    this.lineMaterial;
+    this.objMaterial;
+    this.colour;
+    this.lineWidth;
+    this.lineLength;
+    this.pressures = [];
+  }
+  MaterialsCache(_textureName, _materialName) {
+    this.textureName = _textureName;
+    this.materialName = _materialName;
+    this.lineWidth = 1.0;
   }
 }
 
@@ -733,12 +843,13 @@ class MaterialsHolder {
       return new PaintingToolMeshLineMaterial({
         name: "No custom Shader",
         color: mcolour,
-        map: texture,
-        useMap: 1,
+        // map: texture,
+        // useMap: 1,
         alphaMap: texture,
         useAlphaMap: true,
         transparent: true,
         opacity: 1,
+        alphaTest:0.1,
         lineWidth: _BrushVariablesInput.maxlineWidth,
         // depthTest: false,
         // depthWrite: true,
@@ -771,7 +882,7 @@ class MaterialsHolder {
         //alphaTest: 0.5,
         // alphaMap: texture,
         // useAlphaMap: true,
-        // transparent: true,
+        transparent: true,
         // opacity: 1,
         lineWidth: _BrushVariablesInput.maxlineWidth,
         depthTest: true,
@@ -787,6 +898,44 @@ class MaterialsHolder {
 
     if (_materialName == "LineTexturedMaterialColoured") {
       var _ShaderHolder = new ShaderHolder("LineMaterial");
+      var texture = new THREE.TextureLoader().load(_textureName);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(4, 4);
+      var mcolour = new THREE.Color(
+        _BrushVariablesInput.mainColour.r,
+        _BrushVariablesInput.mainColour.g,
+        _BrushVariablesInput.mainColour.b
+      );
+      var lcolour = new THREE.Color(
+        _BrushVariablesInput.lineColour.r,
+        _BrushVariablesInput.lineColour.g,
+        _BrushVariablesInput.lineColour.b
+      );
+      mcolour.lerp(lcolour, 0.5);
+      return new PaintingToolMeshLineMaterial({
+        name: "No custom Shader",
+        color: mcolour,
+        map: texture,
+        useMap: 1,
+        //alphaTest: 0.5,
+        // alphaMap: texture,
+        // useAlphaMap: true,
+        transparent: true,
+        // opacity: 1,
+        lineWidth: _BrushVariablesInput.maxlineWidth,
+        depthTest: true,
+        depthWrite: true,
+        // blending: THREE.AdditiveBlending,//NormalBlending,
+        repeat: new THREE.Vector2(
+          _BrushVariablesInput.repeatingAmount + 1.0,
+          1
+        ),
+        fragmentShader: _ShaderHolder.fragmentShader
+      });
+    }
+    if (_materialName == "VineLineMaterial") {
+      var _ShaderHolder = new ShaderHolder("VineLine");
       var texture = new THREE.TextureLoader().load(_textureName);
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.RepeatWrapping;
@@ -873,11 +1022,12 @@ class MaterialsHolder {
         _BrushVariablesInput.mainColour.g,
         _BrushVariablesInput.mainColour.b
       );
-      var lcolour = new THREE.Color(
-        _BrushVariablesInput.lineColour.r,
-        _BrushVariablesInput.lineColour.g,
-        _BrushVariablesInput.lineColour.b
-      );
+      // var lcolour = new THREE.Color(
+      //   _BrushVariablesInput.lineColour.r,
+      //   _BrushVariablesInput.lineColour.g,
+      //   _BrushVariablesInput.lineColour.b
+      // );
+      var lcolour = new THREE.Color(0.7,0.7,0);//weird changing _BrushVariablesInput.lineColour has no effect
       // mcolour.lerp (lcolour, 0.5 );
       return new PaintingToolMeshLineMaterial({
         name: _materialName,
@@ -1337,10 +1487,9 @@ class MaterialsHolder {
       var uniforms = {
         map: { type: "t", value: texture },
         colour: { type: "c", value: mcolour },
-        threshhold: { type: "f", value: 0.0 }
+        threshhold: { type: "f", value: 0.1 }
       };
       return new THREE.ShaderMaterial({
-
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1412,6 +1561,30 @@ class MaterialsHolder {
         name: "No custom Shader"
       });
     }
+    if (_materialName == "ShadedDot") {
+      var _ShaderHolder = new ShaderHolder("ShadedDot");
+      var loader = new THREE.TextureLoader();
+      var texture = loader.load(_textureName, function(texture) {
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1, 1);
+      });
+      var mcolour = new THREE.Color(1, 1, 1);
+      var uniforms = {
+        map: { type: "t", value: texture },
+        opacity: { type: "f", value: 1.0 },
+        color: { type: "c", value: mcolour }
+      };
+      return new THREE.ShaderMaterial({
+        name: _materialName,
+        uniforms: uniforms,
+        vertexShader: _ShaderHolder.vertexShader,
+        fragmentShader: _ShaderHolder.fragmentShader,
+        transparent: true
+        // blending: THREE.AdditiveBlending,
+        // depthWrite: true,
+        // depthTest: false
+      });
+    }
     if (_textureName == "" || _textureName == "null") {
       return new THREE.MeshBasicMaterial({
         color: 0xffffff,
@@ -1476,6 +1649,7 @@ export class PaintingToolManager {
     this.decalColour = new THREE.Color();
     this.lineColour = new THREE.Color();
     this.BillboardObjects = [];
+    this.currentBillboardObjectCount = 0;
     //---testing geometry vars----
     // this.segmentCount = 60;
     // this.radius = 2;
@@ -1486,10 +1660,27 @@ export class PaintingToolManager {
     this.timer = 0.0;
     this.group = new THREE.Group();
 
+    this.materialsCache = [];
+    this.currentMaterialCache;
     this.materialsHolder = new MaterialsHolder();
     this.shaderHolder = new ShaderHolder();
 
     this.nodes = [];
+    this.strokecount = 0;
+    this.currentstrokecount = -1;
+    this.NodeRangeBegining = 0;
+    this.NodeRangeEnding = 0;
+    this.PaintingToolMeshLinesCache = [];
+    this.currentPaintingToolMeshLine = new PaintingToolMeshLine();
+    this.geoCount = 200;
+    this.geo = new THREE.Geometry();
+    for (var j = 0; j < this.geoCount; j++) {
+      this.geo.vertices.push(new THREE.Vector3());
+    }
+    this.currentPaintingToolMeshLine.setGeometry(this.geo, function(p) {
+      return p;
+    });
+
     this.NextPreset();
 
     document.addEventListener("keydown", key => {
@@ -1498,7 +1689,14 @@ export class PaintingToolManager {
       }
     });
   }
-
+  stringToVector3(vec: string): THREE.Vector3 {
+    const res: string[] = vec.split(" ");
+    var vect: THREE.Vector3 = new THREE.Vector3();
+    vect.x = Number(res[0]);
+    vect.y = Number(res[1]);
+    vect.z = Number(res[2]);
+    return vect;
+  }
   NextPreset() {
     var presets = Object.values(jsonpreset.remembered);
     var preset = presets[this.currentPreset]["0"];
@@ -1508,8 +1706,18 @@ export class PaintingToolManager {
     } else {
       this.currentPreset = 0;
     }
+    this.ResetCurrentBrush();
   }
-
+  ResetCurrentBrush() {
+    this.SetupMaterials();
+    this.currentBillboardObjectCount = 0;
+    this.strokecount++;
+    this.NodeRangeBegining = 0;
+    if (this.nodes) {
+      this.NodeRangeBegining = this.nodes.length;
+    }
+  }
+  // loop through the points to create a line geometry
   GetPressure() {
     if (!this.nodes.length) {
       return;
@@ -1562,41 +1770,137 @@ export class PaintingToolManager {
     var materials = this.materials.split(",");
     var textures = this.texture.split(",");
     console.log("setup materials", textures);
-    this.LineMaterial = this.materialsHolder.makeMaterial(
-      this,
-      this.assetsPath + textures[0],
-      materials[0]
-    );
-    if (textures[1]) {
-      this.ObjectsMaterial = this.materialsHolder.makeMaterial(
-        this,
-        this.assetsPath + textures[1],
-        materials[1]
-      );
+
+    var noMaterialFound = true;
+    //cache the materials-----
+    // for (var i = 0; i < this.materialsCache.length; i++) {
+    //   if (this.materialsCache[i].textureName == this.texture
+    //     && this.materialsCache[i].materialName == this.materials
+    //     ) {
+    //       this.currentMaterialCache = this.materialsCache[i];
+    //     if (textures[1]) {
+    //       this.ObjectsMaterial = this.materialsCache[i].objMaterial;
+    //     }
+    //     noMaterialFound = false;
+    //     break;
+    //   }
+    // }
+    //cache the materials-----
+    if (noMaterialFound) {
+      this.currentMaterialCache = new MaterialsCache(this.texture,this.materials);
+      this.currentMaterialCache.colour = this.mainColour;
+      this.currentMaterialCache.lineWidth = this.maxlineWidth;
+      console.log("this.currentMaterialCache.lineWidth: " + this.currentMaterialCache.lineWidth);
+      // this.LineMaterial =
+      this.currentMaterialCache.lineMaterial =
+        this.materialsHolder.makeMaterial(
+          this,
+          this.assetsPath + textures[0],
+          materials[0]
+        );
+        if (textures[1]) {
+           this.ObjectsMaterial =
+          this.currentMaterialCache.objMaterial = this.materialsHolder.makeMaterial(
+            this,
+            this.assetsPath + textures[1],
+            materials[1]
+          );
+        }
+        this.materialsCache.push(this.currentMaterialCache);
     }
+//-----old way of adding materials to the scene------
+    // this.LineMaterial = this.materialsHolder.makeMaterial(
+    //   this,
+    //   this.assetsPath + textures[0],
+    //   materials[0]
+    // );
+
+    // if (textures[1]) {
+    //   this.ObjectsMaterial = this.materialsHolder.makeMaterial(
+    //     this,
+    //     this.assetsPath + textures[1],
+    //     materials[1]
+    //   );
+    // }
+//-----old way of adding materials to the scene------
   }
 
   // reset manager
   Reset(_force = false) {
-    console.log("reset");
-    if(this.nodes){
-      if(this.oldnodeslegnth == this.nodes.length && !_force)return;
-      this.oldnodeslegnth = this.nodes.length;
-    }else{
-      this.oldnodeslegnth = -1;
-    }
-    for (var i = this.group.children.length - 1; i >= 0; i--) {
-      this.group.remove(this.group.children[i]);
-    }
-    this.BillboardObjects = [];
+    // console.log("reset");
+    // if (this.nodes) {
+    //   if (this.oldnodeslegnth == this.nodes.length && !_force) return;
+    //   this.oldnodeslegnth = this.nodes.length;
+    // } else {
+    //   this.oldnodeslegnth = -1;
+    // }
+    // for (var i = this.group.children.length - 1; i >= 0; i--) {
+    //   this.group.remove(this.group.children[i]);
+    // }
+    // this.BillboardObjects = [];
 
-    this.LineMaterial.dispose();
+    // this.LineMaterial.dispose();
 
-    if (this.ObjectsMaterial) {
-      this.ObjectsMaterial.dispose();
+    // if (this.ObjectsMaterial) {
+    //   this.ObjectsMaterial.dispose();
+    // }
+
+    // for (var i = 0; i < this.materialsCache.length; i++) {
+    //   materialsCache[i].lineMaterial.dispose();
+    //   materialsCache[i].objMaterial.dispose();
+    // }
+    // window.dispatchEvent(new CustomEvent("paintingToolManagerReset", {}));
+  }
+
+  UpdateBrush(_group, _Geometry) {
+    if (this.strokecount == this.currentstrokecount) {
+      //add to exsisting stroke
+      const geo = new THREE.Geometry();
+      for (var j = 0; j < this.geoCount; j++) {
+        if (j < _Geometry.vertices.length) {
+          geo.vertices.push(_Geometry.vertices[j]);
+        } else {
+          if (_Geometry.vertices.length <= 1) {
+            geo.vertices.push(new THREE.Vector3());
+          } else {
+            geo.vertices.push(
+              _Geometry.vertices[_Geometry.vertices.length - 1]
+            );
+          }
+        }
+      }
+      if (_Geometry.vertices.length<2) {
+      this.PaintingToolMeshLinesCache[this.PaintingToolMeshLinesCache.length - 1].visible = false;
+      }else{
+      this.PaintingToolMeshLinesCache[this.PaintingToolMeshLinesCache.length - 1].visible = true;
+      }
+      this.currentPaintingToolMeshLine.setGeometry(geo, function(p) {
+        return p;
+      });
+    } else {
+      this.currentstrokecount = this.strokecount;
+      // create new stroke
+      var linethreemesh = this.makeLine(this.geo);
+      linethreemesh.visible = false;
+      this.PaintingToolMeshLinesCache.push(linethreemesh);
+      if (linethreemesh != null) {
+        _group.add(linethreemesh);
+      }
     }
-
-    window.dispatchEvent(new CustomEvent("paintingToolManagerReset", {}));
+  }
+  makeLine(_Geometry) {
+    if (!_Geometry) {
+      return;
+    }
+    if (_Geometry.vertices.length <= 0) {
+      return null;
+    }
+    console.log("makeLine");
+    this.currentPaintingToolMeshLine = new PaintingToolMeshLine();
+    return new THREE.Mesh(
+      this.currentPaintingToolMeshLine.geometry,
+      this.currentMaterialCache.lineMaterial
+    );
   }
 }
 
@@ -1632,12 +1936,12 @@ export class DecalElement {
     this.type = _BrushVariablesInput.objects;
     this.Node = _node;
     this._position = _node.position;
-    this._pressure = 1.0;//_node.pressure;
+    this._pressure = 1.0; //_node.pressure;
     this._speed = _node.speed;
     this.Material = _ObjectsMaterial;
-    this._scale = _BrushVariablesInput.maxelementWidth*.4;
-      // _BrushVariablesInput.maxelementWidth *
-      // (this._pressure ? this._pressure : 0.25);
+    this._scale = _BrushVariablesInput.maxelementWidth * 0.4;
+    // _BrushVariablesInput.maxelementWidth *
+    // (this._pressure ? this._pressure : 0.25);
 
     this._shouldCreateObject = true;
     if (this.Material.name == "AnimatedMaterialLightning") {
@@ -1715,14 +2019,14 @@ export class DecalElement {
   }
 
   UpdateDelta(_CameraworldPos, _delta) {
-    if(!this.mesh)return;
+    if (!this.mesh) return;
     if (!this._shouldCreateObject) return;
 
     var cameraworldPos = AFRAME.utils.coordinates.parse(_CameraworldPos);
     //console.log("_CameraworldPos: " + vec3.x);
     // var vec3 = AFRAME.utils.coordinates.parse(_CameraworldPos);
     // console.log("_CameraworldPos: " + _CameraworldPos);
-    this._BrushVariablesInput.facing = "Camera";//temp for now
+    this._BrushVariablesInput.facing = "Camera"; //temp for now
     if (this._BrushVariablesInput.facing == "Camera") {
       this.LookAt(cameraworldPos);
       this.mesh.rotateZ(this.rotationZ);
@@ -1733,7 +2037,7 @@ export class DecalElement {
         this.Node.normal.x,
         this.Node.normal.y,
         this.Node.normal.z
-      );//undefiended, why???
+      ); //undefiended, why???
       this.LookAt(lookatposition);
       this.mesh.rotateX(this.rotationZ);
       this.mesh.rotateY(1.571);
