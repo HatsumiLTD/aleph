@@ -46,6 +46,12 @@ export const Src: FunctionalComponent<SrcProps> = (
     if (!src) {
       return null;
     } else {
+      //passes 'nodes' to paintingToolManager
+      //This needs to be in a better place,
+      if (window.paintingToolManager) {
+        window.paintingToolManager.nodes = Array.from(nodes).map(x => x[1]);
+      }
+      //---
       switch (displayMode) {
         case DisplayMode.MESH: {
           return (
