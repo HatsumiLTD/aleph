@@ -1534,6 +1534,16 @@ export class PaintingToolManager {
         }
         this.ResetCurrentBrush();
     }
+    PrevPreset() {
+        var presets = Object.values(jsonpreset.remembered);
+        this.currentPreset--;
+        if (this.currentPreset<0){
+            this.currentPreset = presets.length - 1;
+        }
+        var preset = presets[this.currentPreset]["0"];
+        this.SetPreset(preset);
+        this.ResetCurrentBrush();
+    }
     ResetCurrentBrush() {
         this.SetupMaterials();
         this.currentBillboardObjectCount = 0;

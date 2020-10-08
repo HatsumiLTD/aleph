@@ -47,32 +47,62 @@ AFRAME.registerComponent("al-painting-tool", {
             //console.log("raycaster cleared");
             this.raycaster = null;
         });
+
         const canvas = this.el.sceneEl.canvas;
         canvas.addEventListener(EVENTS.MOUSEDOWN, evt => {
             this.state.pointerDown = true;
-            this.state.firstpointerDownIntersection = 0;
+            this.state.firstpointerDownIntersection = -999;
         }, false);
         canvas.addEventListener(EVENTS.MOUSEUP, evt => {
             this.state.pointerDown = false;
-            this.state.firstpointerDownIntersection = 0;
+            this.state.firstpointerDownIntersection = -999;
+            paintingToolManager.ResetCurrentBrush();
         }, false);
+
         // vr controller listeners
         const rightController = document.getElementById("right-controller");
         this.el.addEventListener(EVENTS.MOUSEDOWN, evt => {
-            //console.log("trigger down");
-            this.state.pointerDown = true;
+            console.log("trigger down");
             this.state.firstpointerDownIntersection = -999;
+            this.state.pointerDown = true;
         });
         this.el.addEventListener(EVENTS.MOUSEUP, evt => {
-            //console.log("trigger up");
+            console.log("trigger up");
             this.state.pointerDown = false;
             this.state.firstpointerDownIntersection = -999;
             paintingToolManager.ResetCurrentBrush();
         });
+
         rightController.addEventListener(EVENTS.ABUTTONDOWN, evt => {
             paintingToolManager.NextPreset();
         });
+        rightController.addEventListener(EVENTS.BBUTTONDOWN, evt => {
+            paintingToolManager.PrevPreset();
+        });
+        //experimental, change brush size with on axis event
+        this.CurrentWidth = 1.0;
+        rightController.addEventListener('changeBrushSizeAbs', function (evt) {
+            if (evt.detail.axis[0] === 0 && evt.detail.axis[1] === 0 || self.previousAxis === evt.detail.axis[1]) { return; }
+            var delta = evt.detail.axis[1] / 300;
+            var value = THREE.Math.clamp(self.el.getAttribute('brush').size - delta, 0.0, 1.0);
+            this.CurrentWidth += value*0.1;
+            this.CurrentWidth = THREE.Math.clamp(this.CurrentWidth, 0.1, 1.0);
+            this.changeCurrentWidth(this.CurrentWidth);
+        });
+        //experimental, change brush colour with on axis event
+        this.CurrentColourHue = 0.0;
+        rightController.addEventListener('changeBrushSizeAbs', function (evt) {
+            if (evt.detail.axis[0] === 0 && evt.detail.axis[1] === 0 || self.previousAxis === evt.detail.axis[1]) { return; }
+            var delta = evt.detail.axis[0] / 300;
+            var value = THREE.Math.clamp(self.el.getAttribute('brush').size - delta, 0.0, 1.0);
+            this.CurrentColourHue += value;
+            this.CurrentColourHue = THREE.Math.clamp(this.CurrentColourHue, 0.1, 100.0);
+            var newColour = String("hsl(" + this.CurrentColourHue + "," + 90 + "%" + "," + 70 + "%" + ")");
+            this.changeCurrentColour(new THREE.Color(newColour));
+        });
+
         this.debouncedGetIntersection = AFRAME.utils.throttle(this.getIntersection, this.data.minFrameMS, this);
+        // vr controller listeners
         this.group = new THREE.Group();
         this.el.setObject3D("group", this.group);
         this.makeSceneElements();
@@ -160,19 +190,24 @@ AFRAME.registerComponent("al-painting-tool", {
         //console.log("tick");
         if (this.data.raycasterEnabled &&
             this.raycaster &&
-            this.state.firstpointerDownIntersection < 2) {
+            (this.state.firstpointerDownIntersection < 2 || this.VRMode)) {
             this.debouncedGetIntersection();
         }
         else {
             if (this.state.firstpointerDownIntersection > -999)
                 this.state.firstpointerDownIntersection++;
         } // Not intersecting.
-        ////get camera position--------
-        var scene = this.el.sceneEl;
-        var cameraEl = scene.camera;
-        var worldPos = new THREE.Vector3();
-        worldPos.setFromMatrixPosition(cameraEl.matrixWorld);
-        // ////get camera position--------
+
+
+        this.runAnimation();
+    },
+    runAnimation: function(){
+         ////get camera position--------
+         var scene = this.el.sceneEl;
+         var cameraEl = scene.camera;
+         var worldPos = new THREE.Vector3();
+         worldPos.setFromMatrixPosition(cameraEl.matrixWorld);
+         // ////get camera position--------
         //--------run timer---------
         var delta = this.clock.getDelta() * 20.0;
         paintingToolManager.timer += delta * paintingToolManager.animationSpeed;
@@ -181,31 +216,6 @@ AFRAME.registerComponent("al-painting-tool", {
         if (paintingToolManager.timer <= -1.0)
             paintingToolManager.timer += 1.0;
         //--------run timer---------
-        //-------Update the line material(old way, but worked)------
-        // if (paintingToolManager.LineMaterial) {
-        //   if (paintingToolManager.LineMaterial.name != "No custom Shader") {
-        //     // var mcolour = new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
-        //     // this.Material.uniforms.colour.value = mcolour;//_BrushVariablesInput.mainColour;
-        //     if (
-        //       paintingToolManager.nodes.length &&
-        //       paintingToolManager.LineMaterial.uniforms.pressures &&
-        //       paintingToolManager.LineMaterial.uniforms.time
-        //     ) {
-        //       paintingToolManager.LineMaterial.uniforms.pressures.value = paintingToolManager.GetPressure();
-        //       paintingToolManager.LineMaterial.uniforms.time.value =
-        //       paintingToolManager.timer; //timer;
-        //       paintingToolManager.LineMaterial.needsUpdate = true;
-        //       var lineLength = (paintingToolManager.NodeRangeEnding-paintingToolManager.NodeRangeBegining)/paintingToolManager.geoCount;
-        //       paintingToolManager.LineMaterial.uniforms.lengthNormal.value = lineLength;
-        //       //console.log("lineLength: " + lineLength);
-        //       //(paintingToolManager.NodeRangeEnding-paintingToolManager.NodeRangeBegining)/paintingToolManager.geoCount
-        //     //   paintingToolManager.NodeRangeBegining &&
-        //     // int_counter < paintingToolManager.NodeRangeEnding
-        //       //lengthNormal
-        //     }
-        //   }
-        // }
-        // //-------Update the line material(old way, but worked)------
         // //-------Update the line materials------
         //------need to find some way to pass pressuers into the mesh line (probably with vertext), not this way.
         if (this.state.pointerDown) {
@@ -238,23 +248,6 @@ AFRAME.registerComponent("al-painting-tool", {
                 }
             }
         }
-        // //-------Update the line materials------
-        ////THIS DOES NOT UPDATE THE SHADER EITHER, WHY???
-        // for (var i = 0; i < paintingToolManager.PaintingToolMeshLinesCache.length; i++) {
-        //   if (paintingToolManager.PaintingToolMeshLinesCache[i].material) {
-        //     if (paintingToolManager.PaintingToolMeshLinesCache[i].material.name != "No custom Shader") {
-        //       if(paintingToolManager.PaintingToolMeshLinesCache[i].material.uniforms.time){
-        //       paintingToolManager.PaintingToolMeshLinesCache[i].material.uniforms.time.value = paintingToolManager.delta;//this was why... will clean up later
-        //       paintingToolManager.PaintingToolMeshLinesCache[i].material.uniforms.time.needsUpdate = true;
-        //       paintingToolManager.PaintingToolMeshLinesCache[i].material.uniforms.needsUpdate = true;
-        //       paintingToolManager.PaintingToolMeshLinesCache[i].material.needsUpdate = true;
-        //       paintingToolManager.PaintingToolMeshLinesCache[i].needsUpdate = true;
-        //       paintingToolManager.PaintingToolMeshLinesCache[i].material.uniformsNeedUpdate = true;
-        //     }
-        //     }
-        //   }
-        // }
-        ////THIS DOES NOT UPDATE THE SHADER EITHER, WHY???
         //-------Update the decal objects(BillboardObjects)------
         if (paintingToolManager.BillboardObjects.length > 0) {
             paintingToolManager.BillboardObjects.forEach(function (obj) {
@@ -273,7 +266,7 @@ AFRAME.registerComponent("al-painting-tool", {
         //get a node range to read from.
         paintingToolManager.NodeRangeEnding = paintingToolManager.nodes.length + 1;
         //add some drawingdistance from body if in VR mode
-        var drawingdistance = !this.VRMode;
+        var drawingdistance = true;//!this.VRMode;disabled for now
         var int_counter = 0;
         nodes.forEach(function (node) {
             if (int_counter > paintingToolManager.NodeRangeBegining &&
