@@ -161,7 +161,7 @@ AFRAME.registerComponent("al-painting-tool", {
         // add a plane with 'shadow'----should be placed somewhere else when I have time
         //add a background sphere-----
         var backgroundSphere = new THREE.Mesh(new THREE.SphereGeometry(30, 10, 10), new THREE.MeshBasicMaterial({
-            map: (new THREE.TextureLoader).load("https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FHatsumiBackGrounds_13.jpg?v=1601458890388"),
+            map: (new THREE.TextureLoader).load("https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FFinalHatsumiBackGround.png?v=1602267351065"),
         }));
         backgroundSphere.geometry.scale(-1, 1, 1);
         this.el.sceneEl.object3D.add(backgroundSphere);

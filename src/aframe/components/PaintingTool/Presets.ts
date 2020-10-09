@@ -2,36 +2,6 @@ export const jsonpreset = {
   "preset": "Cloud",
   "closed": false,
   "remembered": {
-    "Base": {
-      "0": {
-        "lineType": 0,
-        "mainColour": 16895,
-        "paintDecals": false,
-        "paintLine": true,
-        "texture": "Brush.png,perlin.png",
-        "textureAlt": "null",
-        "materials": "LineTexturedMaterial,AnimatedMaterial",
-        "objects": "plain",
-        "animationSpeed": 0.005,
-        "animationSpeedAlt": 0,
-        "decalColour": 16777215,
-        "facing": "Camera",
-        "spacing": 0,
-        "maxelementWidth": 0.5000000000000003,
-        "jitter": 5,
-        "rotation": 0,
-        "rotationjitter": 0,
-        "lineColour": 11675077,
-        "repeatingAmount": 0,
-        "maxlineWidth": 0.04,
-        "dynamicSpeedSize": 0,
-        "dynamicSpeedOpacity": 0,
-        "dynamicSpeedSpecial": 0,
-        "dynamicPressureSize": 0,
-        "dynamicPressureOpacity": 0,
-        "dynamicPressureSpecial": 0
-      }
-    },
      "PaintStroke": {
       "0": {
         "lineType": 5,
