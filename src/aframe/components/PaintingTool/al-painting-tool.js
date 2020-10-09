@@ -79,12 +79,8 @@ AFRAME.registerComponent("al-painting-tool", {
         rightController.addEventListener(EVENTS.BBUTTONDOWN, evt => {
             paintingToolManager.PrevPreset();
         });
-        //experimental, change brush size with on axis event
-        // this.el.sceneEl.addEventListener(EVENTS.ADD_NODE,  evt => {
-        //     console.log("Node placed");
-        //    this.runAnimation();
-        // }, false);
 
+        //experimental, change brush size with on axis event
         this.CurrentWidth = 1.0;
         rightController.addEventListener('changeBrushSizeAbs', function (evt) {
             if (evt.detail.axis[0] === 0 && evt.detail.axis[1] === 0 || self.previousAxis === evt.detail.axis[1]) { return; }
@@ -96,7 +92,7 @@ AFRAME.registerComponent("al-painting-tool", {
         });
         //experimental, change brush colour with on axis event
         this.CurrentColourHue = 0.0;
-        rightController.addEventListener('changeBrushSizeAbs', function (evt) {
+        rightController.addEventListener('changeBrushColourAbs', function (evt) {
             if (evt.detail.axis[0] === 0 && evt.detail.axis[1] === 0 || self.previousAxis === evt.detail.axis[1]) { return; }
             var delta = evt.detail.axis[0] / 300;
             var value = THREE.Math.clamp(self.el.getAttribute('brush').size - delta, 0.0, 1.0);
@@ -105,6 +101,12 @@ AFRAME.registerComponent("al-painting-tool", {
             var newColour = String("hsl(" + this.CurrentColourHue + "," + 90 + "%" + "," + 70 + "%" + ")");
             this.changeCurrentColour(new THREE.Color(newColour));
         });
+
+
+        // this.el.sceneEl.addEventListener(EVENTS.ADD_NODE,  evt => {
+        //     console.log("Node placed");
+        //    this.runAnimation();
+        // }, false);
 
         this.debouncedGetIntersection = AFRAME.utils.throttle(this.getIntersection, this.data.minFrameMS, this);
         // vr controller listeners
