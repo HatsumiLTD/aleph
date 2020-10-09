@@ -80,6 +80,11 @@ AFRAME.registerComponent("al-painting-tool", {
             paintingToolManager.PrevPreset();
         });
         //experimental, change brush size with on axis event
+        // this.el.sceneEl.addEventListener(EVENTS.ADD_NODE,  evt => {
+        //     console.log("Node placed");
+        //    this.runAnimation();
+        // }, false);
+
         this.CurrentWidth = 1.0;
         rightController.addEventListener('changeBrushSizeAbs', function (evt) {
             if (evt.detail.axis[0] === 0 && evt.detail.axis[1] === 0 || self.previousAxis === evt.detail.axis[1]) { return; }
@@ -219,19 +224,20 @@ AFRAME.registerComponent("al-painting-tool", {
         // //-------Update the line materials------
         //------need to find some way to pass pressuers into the mesh line (probably with vertext), not this way.
         if (this.state.pointerDown) {
-            var lineLength = (paintingToolManager.NodeRangeEnding - paintingToolManager.NodeRangeBegining) / paintingToolManager.geoCount;
+            var lineLength = (paintingToolManager.NodeRangeEnding - paintingToolManager.NodeRangeBegining) / (paintingToolManager.geoCount-1);
             if (lineLength > 1.0)
                 this.forceTouchUp();
-            paintingToolManager.currentMaterialCache.lineLength = THREE.Math.clamp(lineLength, 0.0, 1.0);
+            paintingToolManager.currentMaterialCache.lineLength = THREE.Math.clamp(lineLength * 0.9, 0.01, 1.0);
             // paintingToolManager.currentMaterialCache.pressures = paintingToolManager.GetPressure();
-            console.log(paintingToolManager.materialsCache.length + ":paintingToolManager.materialsCache[i].lineLength: " + paintingToolManager.currentMaterialCache.lineLength);
+            //console.log(paintingToolManager.materialsCache.length + ":paintingToolManager.materialsCache[i].lineLength: " + paintingToolManager.currentMaterialCache.lineLength);
         }
         //------need to find some way to pass pressuers into the mesh line (probably with vertext), not this way.
         for (var i = 0; i < paintingToolManager.materialsCache.length; i++) {
             if (paintingToolManager.materialsCache[i].lineMaterial) {
                 if (paintingToolManager.materialsCache[i].lineMaterial.name != "No custom Shader") {
                     if (paintingToolManager.materialsCache[i].lineMaterial.uniforms.time) {
-                        paintingToolManager.materialsCache[i].lineMaterial.uniforms.time.value = paintingToolManager.timer;
+                        var _time =  (paintingToolManager.timer + paintingToolManager.materialsCache[i].startTime) % 1.0;
+                        paintingToolManager.materialsCache[i].lineMaterial.uniforms.time.value = _time;
                         paintingToolManager.materialsCache[i].lineMaterial.uniforms.lineWidth.value = paintingToolManager.materialsCache[i].lineWidth;
                         //paintingToolManager.materialsCache[i].lineMaterial.uniforms.color.value = new THREE.Color(Math.random(), Math.random(), Math.random() );
                         paintingToolManager.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = paintingToolManager.materialsCache[i].lineLength;
