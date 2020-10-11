@@ -90,6 +90,15 @@ AFRAME.registerComponent("al-painting-tool", {
     );
 
     this.debouncedGetIntersection = AFRAME.utils.throttle(this.getIntersection, this.data.minFrameMS, this);
+
+    // add a plane with 'shadow'----should be placed somewhere else when I have time
+    //add a background sphere-----
+    var backgroundSphere = new THREE.Mesh(new THREE.SphereGeometry(30, 10, 10), new THREE.MeshBasicMaterial({
+        map: (new THREE.TextureLoader).load("https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FHatsumiBackGrounds_13.jpg?v=1601458890388"),
+    }));
+    backgroundSphere.geometry.scale(-1, 1, 1);
+    this.el.sceneEl.object3D.add(backgroundSphere);
+    //add a background sphere-----
   },
 
   update: function(_oldData) {
