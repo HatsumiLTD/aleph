@@ -274,7 +274,7 @@ AFRAME.registerComponent("al-painting-tool", {
         //get a node range to read from.
         paintingToolManager.NodeRangeEnding = paintingToolManager.nodes.length + 1;
         //add some drawingdistance from body if in VR mode
-        var drawingdistance = true;//!this.VRMode;disabled for now
+        var drawingdistance = false;//!this.VRMode;disabled for now
         var int_counter = 0;
         nodes.forEach(function (node) {
             if (int_counter > paintingToolManager.NodeRangeBegining &&
@@ -287,8 +287,7 @@ AFRAME.registerComponent("al-painting-tool", {
                     _position.add(norml.multiplyScalar(0.01));
                     geometry.vertices.push(_position);
                     //add some drawingdistance from body
-                }
-                else {
+                } else {
                     geometry.vertices.push(position);
                 }
             }

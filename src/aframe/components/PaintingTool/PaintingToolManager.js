@@ -1808,10 +1808,11 @@ export class DecalElement {
         this.group = new THREE.Group();
         this.type = _BrushVariablesInput.objects;
         this.Node = _node;
-        this._position = new THREE.Vector3(_node.position.x, _node.position.y, _node.position.z);
+        this._position = _node.position;
          //add some drawingdistance from body
-         var norml = this.stringToVector3(_node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
-         this._position.add(norml.multiplyScalar(0.01));
+        //  this._position = new THREE.Vector3(_node.position.x, _node.position.y, _node.position.z);
+        //  var norml = this.stringToVector3(_node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
+        //  this._position.add(norml.multiplyScalar(0.01));
          //add some drawingdistance from body
 
         this._pressure = 1.0; //_node.pressure;
