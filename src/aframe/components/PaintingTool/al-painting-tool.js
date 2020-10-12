@@ -196,8 +196,8 @@ AFRAME.registerComponent("al-painting-tool", {
     tick: function () {
         //console.log("tick");
         if (this.data.raycasterEnabled &&
-            this.raycaster
-            ) {
+            this.raycaster &&
+            (this.state.firstpointerDownIntersection < 2)) {
             this.debouncedGetIntersection();
         }
         else {
