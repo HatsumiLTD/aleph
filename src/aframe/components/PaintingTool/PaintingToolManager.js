@@ -389,7 +389,7 @@ export class ShaderHolder {
                 "",
                 "    vec4 c = vColor;",
                 THREE.ShaderChunk.Line_Width_ends,
-                "    if( distance(vUV.y,0.5)*2.0 > endswidth ) discard;",
+                "    if( distance(vUV.y,0.5) > endswidth ) discard;",
                 "    vec2 finnaluvpos = vUV * repeat;",
                 "    if( useMap == 1. ) c *= texture2D( map, finnaluvpos );",
                 "    if( useAlphaMap == 1. ) c.a *= texture2D( alphaMap, finnaluvpos ).a;",
@@ -1808,7 +1808,12 @@ export class DecalElement {
         this.group = new THREE.Group();
         this.type = _BrushVariablesInput.objects;
         this.Node = _node;
-        this._position = _node.position;
+        this._position = new THREE.Vector3(_node.position.x, _node.position.y, _node.position.z);
+         //add some drawingdistance from body
+         var norml = this.stringToVector3(_node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
+         this._position.add(norml.multiplyScalar(0.01));
+         //add some drawingdistance from body
+
         this._pressure = 1.0; //_node.pressure;
         this._speed = _node.speed;
         this.Material = _ObjectsMaterial;
@@ -1866,6 +1871,14 @@ export class DecalElement {
         this.rotationZ =
             _BrushVariablesInput.rotation +
                 (-0.5 + Math.random()) * 2.0 * _BrushVariablesInput.rotationjitter;
+    }
+    stringToVector3(vec) {
+        const res = vec.split(" ");
+        var vect = new THREE.Vector3();
+        vect.x = Number(res[0]);
+        vect.y = Number(res[1]);
+        vect.z = Number(res[2]);
+        return vect;
     }
     UpdateDelta(_CameraworldPos, _delta) {
         if (!this.mesh)
