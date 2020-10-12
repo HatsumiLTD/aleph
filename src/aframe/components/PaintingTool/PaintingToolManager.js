@@ -508,7 +508,7 @@ export class ShaderHolder {
                 "c = colourmap;",
                 "c += vignette;",
                 "c.r *= c.r*c.r*0.5;//*(1.-(pressureRange*0.8));",
-                "c.g *= c.g*(0.35+abs(sin(uv.x*12.0))*0.1)*endswidth;",
+                "c.g *= c.g*(0.35+abs(sin(uv.x*12.0))*0.1)*(0.5+endswidth);",
                 "c.b *= 1.1;",
                 "if(c.g <0.8) discard;",
                 "vec3 colourMix = color.rgb;//mix(color.rgb, altcolor.rgb,distFromAxis*0.4);",
@@ -651,6 +651,58 @@ export class ShaderHolder {
                 "}"
             ].join("\n");
         }
+        if (_name == "LineAnimatedBugs2") {
+            this.fragmentShader = [
+              THREE.ShaderChunk.baseLinefragmentVars,
+              "uniform vec4 linecolour;",
+              "mat2 rotate2d(float angle) {return mat2(cos(angle),-sin(angle),sin(angle),cos(angle));}",
+              "void main() {",
+              "",
+              THREE.ShaderChunk.logdepthbuf_fragment,
+               " vec2 uv = vUV;",
+              " vec3 col = color.rgb;",
+              "vec2 finnaluvpos = vUV * repeat;",
+              "float prg = 2.0;",
+              "if (mod(finnaluvpos.x, 2.0)>1.0){",
+              "prg = 0.0;",
+              "}else{",
+              "prg = 2.0;",
+              "}",
+              "float rtime =  mod( (time*(2.0+prg)), 1.0);",
+              "float fwdtime =  mod( (rtime+0.1), 1.0);",
+              "float rrtime =  mod(time*(2.0), 1.0);",
+              "float fwdrrtime =  mod( (rrtime+0.1), 1.0);",
+
+              //"finnaluvpos.x -= time;",
+              "vec2 center = vec2(sin(rtime*6.284)*0.7, cos(rrtime*6.284)*0.5);",
+              "vec2 centerfwd = vec2(sin(fwdtime*6.284)*0.7, cos(fwdrrtime*6.284)*0.5);",
+              "vec2 newUV = (vec2(mod(finnaluvpos.x,1.0),mod(finnaluvpos.y,1.0))/0.5);//center;",
+
+
+              "float zoom = 1.2;",
+              "vec2 scaleCenter = vec2(0.5);",
+              "newUV = (newUV - scaleCenter) * zoom + scaleCenter;",
+              "newUV += center*(zoom*0.5);",
+              "newUV -= .5;",
+              "float angle = atan(center.y-centerfwd.y,center.x-centerfwd.x);",
+              "newUV *= rotate2d(-angle);",
+              "newUV += .5;",
+
+              "if(newUV.x>1.0)discard;",
+              "if(newUV.x<0.0)discard;",
+              "if(newUV.y>1.0)discard;",
+              "if(newUV.y<0.0)discard;",
+
+              "vec4 colourmap = texture2D( map, newUV );",
+              "if(colourmap.a<0.3)discard;",
+
+              "vec4 c = vec4(color.rgb*colourmap.rgb, 1.0);",
+              "gl_FragColor = c;",
+              "",
+              THREE.ShaderChunk.fog_fragment,
+              "}"
+            ].join("\n");
+          }
         if (_name == "LineAnimatedLightning") {
             this.fragmentShader = [
                 THREE.ShaderChunk.baseLinefragmentVars,
@@ -703,7 +755,7 @@ export class ShaderHolder {
                 "float ltime =  mod((wrldpos.y/5.0) + (time*4.), 1.0);",
                 "vec2 uv = vUV;",
                 "vec2 finnaluvpos = vUV;",
-                "float flipper = mod( (time*3.), 1.0)-0.5;",
+                "float flipper = mod( (time*8.), 1.0)-0.5;",
                 "if(flipper>0.0)finnaluvpos.y = 1.0-finnaluvpos.y;",
                 // 'if(timeww>0.9)finnaluvpos.xy *= 0.1;',
                 // 'fwinnaluvpos.y -= sin((finnaluvpos.x*5.)+floor(ltime*3.141*2.0))*0.01;',
@@ -718,8 +770,8 @@ export class ShaderHolder {
                 "light = mix(light,bdistcol,gtime);",
                 "float camdis = 1.0 - abs(zdist.z*0.25);",
                 // '}',
-                'floay finAlph = light * 2.0 * camdis;',
-                'if(finAlph < 0.06)discard;',
+                'float finAlph = light * 2.0;',
+                'if(finAlph < 0.3)discard;',
                 "gl_FragColor = vec4(colour.rgb, finAlph);",
                 "",
                 "}"
@@ -747,6 +799,7 @@ export class ShaderHolder {
                 "float vignette = smoothstep(1.3-0.9, 1.3, centerDist);",
                 "float finStatic = vignette * _static;// * _pressure;",
                 "if(finStatic<0.05)discard;",
+                "if(finStatic<(0.05 + centerDist*0.5))discard;",
                 "c.rgb *= _static;",
                 "c.a = _static;",
                 THREE.ShaderChunk.Line_ends,
@@ -812,12 +865,14 @@ class MaterialsCache {
         this.colour;
         this.lineWidth;
         this.lineLength;
+        this.startTime;
         this.pressures = [];
     }
     MaterialsCache(_textureName, _materialName) {
         this.textureName = _textureName;
         this.materialName = _materialName;
         this.lineWidth = 1.0;
+        this.startTime = Math.random();
     }
 }
 class MaterialsHolder {
@@ -1068,7 +1123,7 @@ class MaterialsHolder {
             });
         }
         if (_materialName == "LineMaterialAnimatedBugs") {
-            var _ShaderHolder = new ShaderHolder("LineAnimatedBugs");
+            var _ShaderHolder = new ShaderHolder("LineAnimatedBugs2");
             var texture = new THREE.TextureLoader().load(_textureName);
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
@@ -1624,7 +1679,7 @@ export class PaintingToolManager {
             this.currentMaterialCache = new MaterialsCache(this.texture, this.materials);
             this.currentMaterialCache.colour = this.mainColour;
             this.currentMaterialCache.lineWidth = this.maxlineWidth;
-            console.log("this.currentMaterialCache.lineWidth: " + this.currentMaterialCache.lineWidth);
+            this.currentMaterialCache.startTime = Math.random();
             // this.LineMaterial =
             this.currentMaterialCache.lineMaterial =
                 this.materialsHolder.makeMaterial(this, this.assetsPath + textures[0], materials[0]);
@@ -1795,6 +1850,7 @@ export class DecalElement {
             //this.geometry = new THREE.IcosahedronBufferGeometry(this._scale);
         }
         this.delta = 0.0;
+        this.startTime = Math.random();
         this._BrushVariablesInput = _BrushVariablesInput;
         this.mesh = new THREE.Mesh(this.geometry, this.Material);
         var randomAmoutx = (-0.5 + Math.random()) *
@@ -1856,7 +1912,9 @@ export class DecalElement {
         //   this.mesh.rotateX(this.rotationZ);
         //   this.mesh.rotateY(1.571);
         // }
-        this.delta = _delta;
+
+        var _time =  (_delta + this.startTime) % 1.0;
+        this.delta = _time;//_delta;
         if (this.Material) {
             if (this.Material.name != "No custom Shader") {
                 this.Material.uniforms.time.value = this.delta;
