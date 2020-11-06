@@ -1534,44 +1534,46 @@ export class PaintingToolManager {
 
     this.currentPreset = 0;
     this.assetsPath = assetsPath;
-
     this.decalColour = new THREE.Color();
     this.lineColour = new THREE.Color();
     this.BillboardObjects = [];
-    //---testing geometry vars----
-    // this.segmentCount = 60;
-    // this.radius = 2;
-    // this.height = 5;
-    // this.coils = 4;
-    //---testing geometry vars----
-    //----
+    this.currentBillboardObjectCount = 0;
     this.timer = 0.0;
     this.group = new THREE.Group();
-    this.nodes = [];
-
+    this.materialsCache = [];
+    this.currentMaterialCache;
     this.materialsHolder = new MaterialsHolder();
     this.shaderHolder = new ShaderHolder();
-
-    document.addEventListener("keydown", key => {
-      if (key.code === "KeyQ") {
-        this.NextPreset();
-      }
+    this.nodes = [];
+    this.strokecount = 0;
+    this.currentstrokecount = -1;
+    this.NodeRangeBegining = 0;
+    this.NodeRangeEnding = 0;
+    this.PaintingToolMeshLinesCache = [];
+    this.currentPaintingToolMeshLine = new PaintingToolMeshLine();
+    this.geoCount = 200;
+    this.geo = new THREE.Geometry();
+    for (var j = 0; j < this.geoCount; j++) {
+        this.geo.vertices.push(new THREE.Vector3());
+    }
+    this.currentPaintingToolMeshLine.setGeometry(this.geo, function (p) {
+        return p;
     });
-
-    document.addEventListener("al-palette-option-selected", e => {
-      const optionIndex = e.detail.optionIndex;
-      const preset = this.GetPresetByIndex(optionIndex);
-      this.SetPreset(preset);
-    });
-
-    document.addEventListener("al-node-spawned", e => {
-      this.nodes = e.detail.nodes;
-      this.Reset();
-    });
-
     this.NextPreset();
+    document.addEventListener("keydown", key => {
+        if (key.code === "KeyQ") {
+            this.NextPreset();
+        }
+    });
   }
-
+  stringToVector3(vec) {
+    const res = vec.split(" ");
+    var vect = new THREE.Vector3();
+    vect.x = Number(res[0]);
+    vect.y = Number(res[1]);
+    vect.z = Number(res[2]);
+    return vect;
+}
   GetPresets() {
     return Object.values(jsonpreset.remembered);
   }
@@ -1582,15 +1584,36 @@ export class PaintingToolManager {
   }
 
   NextPreset() {
-    var preset = this.GetPresetByIndex(this.currentPreset);
-    this.SetPreset(preset);
-    if (this.currentPreset < this.GetPresets().length - 1) {
-      this.currentPreset++;
-    } else {
-      this.currentPreset = 0;
-    }
+    var presets = Object.values(jsonpreset.remembered);
+        var preset = presets[this.currentPreset]["0"];
+        this.SetPreset(preset);
+        if (this.currentPreset < presets.length - 1) {
+            this.currentPreset++;
+        }
+        else {
+            this.currentPreset = 0;
+        }
+        this.ResetCurrentBrush();
   }
-
+  PrevPreset() {
+    var presets = Object.values(jsonpreset.remembered);
+    this.currentPreset--;
+    if (this.currentPreset<0){
+        this.currentPreset = presets.length - 1;
+    }
+    var preset = presets[this.currentPreset]["0"];
+    this.SetPreset(preset);
+    this.ResetCurrentBrush();
+}
+  ResetCurrentBrush() {
+    this.SetupMaterials();
+    this.currentBillboardObjectCount = 0;
+    this.strokecount++;
+    this.NodeRangeBegining = 0;
+    if (this.nodes) {
+        this.NodeRangeBegining = this.nodes.length;
+    }
+}
   GetPressure() {
     if (!this.nodes.length) {
       return;
@@ -1633,9 +1656,8 @@ export class PaintingToolManager {
     this.dynamicPressureSize = preset.dynamicPressureSize;
     this.dynamicPressureOpacity = preset.dynamicPressureOpacity;
     this.dynamicPressureSpecial = preset.dynamicPressureSpecial;
-
     this.SetupMaterials();
-    this.Reset();
+    this.Reset(true);
   }
 
   SetupMaterials() {
@@ -1643,41 +1665,123 @@ export class PaintingToolManager {
     var materials = this.materials.split(",");
     var textures = this.texture.split(",");
     console.log("setup materials", textures);
-    this.LineMaterial = this.materialsHolder.makeMaterial(
-      this,
-      this.assetsPath + textures[0],
-      materials[0]
-    );
-    if (textures[1]) {
-      this.ObjectsMaterial = this.materialsHolder.makeMaterial(
-        this,
-        this.assetsPath + textures[1],
-        materials[1]
-      );
+    var noMaterialFound = true;
+    //cache the materials-----
+    // for (var i = 0; i < this.materialsCache.length; i++) {
+    //   if (this.materialsCache[i].textureName == this.texture
+    //     && this.materialsCache[i].materialName == this.materials
+    //     ) {
+    //       this.currentMaterialCache = this.materialsCache[i];
+    //     if (textures[1]) {
+    //       this.ObjectsMaterial = this.materialsCache[i].objMaterial;
+    //     }
+    //     noMaterialFound = false;
+    //     break;
+    //   }
+    // }
+    //cache the materials-----
+    if (noMaterialFound) {
+        this.currentMaterialCache = new MaterialsCache(this.texture, this.materials);
+        this.currentMaterialCache.colour = this.mainColour;
+        this.currentMaterialCache.lineWidth = this.maxlineWidth;
+        this.currentMaterialCache.startTime = Math.random();
+        // this.LineMaterial =
+        this.currentMaterialCache.lineMaterial =
+            this.materialsHolder.makeMaterial(this, this.assetsPath + textures[0], materials[0]);
+        if (textures[1]) {
+            this.ObjectsMaterial =
+                this.currentMaterialCache.objMaterial = this.materialsHolder.makeMaterial(this, this.assetsPath + textures[1], materials[1]);
+        }
+        this.materialsCache.push(this.currentMaterialCache);
     }
-  }
+    //-----old way of adding materials to the scene------
+    // this.LineMaterial = this.materialsHolder.makeMaterial(
+    //   this,
+    //   this.assetsPath + textures[0],
+    //   materials[0]
+    // );
+    // if (textures[1]) {
+    //   this.ObjectsMaterial = this.materialsHolder.makeMaterial(
+    //     this,
+    //     this.assetsPath + textures[1],
+    //     materials[1]
+    //   );
+    // }
+    //-----old way of adding materials to the scene------
+}
 
   // reset manager
   Reset() {
-    console.log("reset");
-    for (var i = this.group.children.length - 1; i >= 0; i--) {
-      this.group.remove(this.group.children[i]);
+//     console.log("reset");
+//     for (var i = this.group.children.length - 1; i >= 0; i--) {
+//       this.group.remove(this.group.children[i]);
+//     }
+//     this.BillboardObjects = [];
+
+//     this.LineMaterial.dispose();
+
+//     if (this.ObjectsMaterial) {
+//       this.ObjectsMaterial.dispose();
+//     }
+
+//     // set painting tool dirty to force update
+//     let paintingTool = document.querySelector("[al-painting-tool]");
+
+//     if (paintingTool) {
+//       paintingTool.setAttribute("al-painting-tool", "dirty", Date.now());
+//     }
+   }
+   UpdateBrush(_group, _Geometry) {
+    if (this.strokecount == this.currentstrokecount) {
+        //add to exsisting stroke
+        console.log("add to exsisting stroke: " + _Geometry.vertices.length );
+        const geo = new THREE.Geometry();
+        for (var j = 0; j < this.geoCount; j++) {
+            if (j < _Geometry.vertices.length) {
+                geo.vertices.push(_Geometry.vertices[j]);
+            }
+            else {
+                if (_Geometry.vertices.length <= 1) {
+                    geo.vertices.push(new THREE.Vector3());
+                }
+                else {
+                    geo.vertices.push(_Geometry.vertices[_Geometry.vertices.length - 1]);
+                }
+            }
+        }
+        if (_Geometry.vertices.length < 2) {
+            this.PaintingToolMeshLinesCache[this.PaintingToolMeshLinesCache.length - 1].visible = false;
+        }
+        else {
+            this.PaintingToolMeshLinesCache[this.PaintingToolMeshLinesCache.length - 1].visible = true;
+        }
+        this.currentPaintingToolMeshLine.setGeometry(geo, function (p) {
+            return p;
+        });
     }
-    this.BillboardObjects = [];
-
-    this.LineMaterial.dispose();
-
-    if (this.ObjectsMaterial) {
-      this.ObjectsMaterial.dispose();
+    else {
+        this.currentstrokecount = this.strokecount;
+        // create new stroke
+        var linethreemesh = this.makeLine(this.geo);
+        linethreemesh.visible = false;
+        linethreemesh.frustumCulled = false;
+        this.PaintingToolMeshLinesCache.push(linethreemesh);
+        if (linethreemesh != null) {
+            _group.add(linethreemesh);
+        }
     }
-
-    // set painting tool dirty to force update
-    let paintingTool = document.querySelector("[al-painting-tool]");
-
-    if (paintingTool) {
-      paintingTool.setAttribute("al-painting-tool", "dirty", Date.now());
+}
+makeLine(_Geometry) {
+    if (!_Geometry) {
+        return;
     }
-  }
+    if (_Geometry.vertices.length <= 0) {
+        return null;
+    }
+    console.log("makeLine");
+    this.currentPaintingToolMeshLine = new PaintingToolMeshLine();
+    return new THREE.Mesh(this.currentPaintingToolMeshLine.geometry, this.currentMaterialCache.lineMaterial);
+}
 }
 
 //var _BrushVariablesInput = new BrushVariablesEditorInputs();//for the editor

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { PaintingToolMeshLineMaterial } from "./PaintingToolMeshLine";
-import { DecalElement, PaintingToolManager } from "./PaintingToolManager";
+import { DecalElement, ShaderHolder } from "./PaintingToolManager";
 //import "./THREE.MeshLine";
 
 // import { EventUtils } from "../../utils";
@@ -29,9 +29,10 @@ AFRAME.registerComponent("al-painting-tool", {
     raycasterEnabled: { type: "boolean" }
   },
 
-  init: function() {
+  init: function () {
     this.state = {
-      pointerDown: false
+      pointerDown: false,
+      firstpointerDownIntersection: 0
     };
 
     // Use events to figure out what raycaster is listening so we don't have to
@@ -51,6 +52,7 @@ AFRAME.registerComponent("al-painting-tool", {
       EVENTS.MOUSEDOWN,
       evt => {
         this.state.pointerDown = true;
+        this.state.firstpointerDownIntersection = -999;
       },
       false
     );
@@ -59,6 +61,8 @@ AFRAME.registerComponent("al-painting-tool", {
       EVENTS.MOUSEUP,
       evt => {
         this.state.pointerDown = false;
+        this.state.firstpointerDownIntersection = -999;
+        paintingToolManager.ResetCurrentBrush();
       },
       false
     );
@@ -69,11 +73,15 @@ AFRAME.registerComponent("al-painting-tool", {
     this.el.addEventListener(EVENTS.MOUSEDOWN, evt => {
       //console.log("trigger down");
       this.state.pointerDown = true;
+      this.state.firstpointerDownIntersection = -999;
+      paintingToolManager.ResetCurrentBrush();
     });
 
     this.el.addEventListener(EVENTS.MOUSEUP, evt => {
       //console.log("trigger up");
       this.state.pointerDown = false;
+      this.state.firstpointerDownIntersection = -999;
+      paintingToolManager.ResetCurrentBrush();
     });
 
     rightController.addEventListener(EVENTS.ABUTTONDOWN, evt => {
@@ -85,44 +93,53 @@ AFRAME.registerComponent("al-painting-tool", {
       this.data.minFrameMS,
       this
     );
+    this.group = new THREE.Group();
+    this.el.setObject3D("group", this.group);
+    this.makeSceneElements();
+    this.clock = new THREE.Clock();
 
     console.log("add skybox");
 
-    // add a plane with 'shadow'----should be placed somewhere else when I have time
-    //add a background sphere-----
-    var backgroundSphere = new THREE.Mesh(
-      new THREE.SphereGeometry(30, 10, 10),
-      new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load(
-          "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FHatsumiBackGrounds_13.jpg?v=1601458890388"
-        )
-      })
-    );
-    backgroundSphere.geometry.scale(-1, 1, 1);
-    this.el.sceneEl.object3D.add(backgroundSphere);
-    //add a background sphere-----
   },
 
-  update: function(_oldData) {
+  update: function (_oldData) {
     //console.log("nodeNum", this.data.nodesNum);
     //console.log("preset", this.data.preset);
+    // console.log("update");
+    // if (!this.data.enabled) {
+    //   return;
+    // }
+    // this.group = new THREE.Group();
+    // this.el.setObject3D("group", this.group);
+    // this.geometry = this.getGeometry();
+    // this.makeLine();
+    // const linethreemesh = this.makeLine();
+    // if (linethreemesh != null) {
+    //   this.group.add(linethreemesh);
+    // }
+    // this.addDecals();
     console.log("update");
     if (!this.data.enabled) {
       return;
     }
-    this.group = new THREE.Group();
-    this.el.setObject3D("group", this.group);
     this.geometry = this.getGeometry();
-    this.makeLine();
-    const linethreemesh = this.makeLine();
-    if (linethreemesh != null) {
-      this.group.add(linethreemesh);
-    }
+    paintingToolManager.UpdateBrush(this.group, this.geometry);
     this.addDecals();
-    //this.el.sceneEl.emit("al-painting-tool-needs-refresh");
   },
-
-  makeLine: function() {
+  forceTouchUp: function () {
+    this.state.pointerDown = false;
+    this.state.firstpointerDownIntersection = -999;
+    paintingToolManager.ResetCurrentBrush();
+  },
+  changeCurrentColour: function (_colour) {
+    paintingToolManager.currentMaterialCache.colour = _colour;
+  },
+  //_width should be a normal float 0.0 to 1.0
+  changeCurrentWidth: function (_width) {
+    var _scaler = 0.01;
+    paintingToolManager.currentMaterialCache.lineWidth = _width * _scaler;
+  },
+  makeLine: function () {
     if (!this.geometry) {
       return;
     }
@@ -130,13 +147,43 @@ AFRAME.registerComponent("al-painting-tool", {
       return null;
     }
     const line = new PaintingToolMeshLine();
-    line.setGeometry(this.geometry, function(p) {
+    line.setGeometry(this.geometry, function (p) {
       return p;
     });
     return new THREE.Mesh(line.geometry, paintingToolManager.LineMaterial);
   },
 
-  getIntersection: function() {
+  makeSceneElements: function () {
+    // add a plane with 'shadow'----should be placed somewhere else when I have time
+    var geometry = new THREE.PlaneGeometry(30, 30, 30);
+    var _ShaderHolder = new ShaderHolder("ShadedDot");
+    var loader = new THREE.TextureLoader();
+    var mcolour = new THREE.Color(0, 0, 0.1);
+    var uniforms = {
+      opacity: { type: "f", value: 0.6 },
+      color: { type: "c", value: mcolour }
+    };
+    var material = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: _ShaderHolder.vertexShader,
+      fragmentShader: _ShaderHolder.fragmentShader,
+      transparent: true
+    });
+    var plane = new THREE.Mesh(geometry, material);
+    plane.position.set(0, 0, 0);
+    plane.rotateX(-Math.PI * 0.5);
+    plane.updateMatrixWorld();
+    this.el.sceneEl.object3D.add(plane);
+    // add a plane with 'shadow'----should be placed somewhere else when I have time
+    //add a background sphere-----
+    var backgroundSphere = new THREE.Mesh(new THREE.SphereGeometry(30, 10, 10), new THREE.MeshBasicMaterial({
+      map: (new THREE.TextureLoader).load("https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FFinalHatsumiBackGround.png?v=1602267351065"),
+    }));
+    backgroundSphere.geometry.scale(-1, 1, 1);
+    this.el.sceneEl.object3D.add(backgroundSphere);
+    //add a background sphere-----
+  },
+  getIntersection: function () {
     //console.log("get intersection");
     if (!this.data.enabled || !this.state.pointerDown) {
       return;
@@ -174,79 +221,161 @@ AFRAME.registerComponent("al-painting-tool", {
     }
   },
 
-  tick: function() {
+  tick: function () {
     //console.log("tick");
 
-    if (this.data.raycasterEnabled && this.raycaster) {
+    // if (this.data.raycasterEnabled && this.raycaster) {
+    //   this.debouncedGetIntersection();
+    // } // Not intersecting.
+    if (this.data.raycasterEnabled &&
+      this.raycaster &&
+      (this.state.firstpointerDownIntersection < 2)) {
       this.debouncedGetIntersection();
+    }
+    else {
+      if (this.state.firstpointerDownIntersection > -999)
+        this.state.firstpointerDownIntersection++;
     } // Not intersecting.
+
+    this.runAnimation();
+
+    //     ////get camera position--------
+    //     var scene = this.el.sceneEl;
+    //     var cameraEl = scene.camera;
+    //     var worldPos = new THREE.Vector3();
+    //     worldPos.setFromMatrixPosition(cameraEl.matrixWorld);
+    //     // ////get camera position--------
+
+    //     //--------run timer---------
+    //     paintingToolManager.timer += paintingToolManager.animationSpeed;
+    //     if (paintingToolManager.timer >= 1.0) paintingToolManager.timer -= 1.0;
+    //     if (paintingToolManager.timer <= -1.0) paintingToolManager.timer += 1.0;
+    //     //--------run timer---------
+    //     //-------Update the line material------
+    //     if (paintingToolManager.LineMaterial) {
+    //       if (paintingToolManager.LineMaterial.name != "No custom Shader") {
+    //         // var mcolour = new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
+    //         // this.Material.uniforms.colour.value = mcolour;//_BrushVariablesInput.mainColour;
+    //         if (
+    //           paintingToolManager.nodes.length &&
+    //           paintingToolManager.LineMaterial.uniforms.pressures &&
+    //           paintingToolManager.LineMaterial.uniforms.time
+    //         ) {
+    //           paintingToolManager.LineMaterial.uniforms.pressures.value = paintingToolManager.GetPressure();
+    //           paintingToolManager.LineMaterial.uniforms.time.value =
+    //             paintingToolManager.timer; //timer;
+    // //--
+    //             paintingToolManager.LineMaterial.uniforms.lineWidth.value = .1;
+    //             paintingToolManager.LineMaterial.uniforms.lengthNormal.value = 1.0;
+    // //--
+    //           paintingToolManager.LineMaterial.needsUpdate = true;
+    //         }
+    //       }else{
+    //         paintingToolManager.LineMaterial.uniforms.color.value = new THREE.Color(0.1,0.2,1.0);
+    //         paintingToolManager.LineMaterial.uniforms.lineWidth.value = .1;
+    //         paintingToolManager.LineMaterial.uniforms.lengthNormal.value = 1.0;
+    //         paintingToolManager.LineMaterial.needsUpdate = true;
+    //       }
+    //     }
+
+    //     //-------Update the line material------
+    //     //-------Update the decal objects(BillboardObjects)------
+    //     if (paintingToolManager.BillboardObjects.length > 0) {
+    //       paintingToolManager.BillboardObjects.forEach(function(obj) {
+    //         obj.UpdateDelta(worldPos, paintingToolManager.timer);
+    //       });
+    //     }
+    //     //-------Update the decal objects(BillboardObjects)------
+  },
+  runAnimation: function () {
     ////get camera position--------
     var scene = this.el.sceneEl;
     var cameraEl = scene.camera;
     var worldPos = new THREE.Vector3();
     worldPos.setFromMatrixPosition(cameraEl.matrixWorld);
     // ////get camera position--------
-
     //--------run timer---------
-    paintingToolManager.timer += paintingToolManager.animationSpeed;
-    if (paintingToolManager.timer >= 1.0) paintingToolManager.timer -= 1.0;
-    if (paintingToolManager.timer <= -1.0) paintingToolManager.timer += 1.0;
+    var delta = this.clock.getDelta() * 20.0;
+    paintingToolManager.timer += delta * paintingToolManager.animationSpeed;
+    if (paintingToolManager.timer >= 1.0)
+      paintingToolManager.timer -= 1.0;
+    if (paintingToolManager.timer <= -1.0)
+      paintingToolManager.timer += 1.0;
     //--------run timer---------
-    //-------Update the line material------
-    if (paintingToolManager.LineMaterial) {
-      if (paintingToolManager.LineMaterial.name != "No custom Shader") {
-        // var mcolour = new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
-        // this.Material.uniforms.colour.value = mcolour;//_BrushVariablesInput.mainColour;
-        if (
-          paintingToolManager.nodes.length &&
-          paintingToolManager.LineMaterial.uniforms.pressures &&
-          paintingToolManager.LineMaterial.uniforms.time
-        ) {
-          paintingToolManager.LineMaterial.uniforms.pressures.value = paintingToolManager.GetPressure();
-          paintingToolManager.LineMaterial.uniforms.time.value =
-            paintingToolManager.timer; //timer;
-//--
-            paintingToolManager.LineMaterial.uniforms.lineWidth.value = .1;
-            paintingToolManager.LineMaterial.uniforms.lengthNormal.value = 1.0;
-//--
-          paintingToolManager.LineMaterial.needsUpdate = true;
+    // //-------Update the line materials------
+    //------need to find some way to pass pressuers into the mesh line (probably with vertext), not this way.
+    if (this.state.pointerDown) {
+      var lineLength = (paintingToolManager.NodeRangeEnding - paintingToolManager.NodeRangeBegining) / (paintingToolManager.geoCount - 1);
+      if (lineLength > 1.0)
+        this.forceTouchUp();
+      paintingToolManager.currentMaterialCache.lineLength = THREE.Math.clamp(lineLength * 0.9, 0.01, 1.0);
+      // paintingToolManager.currentMaterialCache.pressures = paintingToolManager.GetPressure();
+      //console.log(paintingToolManager.materialsCache.length + ":paintingToolManager.materialsCache[i].lineLength: " + paintingToolManager.currentMaterialCache.lineLength);
+    }
+    //------need to find some way to pass pressuers into the mesh line (probably with vertext), not this way.
+    for (var i = 0; i < paintingToolManager.materialsCache.length; i++) {
+      if (paintingToolManager.materialsCache[i].lineMaterial) {
+        if (paintingToolManager.materialsCache[i].lineMaterial.name != "No custom Shader") {
+          if (paintingToolManager.materialsCache[i].lineMaterial.uniforms.time) {
+            var _time = (paintingToolManager.timer + paintingToolManager.materialsCache[i].startTime) % 1.0;
+            paintingToolManager.materialsCache[i].lineMaterial.uniforms.time.value = _time;
+            paintingToolManager.materialsCache[i].lineMaterial.uniforms.lineWidth.value = paintingToolManager.materialsCache[i].lineWidth;
+            //paintingToolManager.materialsCache[i].lineMaterial.uniforms.color.value = new THREE.Color(Math.random(), Math.random(), Math.random() );
+            paintingToolManager.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = paintingToolManager.materialsCache[i].lineLength;
+            // if(paintingToolManager.materialsCache[i].lineMaterial.uniforms.pressures)
+            //   paintingToolManager.materialsCache[i].lineMaterial.uniforms.pressures.value = paintingToolManager.materialsCache[i].pressures;
+            paintingToolManager.materialsCache[i].lineMaterial.needsUpdate = true;
+          }
         }
-      }else{
-        paintingToolManager.LineMaterial.uniforms.color.value = new THREE.Color(0.1,0.2,1.0);
-        paintingToolManager.LineMaterial.uniforms.lineWidth.value = .1;
-        paintingToolManager.LineMaterial.uniforms.lengthNormal.value = 1.0;
-        paintingToolManager.LineMaterial.needsUpdate = true;
+        else {
+          paintingToolManager.materialsCache[i].lineMaterial.uniforms.color.value = paintingToolManager.materialsCache[i].colour;
+          paintingToolManager.materialsCache[i].lineMaterial.uniforms.lineWidth.value = paintingToolManager.materialsCache[i].lineWidth;
+          paintingToolManager.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = paintingToolManager.materialsCache[i].lineLength;
+          paintingToolManager.materialsCache[i].lineMaterial.needsUpdate = true;
+        }
       }
     }
-
-    //-------Update the line material------
     //-------Update the decal objects(BillboardObjects)------
     if (paintingToolManager.BillboardObjects.length > 0) {
-      paintingToolManager.BillboardObjects.forEach(function(obj) {
+      paintingToolManager.BillboardObjects.forEach(function (obj) {
         obj.UpdateDelta(worldPos, paintingToolManager.timer);
       });
     }
     //-------Update the decal objects(BillboardObjects)------
   },
-
   // loop through the points to create a line geometry
-  getGeometry: function() {
+  getGeometry: function () {
     if (!paintingToolManager.nodes) {
       return;
     }
     const nodes = paintingToolManager.nodes;
-    //console.log("get geometry");
     const geometry = new THREE.Geometry();
-    //console.log(nodes);
-    nodes.forEach(function(node) {
-      // console.log(node.Position);
-      const position = AFRAME.utils.coordinates.parse(node.position);
-      geometry.vertices.push(position);
+    //get a node range to read from.
+    paintingToolManager.NodeRangeEnding = paintingToolManager.nodes.length + 1;
+    //add some drawingdistance from body if in VR mode
+    var drawingdistance = true;//!this.VRMode;disabled for now
+    var int_counter = 0;
+    nodes.forEach(function (node) {
+      if (int_counter > paintingToolManager.NodeRangeBegining &&
+        int_counter < paintingToolManager.NodeRangeEnding) {
+        const position = AFRAME.utils.coordinates.parse(node.position);
+        if (drawingdistance) {
+          //add some drawingdistance from body
+          var _position = new THREE.Vector3(position.x, position.y, position.z);
+          var norml = paintingToolManager.stringToVector3(node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
+          _position.add(norml.multiplyScalar(0.01));
+          geometry.vertices.push(_position);
+          //add some drawingdistance from body
+        }
+        else {
+          geometry.vertices.push(position);
+        }
+      }
+      int_counter++;
     });
     return geometry;
   },
-
-  addDecals: function() {
+  addDecals: function () {
     if (!paintingToolManager.paintDecals) return;
     const nodes = paintingToolManager.nodes;
     if (paintingToolManager.spacing < 0) {
@@ -314,7 +443,7 @@ AFRAME.registerComponent("al-painting-tool", {
       }
     }
   },
-  remove: function() {
+  remove: function () {
     this.el.removeObject3D("group");
 
     // for (var i = this.group.children.length - 1; i >= 0; i--) {
