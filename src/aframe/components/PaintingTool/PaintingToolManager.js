@@ -1565,6 +1565,16 @@ export class PaintingToolManager {
             this.NextPreset();
         }
     });
+    document.addEventListener("al-palette-option-selected", e => {
+        const optionIndex = e.detail.optionIndex;
+        const preset = this.GetPresetByIndex(optionIndex);
+        this.SetPreset(preset);
+      });
+
+      document.addEventListener("al-node-spawned", e => {
+        this.nodes = e.detail.nodes;
+        this.Reset();
+      });
   }
   stringToVector3(vec) {
     const res = vec.split(" ");

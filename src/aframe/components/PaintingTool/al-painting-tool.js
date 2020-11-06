@@ -102,7 +102,7 @@ AFRAME.registerComponent("al-painting-tool", {
 
   },
 
-  update: function (_oldData) {
+  OverRideUpdate: function () {
     //console.log("nodeNum", this.data.nodesNum);
     //console.log("preset", this.data.preset);
     // console.log("update");
@@ -119,9 +119,9 @@ AFRAME.registerComponent("al-painting-tool", {
     // }
     // this.addDecals();
     console.log("update");
-    if (!this.data.enabled) {
-      return;
-    }
+    // if (!this.data.enabled) {
+    //   return;
+    // }
     this.geometry = this.getGeometry();
     paintingToolManager.UpdateBrush(this.group, this.geometry);
     this.addDecals();
@@ -219,23 +219,25 @@ AFRAME.registerComponent("al-painting-tool", {
     } else {
       this.state.lastIntersection = intersection;
     }
+    this.OverRideUpdate();
   },
 
   tick: function () {
     //console.log("tick");
 
-    // if (this.data.raycasterEnabled && this.raycaster) {
-    //   this.debouncedGetIntersection();
-    // } // Not intersecting.
-    if (this.data.raycasterEnabled &&
-      this.raycaster &&
-      (this.state.firstpointerDownIntersection < 2)) {
+    if (this.data.raycasterEnabled && this.raycaster) {
       this.debouncedGetIntersection();
-    }
-    else {
-      if (this.state.firstpointerDownIntersection > -999)
-        this.state.firstpointerDownIntersection++;
     } // Not intersecting.
+
+    // if (this.data.raycasterEnabled &&
+    //   this.raycaster &&
+    //   (this.state.firstpointerDownIntersection < 2)) {
+    //   this.debouncedGetIntersection();
+    // }
+    // else {
+    //   if (this.state.firstpointerDownIntersection > -999)
+    //     this.state.firstpointerDownIntersection++;
+    // } // Not intersecting.
 
     this.runAnimation();
 
@@ -304,14 +306,14 @@ AFRAME.registerComponent("al-painting-tool", {
     //--------run timer---------
     // //-------Update the line materials------
     //------need to find some way to pass pressuers into the mesh line (probably with vertext), not this way.
-    if (this.state.pointerDown) {
-      var lineLength = (paintingToolManager.NodeRangeEnding - paintingToolManager.NodeRangeBegining) / (paintingToolManager.geoCount - 1);
-      if (lineLength > 1.0)
-        this.forceTouchUp();
-      paintingToolManager.currentMaterialCache.lineLength = THREE.Math.clamp(lineLength * 0.9, 0.01, 1.0);
-      // paintingToolManager.currentMaterialCache.pressures = paintingToolManager.GetPressure();
-      //console.log(paintingToolManager.materialsCache.length + ":paintingToolManager.materialsCache[i].lineLength: " + paintingToolManager.currentMaterialCache.lineLength);
-    }
+    // if (this.state.pointerDown) {
+    //   var lineLength = (paintingToolManager.NodeRangeEnding - paintingToolManager.NodeRangeBegining) / (paintingToolManager.geoCount - 1);
+    //   if (lineLength > 1.0)
+    //     this.forceTouchUp();
+    //   paintingToolManager.currentMaterialCache.lineLength = THREE.Math.clamp(lineLength * 0.9, 0.01, 1.0);
+    //   // paintingToolManager.currentMaterialCache.pressures = paintingToolManager.GetPressure();
+    //   //console.log(paintingToolManager.materialsCache.length + ":paintingToolManager.materialsCache[i].lineLength: " + paintingToolManager.currentMaterialCache.lineLength);
+    // }
     //------need to find some way to pass pressuers into the mesh line (probably with vertext), not this way.
     for (var i = 0; i < paintingToolManager.materialsCache.length; i++) {
       if (paintingToolManager.materialsCache[i].lineMaterial) {
@@ -321,7 +323,7 @@ AFRAME.registerComponent("al-painting-tool", {
             paintingToolManager.materialsCache[i].lineMaterial.uniforms.time.value = _time;
             paintingToolManager.materialsCache[i].lineMaterial.uniforms.lineWidth.value = paintingToolManager.materialsCache[i].lineWidth;
             //paintingToolManager.materialsCache[i].lineMaterial.uniforms.color.value = new THREE.Color(Math.random(), Math.random(), Math.random() );
-            paintingToolManager.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = paintingToolManager.materialsCache[i].lineLength;
+            paintingToolManager.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = 1.0;//paintingToolManager.materialsCache[i].lineLength;
             // if(paintingToolManager.materialsCache[i].lineMaterial.uniforms.pressures)
             //   paintingToolManager.materialsCache[i].lineMaterial.uniforms.pressures.value = paintingToolManager.materialsCache[i].pressures;
             paintingToolManager.materialsCache[i].lineMaterial.needsUpdate = true;
@@ -330,7 +332,7 @@ AFRAME.registerComponent("al-painting-tool", {
         else {
           paintingToolManager.materialsCache[i].lineMaterial.uniforms.color.value = paintingToolManager.materialsCache[i].colour;
           paintingToolManager.materialsCache[i].lineMaterial.uniforms.lineWidth.value = paintingToolManager.materialsCache[i].lineWidth;
-          paintingToolManager.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = paintingToolManager.materialsCache[i].lineLength;
+          paintingToolManager.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = 1.0;//paintingToolManager.materialsCache[i].lineLength;
           paintingToolManager.materialsCache[i].lineMaterial.needsUpdate = true;
         }
       }
@@ -345,15 +347,18 @@ AFRAME.registerComponent("al-painting-tool", {
   },
   // loop through the points to create a line geometry
   getGeometry: function () {
-    if (!paintingToolManager.nodes) {
-      return;
-    }
+    // if (!paintingToolManager.nodes) {
+    //   return;
+    // }
     const nodes = paintingToolManager.nodes;
     const geometry = new THREE.Geometry();
     //get a node range to read from.
     paintingToolManager.NodeRangeEnding = paintingToolManager.nodes.length + 1;
+
+    console.log("nodes: "+ nodes.length );
+    console.log("paintingToolManager.nodes.length: " + paintingToolManager.nodes.length );
     //add some drawingdistance from body if in VR mode
-    var drawingdistance = true;//!this.VRMode;disabled for now
+    var drawingdistance = false;//!this.VRMode;disabled for now
     var int_counter = 0;
     nodes.forEach(function (node) {
       if (int_counter > paintingToolManager.NodeRangeBegining &&
@@ -368,6 +373,10 @@ AFRAME.registerComponent("al-painting-tool", {
           //add some drawingdistance from body
         }
         else {
+          if(int_counter == paintingToolManager.NodeRangeEnding-2){
+            var _position = new THREE.Vector3(position.x, position.y, position.z);
+            console.log("position: " + _position.x + ", "+ _position.y + ", "+ _position.z );
+          }
           geometry.vertices.push(position);
         }
       }
