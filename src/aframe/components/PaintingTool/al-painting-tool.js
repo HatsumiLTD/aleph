@@ -22,7 +22,7 @@ AFRAME.registerComponent("al-painting-tool", {
   schema: {
     enabled: { default: true },
     minFrameMS: { type: "number", default: 15 },
-    minLineSegmentLength: { type: "number", default: 0.05 },
+    minLineSegmentLength: { type: "number", default: 0.0001 },
     nodesNum: { type: "number" },
     dirty: { type: "string" },
     preset: { type: "number" },
@@ -205,10 +205,20 @@ AFRAME.registerComponent("al-painting-tool", {
           paintingToolManager.LineMaterial.uniforms.pressures.value = paintingToolManager.GetPressure();
           paintingToolManager.LineMaterial.uniforms.time.value =
             paintingToolManager.timer; //timer;
+//--
+            paintingToolManager.LineMaterial.uniforms.lineWidth.value = .1;
+            paintingToolManager.LineMaterial.uniforms.lengthNormal.value = 1.0;
+//--
           paintingToolManager.LineMaterial.needsUpdate = true;
         }
+      }else{
+        paintingToolManager.LineMaterial.uniforms.color.value = new THREE.Color(0.1,0.2,1.0);
+        paintingToolManager.LineMaterial.uniforms.lineWidth.value = .1;
+        paintingToolManager.LineMaterial.uniforms.lengthNormal.value = 1.0;
+        paintingToolManager.LineMaterial.needsUpdate = true;
       }
     }
+
     //-------Update the line material------
     //-------Update the decal objects(BillboardObjects)------
     if (paintingToolManager.BillboardObjects.length > 0) {

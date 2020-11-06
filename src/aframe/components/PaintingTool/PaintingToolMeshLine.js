@@ -1,17 +1,12 @@
-// @ts-nocheck
+// paintitngtoolmeshline///
 (function() {
   "use strict";
-
   var root = this;
-
   var has_require = typeof require !== "undefined";
-
   //var THREE = root.THREE || has_require && require('three')
   if (!THREE) throw new Error("MeshLine requires three.js");
-
   function PaintingToolMeshLine() {
     this.positions = [];
-
     this.previous = [];
     this.next = [];
     this.side = [];
@@ -20,25 +15,19 @@
     this.uvs = [];
     this.counters = [];
     this.geometry = new THREE.BufferGeometry();
-
     this.widthCallback = null;
-
     // Used to raycast
     this.matrixWorld = new THREE.Matrix4();
   }
-
   PaintingToolMeshLine.prototype.setMatrixWorld = function(matrixWorld) {
     this.matrixWorld = matrixWorld;
   };
-
   PaintingToolMeshLine.prototype.setGeometry = function(g, c) {
     this.widthCallback = c;
-
     this.positions = [];
     this.counters = [];
     // g.computeBoundingBox();
     // g.computeBoundingSphere();
-
     // set the normals
     // g.computeVertexNormals();
     if (g instanceof THREE.Geometry) {
@@ -51,11 +40,9 @@
         this.counters.push(c);
       }
     }
-
     if (g instanceof THREE.BufferGeometry) {
       // read attribute positions ?
     }
-
     if (g instanceof Float32Array || g instanceof Array) {
       for (var j = 0; j < g.length; j += 3) {
         var c = j / g.length;
@@ -65,71 +52,51 @@
         this.counters.push(c);
       }
     }
-
     this.process();
   };
-
   PaintingToolMeshLine.prototype.raycast = (function() {
     var inverseMatrix = new THREE.Matrix4();
     var ray = new THREE.Ray();
     var sphere = new THREE.Sphere();
-
     return function raycast(raycaster, intersects) {
       var precision = raycaster.linePrecision;
       var precisionSq = precision * precision;
       var interRay = new THREE.Vector3();
-
       var geometry = this.geometry;
-
       if (geometry.boundingSphere === null) geometry.computeBoundingSphere();
-
       // Checking boundingSphere distance to ray
-
       sphere.copy(geometry.boundingSphere);
       sphere.applyMatrix4(this.matrixWorld);
-
       if (raycaster.ray.intersectSphere(sphere, interRay) === false) {
         return;
       }
-
       inverseMatrix.getInverse(this.matrixWorld);
       ray.copy(raycaster.ray).applyMatrix4(inverseMatrix);
-
       var vStart = new THREE.Vector3();
       var vEnd = new THREE.Vector3();
       var interSegment = new THREE.Vector3();
       var step = this instanceof THREE.LineSegments ? 2 : 1;
-
       if (geometry instanceof THREE.BufferGeometry) {
         var index = geometry.index;
         var attributes = geometry.attributes;
-
         if (index !== null) {
           var indices = index.array;
           var positions = attributes.position.array;
-
           for (var i = 0, l = indices.length - 1; i < l; i += step) {
             var a = indices[i];
             var b = indices[i + 1];
-
             vStart.fromArray(positions, a * 3);
             vEnd.fromArray(positions, b * 3);
-
             var distSq = ray.distanceSqToSegment(
               vStart,
               vEnd,
               interRay,
               interSegment
             );
-
             if (distSq > precisionSq) continue;
-
             interRay.applyMatrix4(this.matrixWorld); //Move back to world space for distance calculation
-
             var distance = raycaster.ray.origin.distanceTo(interRay);
-
             if (distance < raycaster.near || distance > raycaster.far) continue;
-
             intersects.push({
               distance: distance,
               // What do we want? intersection point on the ray or on the segment??
@@ -143,26 +110,19 @@
           }
         } else {
           var positions = attributes.position.array;
-
           for (var i = 0, l = positions.length / 3 - 1; i < l; i += step) {
             vStart.fromArray(positions, 3 * i);
             vEnd.fromArray(positions, 3 * i + 3);
-
             var distSq = ray.distanceSqToSegment(
               vStart,
               vEnd,
               interRay,
               interSegment
             );
-
             if (distSq > precisionSq) continue;
-
             interRay.applyMatrix4(this.matrixWorld); //Move back to world space for distance calculation
-
             var distance = raycaster.ray.origin.distanceTo(interRay);
-
             if (distance < raycaster.near || distance > raycaster.far) continue;
-
             intersects.push({
               distance: distance,
               // What do we want? intersection point on the ray or on the segment??
@@ -178,7 +138,6 @@
       } else if (geometry instanceof THREE.Geometry) {
         var vertices = geometry.vertices;
         var nbVertices = vertices.length;
-
         for (var i = 0; i < nbVertices - 1; i += step) {
           var distSq = ray.distanceSqToSegment(
             vertices[i],
@@ -186,15 +145,10 @@
             interRay,
             interSegment
           );
-
           if (distSq > precisionSq) continue;
-
           interRay.applyMatrix4(this.matrixWorld); //Move back to world space for distance calculation
-
           var distance = raycaster.ray.origin.distanceTo(interRay);
-
           if (distance < raycaster.near || distance > raycaster.far) continue;
-
           intersects.push({
             distance: distance,
             // What do we want? intersection point on the ray or on the segment??
@@ -209,7 +163,6 @@
       }
     };
   })();
-
   PaintingToolMeshLine.prototype.compareV3 = function(a, b) {
     var aa = a * 6;
     var ab = b * 6;
@@ -219,27 +172,22 @@
       this.positions[aa + 2] === this.positions[ab + 2]
     );
   };
-
   PaintingToolMeshLine.prototype.copyV3 = function(a) {
     var aa = a * 6;
     return [this.positions[aa], this.positions[aa + 1], this.positions[aa + 2]];
   };
-
   PaintingToolMeshLine.prototype.process = function() {
     var l = this.positions.length / 6;
-
     this.previous = [];
     this.next = [];
     this.side = [];
     this.width = [];
     this.indices_array = [];
     this.uvs = [];
-
     for (var j = 0; j < l; j++) {
       this.side.push(1);
       this.side.push(-1);
     }
-
     var w;
     for (var j = 0; j < l; j++) {
       if (this.widthCallback) w = this.widthCallback(j / (l - 1));
@@ -247,14 +195,11 @@
       this.width.push(w);
       this.width.push(w);
     }
-
     for (var j = 0; j < l; j++) {
       this.uvs.push(j / (l - 1), 0);
       this.uvs.push(j / (l - 1), 1);
     }
-
     var v;
-
     if (this.compareV3(0, l - 1)) {
       v = this.copyV3(l - 2);
     } else {
@@ -267,13 +212,11 @@
       this.previous.push(v[0], v[1], v[2]);
       this.previous.push(v[0], v[1], v[2]);
     }
-
     for (var j = 1; j < l; j++) {
       v = this.copyV3(j);
       this.next.push(v[0], v[1], v[2]);
       this.next.push(v[0], v[1], v[2]);
     }
-
     if (this.compareV3(l - 1, 0)) {
       v = this.copyV3(1);
     } else {
@@ -281,13 +224,11 @@
     }
     this.next.push(v[0], v[1], v[2]);
     this.next.push(v[0], v[1], v[2]);
-
     for (var j = 0; j < l - 1; j++) {
       var n = j * 2;
       this.indices_array.push(n, n + 1, n + 2);
       this.indices_array.push(n + 2, n + 1, n + 3);
     }
-
     if (!this.attributes) {
       this.attributes = {
         position: new THREE.BufferAttribute(
@@ -321,7 +262,6 @@
       this.attributes.index.copyArray(new Uint16Array(this.indices_array));
       this.attributes.index.needsUpdate = true;
     }
-
     this.geometry.setAttribute("position", this.attributes.position);
     this.geometry.setAttribute("previous", this.attributes.previous);
     this.geometry.setAttribute("next", this.attributes.next);
@@ -329,22 +269,17 @@
     this.geometry.setAttribute("width", this.attributes.width);
     this.geometry.setAttribute("uv", this.attributes.uv);
     this.geometry.setAttribute("counters", this.attributes.counters);
-
     this.geometry.setIndex(this.attributes.index);
   };
-
   function memcpy(src, srcOffset, dst, dstOffset, length) {
     var i;
-
     src = src.subarray || src.slice ? src : src.buffer;
     dst = dst.subarray || dst.slice ? dst : dst.buffer;
-
     src = srcOffset
       ? src.subarray
         ? src.subarray(srcOffset, length && srcOffset + length)
         : src.slice(srcOffset, length && srcOffset + length)
       : src;
-
     if (dst.set) {
       dst.set(src, dstOffset);
     } else {
@@ -352,10 +287,8 @@
         dst[i + dstOffset] = src[i];
       }
     }
-
     return dst;
   }
-
   /**
    * Fast method to advance the line by one position.  The oldest position is removed.
    * @param position
@@ -365,35 +298,28 @@
     var previous = this.attributes.previous.array;
     var next = this.attributes.next.array;
     var l = positions.length;
-
     // PREVIOUS
     memcpy(positions, 0, previous, 0, l);
-
     // POSITIONS
     memcpy(positions, 6, positions, 0, l - 6);
-
     positions[l - 6] = position.x;
     positions[l - 5] = position.y;
     positions[l - 4] = position.z;
     positions[l - 3] = position.x;
     positions[l - 2] = position.y;
     positions[l - 1] = position.z;
-
     // NEXT
     memcpy(positions, 6, next, 0, l - 6);
-
     next[l - 6] = position.x;
     next[l - 5] = position.y;
     next[l - 4] = position.z;
     next[l - 3] = position.x;
     next[l - 2] = position.y;
     next[l - 1] = position.z;
-
     this.attributes.position.needsUpdate = true;
     this.attributes.previous.needsUpdate = true;
     this.attributes.next.needsUpdate = true;
   };
-
   THREE.ShaderChunk["paintingtool_meshline_vert"] = [
     "",
     THREE.ShaderChunk.logdepthbuf_pars_vertex,
@@ -418,6 +344,7 @@
     "varying float vCounters;",
     "varying vec3 wrldpos;",
     "varying vec3 zdist;",
+    "varying float lwidth;",
     "",
     "vec2 fix( vec4 i, float aspect ) {",
     "",
@@ -449,8 +376,9 @@
     "    float w = 1.8 * pixelWidth * lineWidth * width;",
     "",
     "    if( sizeAttenuation == 1. ) {",
-    "        w = 1.8 * lineWidth * width;",
+    "        w = 1.8 * lineWidth;",
     "    }",
+    "    lwidth = lineWidth;",
     "",
     "    vec2 dir;",
     "    if( nextP == currentP ) dir = normalize( currentP - prevP );",
@@ -477,7 +405,7 @@
     "  vec4 worldPosition = (modelMatrix * vec4(position, 1.));",
     "  wrldpos = worldPosition.xyz;",
     "  zdist = -(modelViewMatrix * vec4(gl_Position.xyz, 1.)).xyz;",
-    "    gl_Position = finalPosition;",
+    "  gl_Position = finalPosition;",
     "",
     THREE.ShaderChunk.logdepthbuf_vertex,
     THREE.ShaderChunk.fog_vertex &&
@@ -485,7 +413,6 @@
     THREE.ShaderChunk.fog_vertex,
     "}"
   ].join("\r\n");
-
   THREE.ShaderChunk["paintingtool_meshline_frag"] = [
     "",
     THREE.ShaderChunk.fog_pars_fragment,
@@ -525,7 +452,6 @@
     THREE.ShaderChunk.fog_fragment,
     "}"
   ].join("\r\n");
-
   function PaintingToolMeshLineMaterial(parameters) {
     THREE.ShaderMaterial.call(this, {
       uniforms: Object.assign({}, THREE.UniformsLib.fog, {
@@ -572,14 +498,13 @@
         visibility: { value: 1 },
         alphaTest: { value: 0 },
         time: { value: 0 },
+        lengthNormal: { value: 0 },
         repeat: { value: new THREE.Vector2(1, 1) },
         vertexShader: { value: THREE.ShaderChunk.paintingtool_meshline_vert },
         fragmentShader: { value: THREE.ShaderChunk.paintingtool_meshline_frag }
       })
     });
-
     this.type = "PaintingToolMeshLineMaterial";
-
     Object.defineProperties(this, {
       vertexShader: {
         enumerable: true,
@@ -781,22 +706,17 @@
         }
       }
     });
-
     this.setValues(parameters);
   }
-
   PaintingToolMeshLineMaterial.prototype = Object.create(
     THREE.ShaderMaterial.prototype
   );
   PaintingToolMeshLineMaterial.prototype.constructor = PaintingToolMeshLineMaterial;
   PaintingToolMeshLineMaterial.prototype.isMeshLineMaterial = true;
-
   PaintingToolMeshLineMaterial.prototype.copy = function(source) {
     THREE.ShaderMaterial.prototype.copy.call(this, source);
-
     this.lineWidth = source.lineWidth;
     this.pressures = source.pressures;
-
     this.map = source.map;
     this.useMap = source.useMap;
     this.alphaMap = source.alphaMap;
@@ -814,10 +734,8 @@
     this.visibility = source.visibility;
     this.alphaTest = source.alphaTest;
     this.repeat.copy(source.repeat);
-
     return this;
   };
-
   if (typeof exports !== "undefined") {
     if (typeof module !== "undefined" && module.exports) {
       exports = module.exports = {
@@ -831,7 +749,6 @@
     root.PaintingToolMeshLine = PaintingToolMeshLine;
     root.PaintingToolMeshLineMaterial = PaintingToolMeshLineMaterial;
   }
-
   // if( typeof exports !== 'undefined' ) {
   //   if( typeof module !== 'undefined' && module.exports ) {
   //     exports = module.exports = { PaintingToolMeshLine: PaintingToolMeshLine, PaintingToolMeshLineMaterial: PaintingToolMeshLineMaterial };
