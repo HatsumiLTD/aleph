@@ -47,7 +47,7 @@ export const Nodes: FunctionalComponent<NodesProps> = (
       );
       textOffset.multiplyScalar(node.scale);
 
-      return  (
+      return (
         <a-entity al-child-hover-visible id={nodeId + "-parent"}>
           <a-entity
             position={node.position}
@@ -94,6 +94,7 @@ export const Nodes: FunctionalComponent<NodesProps> = (
             `}
             scale={` ${entityScale} ${entityScale} ${entityScale};`}
           />
-        </a-entity>)
+        </a-entity>
+      );
     });
   })();

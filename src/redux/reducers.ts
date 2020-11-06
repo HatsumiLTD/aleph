@@ -271,7 +271,8 @@ export const app = (
       return {
         ...state,
         graphEnabled: action.payload,
-        paintingEnabled: action.payload === false ? false : state.paintingEnabled
+        paintingEnabled:
+          action.payload === false ? false : state.paintingEnabled
       };
     }
     case TypeKeys.APP_SET_BOUNDINGBOX_ENABLED: {

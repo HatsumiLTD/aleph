@@ -3,7 +3,7 @@ import { Constants } from "../../Constants";
 import { ControlsType } from "../../enums";
 import { AlAngle, AlEdge, AlNode } from "../../interfaces";
 import { ThreeUtils } from "../../utils";
-import { MathUtils as THREEMath } from "three";
+import { Math as THREEMath } from "three";
 
 interface AnglesProps extends FunctionalComponentProps {
   angles: Map<string, AlAngle>;
