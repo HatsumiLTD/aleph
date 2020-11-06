@@ -10,7 +10,7 @@ interface OrbitCameraProps extends FunctionalComponentProps {
   far: number;
   fov: number;
   graphEnabled: boolean;
-  maxDistance: number,
+  maxDistance: number;
   maxPolarAngle: number;
   minDistance: number;
   minPolarAngle: number;
@@ -44,20 +44,20 @@ export const OrbitCamera: FunctionalComponent<OrbitCameraProps> = (
   _children
 ) =>
   (() => {
-      return (
-        <al-a-camera
-          fov={fov}
-          near={near}
-          aspect={aspect}
-          look-controls="enabled: false"
-          far={far}
-          id="mainCamera"
-          raycaster={`
+    return (
+      <al-a-camera
+        fov={fov}
+        near={near}
+        aspect={aspect}
+        look-controls="enabled: false"
+        far={far}
+        id="mainCamera"
+        raycaster={`
             enabled: ${graphEnabled};
             objects: [data-raycastable];
           `}
-          al-cursor="rayOrigin: mouse"
-          al-orbit-control={`
+        al-cursor="rayOrigin: mouse"
+        al-orbit-control={`
             minDistance: ${minDistance};
             minPolarAngle: ${minPolarAngle};
             maxDistance: ${maxDistance};
@@ -73,8 +73,8 @@ export const OrbitCamera: FunctionalComponent<OrbitCameraProps> = (
             animating: ${animating};
             panSpeed: ${panSpeed}
           `}
-          al-control-lights
-          ref={ref => cb(ref)}
-        />
-      );
+        al-control-lights
+        ref={ref => cb(ref)}
+      />
+    );
   })();

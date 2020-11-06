@@ -495,7 +495,7 @@ export class Aleph {
       Constants.minFrameMS
     ).bind(this);
   }
-  
+
   protected async componentWillUpdate() {
     // this isn't firing in VR :-(
     // have to quit VR for new nodes to render
@@ -509,7 +509,11 @@ export class Aleph {
           this._scene.addEventListener("loaded", () => {
             this._scene.sceneEl.renderer.toneMapping = (THREE as any).ACESFilmicToneMapping;
           });
-          this._scene.addEventListener("enter-vr", this._vrEnteredHandler, false);
+          this._scene.addEventListener(
+            "enter-vr",
+            this._vrEnteredHandler,
+            false
+          );
           this._scene.addEventListener("exit-vr", this._vrExitedHandler, false);
         }}
         isWebGl2={this._isWebGl2}
@@ -553,7 +557,7 @@ export class Aleph {
             vrEnabled={this.vrEnabled}
           />
         </ModelContainer>
-        { (this._debugPaint || !this.paintingEnabled) && [
+        {(this._debugPaint || !this.paintingEnabled) && [
           <Nodes
             boundingSphereRadius={this._boundingSphereRadius}
             camera={this._scene ? this._scene.camera : null}
@@ -589,8 +593,7 @@ export class Aleph {
             nodes={this.nodes}
             selected={this.selected}
           />
-          ]
-        }
+        ]}
         {(() => {
           switch (this.controlsType) {
             case ControlsType.TRACKBALL: {
@@ -1124,10 +1127,7 @@ export class Aleph {
         Constants.zoomFactor,
         Constants.fov
       );
-      cameraState = Utils.getCameraStateFromMesh(
-        mesh,
-        sceneDistance
-      );
+      cameraState = Utils.getCameraStateFromMesh(mesh, sceneDistance);
     }
 
     if (sceneDistance) {
@@ -1229,7 +1229,7 @@ export class Aleph {
           cameraPosition: this._camera.object3D.children[0].position.clone(),
           cameraDirection: this._camera.getAttribute("raycaster").direction,
           intersection,
-          type: AlVolumeCastType.CREATE,
+          type: AlVolumeCastType.CREATE
         });
       } else if (intersection) {
         newNode = {
@@ -1267,12 +1267,10 @@ export class Aleph {
         }
       });
       document.dispatchEvent(nodeSpawnedEvent);
-
     }
   }
 
   private _vrEnteredHandler(_event: CustomEvent): void {
-
     // can't update state at the moment when in VR
     const controllers = document.getElementById("controllers");
     controllers.setAttribute("visible", "true");
@@ -1281,7 +1279,6 @@ export class Aleph {
   }
 
   private _vrExitedHandler(_event: CustomEvent): void {
-
     // can't update state at the moment when in VR
     const controllers = document.getElementById("controllers");
     controllers.setAttribute("visible", "false");

@@ -148,7 +148,6 @@ AFRAME.registerComponent("al-node", {
   },
 
   tickFunction() {
-
     const el = this.el;
     const state = this.state;
 

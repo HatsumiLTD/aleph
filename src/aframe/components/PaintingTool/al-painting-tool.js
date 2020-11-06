@@ -66,38 +66,38 @@ AFRAME.registerComponent("al-painting-tool", {
     // vr controller listeners
     const rightController = document.getElementById("right-controller");
 
-    this.el.addEventListener(
-      EVENTS.MOUSEDOWN,
-      evt => {
-        //console.log("trigger down");
-        this.state.pointerDown = true;
-      }
+    this.el.addEventListener(EVENTS.MOUSEDOWN, evt => {
+      //console.log("trigger down");
+      this.state.pointerDown = true;
+    });
+
+    this.el.addEventListener(EVENTS.MOUSEUP, evt => {
+      //console.log("trigger up");
+      this.state.pointerDown = false;
+    });
+
+    rightController.addEventListener(EVENTS.ABUTTONDOWN, evt => {
+      paintingToolManager.NextPreset();
+    });
+
+    this.debouncedGetIntersection = AFRAME.utils.throttle(
+      this.getIntersection,
+      this.data.minFrameMS,
+      this
     );
 
-    this.el.addEventListener(
-      EVENTS.MOUSEUP,
-      evt => {
-        //console.log("trigger up");
-        this.state.pointerDown = false;
-      }
-    );
-
-    rightController.addEventListener(
-      EVENTS.ABUTTONDOWN,
-      evt => {
-        paintingToolManager.NextPreset();
-      }
-    );
-
-    this.debouncedGetIntersection = AFRAME.utils.throttle(this.getIntersection, this.data.minFrameMS, this);
-    
     console.log("add skybox");
-    
+
     // add a plane with 'shadow'----should be placed somewhere else when I have time
     //add a background sphere-----
-    var backgroundSphere = new THREE.Mesh(new THREE.SphereGeometry(30, 10, 10), new THREE.MeshBasicMaterial({
-        map: (new THREE.TextureLoader).load("https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FHatsumiBackGrounds_13.jpg?v=1601458890388"),
-    }));
+    var backgroundSphere = new THREE.Mesh(
+      new THREE.SphereGeometry(30, 10, 10),
+      new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load(
+          "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FHatsumiBackGrounds_13.jpg?v=1601458890388"
+        )
+      })
+    );
     backgroundSphere.geometry.scale(-1, 1, 1);
     this.el.sceneEl.object3D.add(backgroundSphere);
     //add a background sphere-----
@@ -197,12 +197,14 @@ AFRAME.registerComponent("al-painting-tool", {
       if (paintingToolManager.LineMaterial.name != "No custom Shader") {
         // var mcolour = new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
         // this.Material.uniforms.colour.value = mcolour;//_BrushVariablesInput.mainColour;
-        if (paintingToolManager.nodes.length &&
+        if (
+          paintingToolManager.nodes.length &&
           paintingToolManager.LineMaterial.uniforms.pressures &&
           paintingToolManager.LineMaterial.uniforms.time
-          ) {
+        ) {
           paintingToolManager.LineMaterial.uniforms.pressures.value = paintingToolManager.GetPressure();
-          paintingToolManager.LineMaterial.uniforms.time.value = paintingToolManager.timer; //timer;
+          paintingToolManager.LineMaterial.uniforms.time.value =
+            paintingToolManager.timer; //timer;
           paintingToolManager.LineMaterial.needsUpdate = true;
         }
       }
@@ -235,13 +237,17 @@ AFRAME.registerComponent("al-painting-tool", {
   },
 
   addDecals: function() {
-    if(!paintingToolManager.paintDecals)return;
+    if (!paintingToolManager.paintDecals) return;
     const nodes = paintingToolManager.nodes;
     if (paintingToolManager.spacing < 0) {
       var counter = 0;
       for (var j = 0; j < nodes.length; j++) {
         if (counter-- == 0) {
-          var _DecalElement = new DecalElement(paintingToolManager.ObjectsMaterial, nodes[j], paintingToolManager);//createDecal(nodes[j]);
+          var _DecalElement = new DecalElement(
+            paintingToolManager.ObjectsMaterial,
+            nodes[j],
+            paintingToolManager
+          ); //createDecal(nodes[j]);
           if (DecalElement.mesh) {
             this.group.add(_DecalElement.mesh);
             paintingToolManager.BillboardObjects.push(_DecalElement);
@@ -255,11 +261,19 @@ AFRAME.registerComponent("al-painting-tool", {
         vec3 = new THREE.Vector3(vec3.x, vec3.y, vec3.z);
 
         var vec3target = AFRAME.utils.coordinates.parse(nodes[j].position);
-        vec3target = new THREE.Vector3(vec3target.x, vec3target.y, vec3target.z);
+        vec3target = new THREE.Vector3(
+          vec3target.x,
+          vec3target.y,
+          vec3target.z
+        );
 
         if (j + 1 < nodes.length) {
           vec3target = AFRAME.utils.coordinates.parse(nodes[j + 1].position);
-          vec3target = new THREE.Vector3(vec3target.x, vec3target.y, vec3target.z);
+          vec3target = new THREE.Vector3(
+            vec3target.x,
+            vec3target.y,
+            vec3target.z
+          );
         }
         var distance = vec3.distanceTo(vec3target);
         var direction = new THREE.Vector3();
@@ -276,7 +290,11 @@ AFRAME.registerComponent("al-painting-tool", {
             _direction.multiplyScalar(distance * perc)
           );
           nodes[j].position = lerpedpos;
-          var _DecalElement = new DecalElement(paintingToolManager.ObjectsMaterial, nodes[j], paintingToolManager);//createDecal(nnodes[j]);
+          var _DecalElement = new DecalElement(
+            paintingToolManager.ObjectsMaterial,
+            nodes[j],
+            paintingToolManager
+          ); //createDecal(nnodes[j]);
           if (_DecalElement.mesh) {
             this.group.add(_DecalElement.mesh);
             paintingToolManager.BillboardObjects.push(_DecalElement);

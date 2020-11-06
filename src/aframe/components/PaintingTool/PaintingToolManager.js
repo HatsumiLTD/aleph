@@ -127,7 +127,7 @@ class ShaderHolder {
       "varying vec3 wrldpos;",
       "varying vec3 zdist;",
       "varying float lwidth;",
-      
+
       "uniform float pressures[20];",
       ""
     ].join("\r\n");
@@ -596,7 +596,7 @@ class ShaderHolder {
         "float ltime =  mod( (time*4.), 1.0);",
         "vec2 uv = vUV;",
         // "vec2 finnaluvpos = vUV * repeat ;",
-        
+
         "vec2 finnaluvpos = vUV * repeat+((1.0-lwidth)*30.0);",
         "float flipper = mod( (time*3.), 1.0)-0.5;",
         "if(flipper>0.0)finnaluvpos.y = 1.0-finnaluvpos.y;",
@@ -850,7 +850,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new PaintingToolMeshLineMaterial({  
+      return new PaintingToolMeshLineMaterial({
         name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -921,7 +921,7 @@ class MaterialsHolder {
         _BrushVariablesInput.lineColour.b
       );
       // mcolour.lerp (lcolour, 0.5 );
-      return new PaintingToolMeshLineMaterial({  
+      return new PaintingToolMeshLineMaterial({
         name: _materialName,
         color: mcolour,
         altcolor: lcolour,
@@ -961,7 +961,7 @@ class MaterialsHolder {
       );
       // mcolour.lerp (lcolour, 0.5 );
       return new PaintingToolMeshLineMaterial({
-          name: _materialName,
+        name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -996,7 +996,7 @@ class MaterialsHolder {
       // var lcolour = new THREE.Color(_BrushVariablesInput.lineColour.r, _BrushVariablesInput.lineColour.g, _BrushVariablesInput.lineColour.b);
       // mcolour.lerp (lcolour, 0.5 );
       return new PaintingToolMeshLineMaterial({
-       name: _materialName,
+        name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -1076,7 +1076,7 @@ class MaterialsHolder {
       );
       // mcolour.lerp (lcolour, 0.5 );
       return new PaintingToolMeshLineMaterial({
-         name: _materialName,
+        name: _materialName,
         color: mcolour,
         altcolor: lcolour,
         map: texture,
@@ -1154,7 +1154,7 @@ class MaterialsHolder {
         time: { type: "f", value: 1.0 },
         colour: { type: "c", value: mcolour }
       };
-      return new THREE.ShaderMaterial({  
+      return new THREE.ShaderMaterial({
         name: _materialName,
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
@@ -1187,7 +1187,7 @@ class MaterialsHolder {
         colour: { type: "c", value: mcolour }
       };
       return new THREE.ShaderMaterial({
-          name: _materialName,
+        name: _materialName,
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1212,7 +1212,7 @@ class MaterialsHolder {
       );
       //mcolour.lerp (lcolour, 0.5 );
       return new THREE.MeshBasicMaterial({
-          name: _materialName,
+        name: _materialName,
         color: lcolour,
         map: texture,
         name: "No custom Shader"
@@ -1278,7 +1278,7 @@ class MaterialsHolder {
         threshhold: { type: "f", value: 0.0 }
       };
       return new THREE.ShaderMaterial({
-          name: _materialName,
+        name: _materialName,
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1306,7 +1306,6 @@ class MaterialsHolder {
         colour: { type: "c", value: mcolour }
       };
       return new THREE.ShaderMaterial({
-        
         uniforms: uniforms,
         vertexShader: _ShaderHolder.vertexShader,
         fragmentShader: _ShaderHolder.fragmentShader,
@@ -1429,35 +1428,35 @@ export class PaintingToolManager {
     this.materialsHolder = new MaterialsHolder();
     this.shaderHolder = new ShaderHolder();
 
-    document.addEventListener("keydown", (key) => {
+    document.addEventListener("keydown", key => {
       if (key.code === "KeyQ") {
         this.NextPreset();
       }
     });
 
-    document.addEventListener("al-palette-option-selected", (e) => {
+    document.addEventListener("al-palette-option-selected", e => {
       const optionIndex = e.detail.optionIndex;
       const preset = this.GetPresetByIndex(optionIndex);
       this.SetPreset(preset);
     });
 
-    document.addEventListener("al-node-spawned", (e) => {
+    document.addEventListener("al-node-spawned", e => {
       this.nodes = e.detail.nodes;
       this.Reset();
     });
 
     this.NextPreset();
   }
-  
+
   GetPresets() {
     return Object.values(jsonpreset.remembered);
   }
-  
+
   GetPresetByIndex(index) {
     var presets = this.GetPresets();
     return presets[index]["0"];
   }
-    
+
   NextPreset() {
     var preset = this.GetPresetByIndex(this.currentPreset);
     this.SetPreset(preset);
@@ -1482,7 +1481,7 @@ export class PaintingToolManager {
     }
     return pressureArray;
   }
-  
+
   SetPreset(preset) {
     console.log("set preset");
     this.lineType = preset.lineType;
@@ -1497,7 +1496,7 @@ export class PaintingToolManager {
     this.animationSpeedAlt = preset.animationSpeedAlt;
     this.decalColour = new THREE.Color(preset.decalColour);
     this.facing = preset.facing;
-    this.spacing = preset.spacing
+    this.spacing = preset.spacing;
     this.maxlineWidth = preset.maxlineWidth;
     this.maxelementWidth = preset.maxelementWidth;
     this.jitter = preset.jitter;
@@ -1510,7 +1509,7 @@ export class PaintingToolManager {
     this.dynamicPressureSize = preset.dynamicPressureSize;
     this.dynamicPressureOpacity = preset.dynamicPressureOpacity;
     this.dynamicPressureSpecial = preset.dynamicPressureSpecial;
-    
+
     this.SetupMaterials();
     this.Reset();
   }
@@ -1543,14 +1542,14 @@ export class PaintingToolManager {
     this.BillboardObjects = [];
 
     this.LineMaterial.dispose();
-    
+
     if (this.ObjectsMaterial) {
       this.ObjectsMaterial.dispose();
     }
 
     // set painting tool dirty to force update
-    let paintingTool = document.querySelector('[al-painting-tool]');
-    
+    let paintingTool = document.querySelector("[al-painting-tool]");
+
     if (paintingTool) {
       paintingTool.setAttribute("al-painting-tool", "dirty", Date.now());
     }
@@ -1592,7 +1591,9 @@ export class DecalElement {
     this._pressure = _node.pressure;
     this._speed = _node.speed;
     this.Material = _ObjectsMaterial;
-    this._scale = _BrushVariablesInput.maxelementWidth * (this._pressure ? this._pressure : 0.1);
+    this._scale =
+      _BrushVariablesInput.maxelementWidth *
+      (this._pressure ? this._pressure : 0.1);
     this._shouldCreateObject = true;
     if (this.Material.name == "AnimatedMaterialLightning") {
       if (this._pressure < 0.5) this._shouldCreateObject = false;
@@ -1617,7 +1618,7 @@ export class DecalElement {
     }
     if (_BrushVariablesInput.objects == "rsphere") {
       this.geometry = new THREE.SphereBufferGeometry(
-        this._scale*0.5,
+        this._scale * 0.5,
         2 + Math.random() * 3,
         2 + Math.random() * 3
       );

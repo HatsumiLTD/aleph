@@ -80,7 +80,10 @@ AFRAME.registerComponent("al-node-spawner", {
       this.canvasMouseDown
     );
     this.el.sceneEl.canvas.removeEventListener("mouseup", this.canvasMouseUp);
-    this.el.sceneEl.canvas.removeEventListener("mousemove", this.canvasMouseMove);
+    this.el.sceneEl.canvas.removeEventListener(
+      "mousemove",
+      this.canvasMouseMove
+    );
     this.el.removeEventListener("raycaster-intersected", this.pointerOver);
     this.el.removeEventListener(
       "raycaster-intersected-cleared",
@@ -114,7 +117,7 @@ AFRAME.registerComponent("al-node-spawner", {
 
   pointerDown(_event) {
     if (this.data.graphEnabled) {
-      this.state.pointerDown =true;
+      this.state.pointerDown = true;
       this.el.sceneEl.emit("al-graph-pointer-down", {}, false);
     }
   },
@@ -129,11 +132,7 @@ AFRAME.registerComponent("al-node-spawner", {
   elClick(event: CustomEvent) {
     console.log("click", event);
     if ((this.state.left || this.data.vrEnabled) && this.data.graphEnabled) {
-      this.el.sceneEl.emit(
-        "al-add-node",
-        { aframeEvent: event },
-        false
-      );
+      this.el.sceneEl.emit("al-add-node", { aframeEvent: event }, false);
     }
   },
 

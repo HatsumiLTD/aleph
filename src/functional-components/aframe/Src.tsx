@@ -72,7 +72,7 @@ export const Src: FunctionalComponent<SrcProps> = (
               scale="1 1 1"
               ref={ref => cb(ref)}
             />
-          )
+          );
         }
         case DisplayMode.SLICES: {
           return (

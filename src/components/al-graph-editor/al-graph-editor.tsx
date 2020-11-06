@@ -56,13 +56,18 @@ export class AlGraphEditor {
         painting-enabled={this.paintingEnabled}
         units={this.units}
       ></al-graph-settings>,
-      !this.paintingEnabled && <div>
-        <al-node-list nodes={this.nodes} selected={this.selected}></al-node-list>
-        <ion-item-divider></ion-item-divider>
-        <al-node-editor node={this._getSelectedNode()}></al-node-editor>
-        <al-edge-editor edge={this._getSelectedEdge()}></al-edge-editor>
-        <al-angle-editor angle={this._getSelectedAngle()}></al-angle-editor>
-      </div>
+      !this.paintingEnabled && (
+        <div>
+          <al-node-list
+            nodes={this.nodes}
+            selected={this.selected}
+          ></al-node-list>
+          <ion-item-divider></ion-item-divider>
+          <al-node-editor node={this._getSelectedNode()}></al-node-editor>
+          <al-edge-editor edge={this._getSelectedEdge()}></al-edge-editor>
+          <al-angle-editor angle={this._getSelectedAngle()}></al-angle-editor>
+        </div>
+      )
     ];
   }
 }

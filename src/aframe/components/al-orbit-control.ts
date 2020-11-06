@@ -1,4 +1,4 @@
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { MathUtils as THREEMath } from "three";
 
 const AlControlEvents = {
