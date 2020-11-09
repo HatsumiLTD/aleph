@@ -42,8 +42,8 @@ AFRAME.registerComponent("al-gltf-model", {
           // The "mesh" is actually a whole GLTF scene
           el.setObject3D("mesh", self.model);
           //FOR DEBUGGING_______please remove for production
-          // self.model.children[0].position.set(0,0,-2.5);
-          // self.model.position.set(0,0,0);
+          self.model.children[0].position.set(0,0,-2.5);
+          self.model.position.set(0,0,0);
           //FOR DEBUGGING_______please remove for production
 
           el.sceneEl.emit(
