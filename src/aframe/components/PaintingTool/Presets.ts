@@ -347,7 +347,7 @@ export const jsonpreset = {
         "animationSpeedAlt": 0,
         "decalColour": 3397621,
         "facing": "Line",
-        "spacing": 0,
+        "spacing": -4,
         "maxelementWidth": 0.08,
         "jitter": 1,
         "rotation": 0,
