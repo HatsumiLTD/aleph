@@ -8,7 +8,8 @@ export const VRControls: FunctionalComponent<VRControlsProps> = _children =>
       <a-entity id="controllers" visible="false">
         <a-entity
           laser-controls="hand: left; model: false"
-          raycaster="objects: [data-raycastable];"
+          raycaster="objects: nill; far: 0.;"
+          line="opacity: 0.0"
           id="left-controller"
         >
           <a-entity>
@@ -281,8 +282,7 @@ export const VRControls: FunctionalComponent<VRControlsProps> = _children =>
 
 
             <a-gltf-model
-            src="url(https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2Fnew-palette-transparent.glb?v=1605015425404)"
-            // src="url(https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2Fhatsumi-palette.glb?v=1598617782328)"
+            src="url(https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2Fnew-palette-transparent.glb?v=1605025292884)"
               position="0 0 0"
             ></a-gltf-model>
           </a-entity>

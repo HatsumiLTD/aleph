@@ -1797,7 +1797,6 @@ export class PaintingToolManager {
         //-----old way of adding materials to the scene------
     }
 
-    // reset manager
     updateStroke() {
         this.UpdateBrush(this.parentGroup, this.getGeometry());
         this.addDecals();
@@ -1805,15 +1804,11 @@ export class PaintingToolManager {
     changeCurrentColour(_colour) {
         let $this = this;
         this.mainColour = _colour;
-        //    this.currentMaterialCache.colour
     }
-    //_width should be a normal float 0.0 to 1.0
     changeCurrentWidth(delta) {
-        // let $this = this;
         var value = delta;
-        this.CurrentWidth += value * 0.04;
+        this.CurrentWidth -= value * 0.01;
         this.CurrentWidth = THREE.Math.clamp(this.CurrentWidth, 0.1, 1.0);
-
         var _scaler = this.maxlineWidth;
         this.currentMaterialCache.lineWidth = _scaler * this.CurrentWidth;
     }
@@ -1945,17 +1940,16 @@ export class PaintingToolManager {
                         $this.materialsCache[i].lineMaterial.needsUpdate = true;
                     }
                 } else {
-                    $this.materialsCache[i].lineMaterial.uniforms.color.value = $this.materialsCache[i].colour;
-                    $this.materialsCache[i].lineMaterial.uniforms.lineWidth.value = $this.materialsCache[i].lineWidth;
-                    $this.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = $this.materialsCache[i].lineLength;
-                    $this.materialsCache[i].lineMaterial.needsUpdate = true;
+                    if (i == $this.materialsCache.length - 1) {//only update the curently painting lineMaterial
+                        $this.materialsCache[i].lineMaterial.uniforms.color.value = $this.materialsCache[i].colour;
+                        $this.materialsCache[i].lineMaterial.uniforms.lineWidth.value = $this.materialsCache[i].lineWidth;
+                        $this.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = $this.materialsCache[i].lineLength;
+                        $this.materialsCache[i].lineMaterial.needsUpdate = true;
+                    }
                 }
             }
         }
 
-        $this.currentMaterialCache.lineMaterial.uniforms.lengthNormal.value
-        $this.currentMaterialCache.lineMaterial.uniforms.color.value = this.currentMaterialCache.colour;
-        $this.currentMaterialCache.lineMaterial.needsUpdate = true;
 
         //-------Update the decal objects(BillboardObjects)------
         if ($this.BillboardObjects.length > 0) {
@@ -1967,7 +1961,6 @@ export class PaintingToolManager {
         return retrunValue;
     }
     addDecals() {
-
         let $this = this;
         // console.log("add decals");
         if (!$this.paintDecals)
@@ -1981,14 +1974,10 @@ export class PaintingToolManager {
                     var originalPos = nodes[j].position;
                     nodes[j].position = vec3;
                     var _DecalElement = new DecalElement($this.ObjectsMaterial, nodes[j], paintingToolManager);
-                    if ($this.ObjectsMaterial.name == "ice") console.log("Should Add");
                     if (_DecalElement.mesh && !nodes[j].nodeAttached) {
-                        console.log("Did Add");
                         $this.parentGroup.add(_DecalElement.mesh);
                         $this.BillboardObjects.push(_DecalElement);
                         nodes[j].nodeAttached = true;
-                    } else {
-                        console.log("Didnt Add");
                     }
                     counter = -$this.spacing;
                     nodes[j].position = originalPos;
