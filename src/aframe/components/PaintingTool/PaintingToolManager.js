@@ -1573,8 +1573,12 @@ export class PaintingToolManager {
         });
         document.addEventListener("al-palette-option-selected", e => {
             const optionIndex = e.detail.optionIndex;
-            const preset = this.GetPresetByIndex(optionIndex);
-            this.SetPreset(preset);
+            if (optionIndex <= 11) {
+                const preset = this.GetPresetByIndex(optionIndex);
+                this.SetPreset(preset);
+            } else {
+                this.ChangecolourByIndex(optionIndex);
+            }
         });
 
         document.addEventListener("al-node-spawned", e => {
@@ -1596,9 +1600,77 @@ export class PaintingToolManager {
 
     GetPresetByIndex(index) {
         var presets = this.GetPresets();
-        return presets[index]["0"];
+        var indexTranslation = index;
+        if (index == 7) indexTranslation = 0;//brush
+        if (index == 4) indexTranslation = 1;//Fire
+        if (index == 5) indexTranslation = 2;//Water
+        if (index == 0) indexTranslation = 3;//Smake
+        if (index == 10) indexTranslation = 4;//Vine(with leaves)
+        if (index == 6) indexTranslation = 5;//Lava
+        if (index == 9) indexTranslation = 6;//Wind
+        if (index == 8) indexTranslation = 7;//Bugs
+        if (index == 1) indexTranslation = 8;//Lightning
+        if (index == 11) indexTranslation = 9;//Vine (Spkied)
+        if (index == 2) indexTranslation = 10;//TV Static
+        if (index == 3) indexTranslation = 11;//Ice
+        return presets[indexTranslation]["0"];
     }
+    ChangecolourByIndex(index) {
+        console.log("ChangecolourByIndex");
+        var _colour = this.mainColour;
+        if (index == 12) {//red orange
+            _colour = new THREE.Color("rgb(255, 52, 0)");
+        }
+        if (index == 13) {//orange
+            _colour = new THREE.Color("rgb(255, 127, 0)");
+        }
+        if (index == 14) {//yellow orange
+            _colour = new THREE.Color("rgb(255, 187, 16)");
+        }
+        if (index == 15) {//yellow
+            _colour = new THREE.Color("rgb(255, 248, 5)");
+        }
+        if (index == 16) {//yellow green
+            _colour = new THREE.Color("rgb(187, 255, 0)");
+        }
+        if (index == 17) {//green
+            _colour = new THREE.Color("rgb(87, 255, 0)");
+        }
+        if (index == 18) {//turquoise
+            _colour = new THREE.Color("rgb(0, 255, 170)");
+        }
+        if (index == 19) {//light blue
+            _colour = new THREE.Color("rgb(2, 152, 255)");
+        }
+        if (index == 20) {//blue
+            _colour = new THREE.Color("rgb(19, 25, 255)");
+        }
+        if (index == 21) {//purple
+            _colour = new THREE.Color("rgb(130, 0, 255)");
+        }
+        if (index == 22) {//pink
+            _colour = new THREE.Color("rgb(255, 1, 243)");
+        }
+        if (index == 22) {//pink
+            _colour = new THREE.Color("rgb(255, 1, 243)");
+        }
+        if (index == 23) {//red
+            _colour = new THREE.Color("rgb(255, 0, 49)");
+        }
+        //-----
+        if (index == 24) {//black
+            _colour = new THREE.Color("rgb(255, 255, 255)");
+        }
+        if (index == 25) {//white
+            _colour = new THREE.Color("rgb(0, 0, 0)");
+        }
+        if (index == 26) {//grey
+            _colour = new THREE.Color("rgb(127, 127, 127)");
+        }
+        //-----
+        this.changeCurrentColour(_colour);
 
+    }
     NextPreset() {
         var presets = Object.values(jsonpreset.remembered);
         var preset = presets[this.currentPreset]["0"];
@@ -1731,18 +1803,19 @@ export class PaintingToolManager {
         this.addDecals();
     }
     changeCurrentColour(_colour) {
-        let $this = this;//no idea why this is needed here...
-        $this.currentMaterialCache.colour = _colour;
+        let $this = this;
+        this.mainColour = _colour;
+        //    this.currentMaterialCache.colour
     }
     //_width should be a normal float 0.0 to 1.0
     changeCurrentWidth(delta) {
-        // let $this = this;//no idea why this is needed here...
+        // let $this = this;
         var value = delta;
         this.CurrentWidth += value * 0.04;
         this.CurrentWidth = THREE.Math.clamp(this.CurrentWidth, 0.1, 1.0);
 
         var _scaler = this.maxlineWidth;
-        this.currentMaterialCache.lineWidth =_scaler * this.CurrentWidth;
+        this.currentMaterialCache.lineWidth = _scaler * this.CurrentWidth;
     }
     UpdateBrush(_group, _Geometry) {
         if (this.strokecount == this.currentstrokecount) {
@@ -1799,7 +1872,7 @@ export class PaintingToolManager {
         //   return;
         // }
 
-        let $this = this;//no idea why this is needed here...
+        let $this = this;
         const _nodes = $this.nodes;
         const geometry = new THREE.Geometry();
         //get a node range to read from.
@@ -1830,7 +1903,7 @@ export class PaintingToolManager {
         return geometry;
     }
     runAnimation(scene, pointerDown) {
-        let $this = this;//no idea why this is needed here...
+        let $this = this;
         var retrunValue = false;
         ////get camera position--------
         // var scene = this.el.sceneEl;
@@ -1857,6 +1930,7 @@ export class PaintingToolManager {
             //console.log($this.materialsCache.length + ":$this.materialsCache[i].lineLength: " + $this.currentMaterialCache.lineLength);
         }
         //------need to find some way to pass pressuers into the mesh line (probably with vertext), not this way.
+
         for (var i = 0; i < $this.materialsCache.length; i++) {
             if ($this.materialsCache[i].lineMaterial) {
                 if ($this.materialsCache[i].lineMaterial.name != "No custom Shader") {
@@ -1878,6 +1952,11 @@ export class PaintingToolManager {
                 }
             }
         }
+
+        $this.currentMaterialCache.lineMaterial.uniforms.lengthNormal.value
+        $this.currentMaterialCache.lineMaterial.uniforms.color.value = this.currentMaterialCache.colour;
+        $this.currentMaterialCache.lineMaterial.needsUpdate = true;
+
         //-------Update the decal objects(BillboardObjects)------
         if ($this.BillboardObjects.length > 0) {
             $this.BillboardObjects.forEach(function (obj) {
@@ -1889,7 +1968,7 @@ export class PaintingToolManager {
     }
     addDecals() {
 
-        let $this = this;//no idea why this is needed here...
+        let $this = this;
         // console.log("add decals");
         if (!$this.paintDecals)
             return;
