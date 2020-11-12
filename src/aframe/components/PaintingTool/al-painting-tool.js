@@ -15,13 +15,15 @@ const EVENTS = {
   BBUTTONDOWN: "bbuttondown",
   RAYCASTER_INTERSECTED: "raycaster-intersected",
   RAYCASTER_CLEARED: "raycaster-intersected-cleared",
-  ADD_NODE: "al-add-node"
+  ADD_NODE: "al-add-node",
+  UPDATE_BRUSH_NODE: "al-update-brush-node"
 };
 AFRAME.registerComponent("al-painting-tool", {
   schema: {
     enabled: { default: true },
     minFrameMS: { type: "number", default: 15 },
-    minLineSegmentLength: { type: "number", default: 0.0001 },
+    minLineSegmentLength: { type: "number", default: 0.01 },
+    minBrushSegmentLength: { type: "number", default: 0.00005 },
     nodesNum: { type: "number" },
     dirty: { type: "string" },
     preset: { type: "number" },
@@ -177,11 +179,7 @@ AFRAME.registerComponent("al-painting-tool", {
     const intersection = this.raycaster.components.raycaster.getIntersection(
       this.el
     );
-    // if (intersection) {
-    //   this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume + 0.01, 0.0, 1.0);
-    // } else {
-    //   this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume - 0.1, 0.0, 1.0);
-    // }
+
     if (!intersection) {
       this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume - 0.1, 0.0, 1.0);
       return;
@@ -192,9 +190,8 @@ AFRAME.registerComponent("al-painting-tool", {
       const distance = this.state.lastIntersection.point.distanceTo(
         intersection.point
       );
-
+      //--
       if (distance >= this.data.minLineSegmentLength) {
-        this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume + 0.06, 0.0, 1.0);
         this.el.sceneEl.emit(
           EVENTS.ADD_NODE,
           {
@@ -207,11 +204,22 @@ AFRAME.registerComponent("al-painting-tool", {
           },
           false
         );
-
         this.state.lastIntersection = intersection;
+      }
+      //--
+      if (distance >= this.data.minBrushSegmentLength) {
+        this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume + 0.06, 0.0, 1.0);
+        const nodeSpawnedEvent = new CustomEvent(EVENTS.UPDATE_BRUSH_NODE, {
+          detail: {
+            intersectedEl: this.el,
+            intersection: intersection
+          }
+        });
+        document.dispatchEvent(nodeSpawnedEvent);
       } else {
         this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume - 0.1, 0.0, 1.0);
       }
+      //--
     } else {
       this.state.lastIntersection = intersection;
     }
@@ -232,11 +240,12 @@ AFRAME.registerComponent("al-painting-tool", {
       rightController.components.sound.pool.children[0].setVolume(this.sfx_brushVolume * this.sfx_brushMasterVolume);
       this.sfx_oldbrushVolume = this.sfx_brushVolume;
     }
-
-    if (paintingToolManager.runAnimation(this.el.sceneEl, this.state.pointerDown)) {
+    if (paintingToolManager.updateLineLength(this.state.pointerDown)) {
       this.forceTouchUp();
       this.forceTouchDown();
     }
+    paintingToolManager.runAnimation(this.el.sceneEl, this.state.pointerDown);
+
   },
   remove: function () {
     this.el.removeObject3D("group");

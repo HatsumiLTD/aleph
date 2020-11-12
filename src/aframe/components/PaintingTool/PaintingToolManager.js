@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { Vector3 } from "three";
 import "./PaintingToolMeshLine";
 import { jsonpreset } from "./Presets";
 
@@ -869,11 +870,13 @@ class MaterialsCache {
         this.lineLength;
         this.startTime;
         this.pressures = [];
+        this.time;
     }
     MaterialsCache(_textureName, _materialName) {
         this.textureName = _textureName;
         this.materialName = _materialName;
         this.lineWidth = 1.0;
+        this.time = 0;
         this.startTime = Math.random();
     }
 }
@@ -1547,6 +1550,8 @@ export class PaintingToolManager {
          */
 
         this.clock = new THREE.Clock();
+        this.currentTime = 0;
+        this.lastTime = 0;
         this.parentGroup;
         this.CurrentWidth = 1.0;
 
@@ -1595,59 +1600,82 @@ export class PaintingToolManager {
             }
         });
 
-        document.addEventListener("al-node-spawned", e => {
-            // this.nodes = e.detail.nodes;
-            let position = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].position);
-            let normal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].normal);
-            let paintingNode = new PaintingNode(position, normal, 0.0);
-            this.nodes.push(paintingNode);//e.detail.nodes[e.detail.nodes.length - 1]);
-            this.updateStroke();
-        });
         // document.addEventListener("al-node-spawned", e => {
-        //     if (e.detail.nodes.length < 3) {
-        //         // this.nodes = e.detail.nodes;
-        //         let nodepos = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].position);
-        //         let normal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].normal);
-
-        //         const paintingNode = new PaintingNode(nodepos, normal, 0.0);
-        //         this.nodes.push(paintingNode);
-
-        //     } else {
-        //         let _startpos = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 2].position);
-        //         let _endpos = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].position);
-        //         let _snormal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 2].normal);
-        //         let _enormal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].normal);
-
-        //         let startpos = new THREE.Vector3(_startpos.x, _startpos.y, _startpos.z);
-        //         let endpos = new THREE.Vector3(_endpos.x, _endpos.y, _endpos.z);
-        //         let snormal = new THREE.Vector3(_snormal.x, _snormal.y, _snormal.z);
-        //         let enormal = new THREE.Vector3(_enormal.x, _enormal.y, _enormal.z);
-
-        //         let distance = startpos.distanceTo(endpos);
-        //         // console.log("distance: " + distance);
-        //         var minDistance = 0.0001;
-        //         var maxDistance = 0.01;
-        //         if (distance > minDistance) {
-
-        //         if (distance > maxDistance) {
-        //             var count = ((minDistance*1000.0)/(distance*1000.0))/1000.0;
-        //             console.log("count: " + count);
-        //             for (var i = 0; i <= count; i++) {
-        //                 let perc = parseFloat(i) / parseFloat(Math.floor(count + 1.0));
-        //                 let newpos = startpos;
-        //                 newpos.lerp(endpos, perc);
-        //                 let newNorm = snormal;
-        //                 newNorm.lerp(enormal, perc);
-        //                 const paintingNode = new PaintingNode(newpos, newNorm, 0.0);
-        //                 this.nodes.push(paintingNode);
-        //             }
-        //         }else{
-        //             this.nodes[this.nodes.length - 1].position = endpos;
-        //         }
-        //         }
-        //     }
+        //     // this.nodes = e.detail.nodes;
+        //     let position = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].position);
+        //     let normal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].normal);
+        //     let paintingNode = new PaintingNode(position, normal, 0.0);
+        //     this.nodes.push(paintingNode);//e.detail.nodes[e.detail.nodes.length - 1]);
         //     this.updateStroke();
         // });
+
+        this.Temp_PaintingNode = new PaintingNode(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 1.0);
+        document.addEventListener("al-update-brush-node", e => {
+            if (this.NodeRangeEnding - this.NodeRangeBegining > 1) {
+                let nodepos = AFRAME.utils.coordinates.parse(e.detail.intersection.point);
+                let pos = new THREE.Vector3(e.detail.intersection.point.x, e.detail.intersection.point.y, e.detail.intersection.point.z);
+                let nrm = new THREE.Vector3(e.detail.intersection.face.normal.x, e.detail.intersection.face.normal.y, e.detail.intersection.face.normal.z);
+                // console.log("al-update-brush-node: " + e.detail.intersectedEl.name);
+                // this.nodes[this.nodes.length - 1].position = pos;
+                // this.nodes[this.nodes.length - 1].normal = nrm;
+                this.Temp_PaintingNode.position = pos;
+                this.Temp_PaintingNode.normal = nrm;
+                this.updateStroke();
+            }
+        });
+
+        document.addEventListener("al-node-spawned", e => {
+            if (this.NodeRangeEnding - this.NodeRangeBegining < 2) {//place nodes normally at the begining of stroke
+                let nodepos = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].position);
+                let normal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].normal);
+                this.Temp_PaintingNode.position = new THREE.Vector3(nodepos.x, nodepos.y, nodepos.z);
+                this.Temp_PaintingNode.normal = new THREE.Vector3(normal.x, normal.y, normal.z);;
+                const paintingNode = new PaintingNode(nodepos, normal, 1.0);
+                this.nodes.push(paintingNode);
+                this.updateStroke();
+            } else {
+                //calculate disdance between last node position and new node position
+                let _startpos = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 2].position);
+                let _endpos = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].position);
+                let _snormal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 2].normal);
+                let _enormal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].normal);
+
+                let startpos = new THREE.Vector3(_startpos.x, _startpos.y, _startpos.z);
+                let endpos = new THREE.Vector3(_endpos.x, _endpos.y, _endpos.z);
+                let snormal = new THREE.Vector3(_snormal.x, _snormal.y, _snormal.z);
+                let enormal = new THREE.Vector3(_enormal.x, _enormal.y, _enormal.z);
+
+                let distance = startpos.distanceTo(endpos);
+                // console.log("distance: " + distance);
+                var minDistance = 0.0001;
+                var maxDistance = 0.01;
+                if (distance > minDistance) {
+                    //add multipul new node in between the Aleph Node positions
+                    var count = (((distance * 1000.0) / (minDistance * 1000.0)) / 1000.0) * 2.0;
+                    // if (count > 2)
+                    // console.log("count: " + count);
+                    for (var i = 0; i <= count; i++) {
+                        let perc = parseFloat(i) / parseFloat(Math.floor(count + 1));
+                        // if (count > 2)
+                        // console.log("perc: " + perc);
+                        let newpos = startpos.clone();
+                        newpos.lerp(endpos, perc);
+                        let newNorm = snormal.clone();
+                        newNorm.lerp(enormal, perc);
+                        const paintingNode = new PaintingNode(newpos, newNorm, 1.0);
+                        this.nodes.push(paintingNode);
+                    }
+                    this.updateStroke();
+                } else {
+                    //place nodes normally at smaller distances
+                    let nodepos = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].position);
+                    let normal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].normal);
+                    const paintingNode = new PaintingNode(nodepos, normal, 1.0);
+                    this.nodes.push(paintingNode);
+                    this.updateStroke();
+                }
+            }
+        });
     }
     stringToVector3(vec) {
         const res = vec.split(" ");
@@ -1835,6 +1863,7 @@ export class PaintingToolManager {
             this.currentMaterialCache.colour = this.mainColour;
             this.currentMaterialCache.lineWidth = this.maxlineWidth * this.CurrentWidth;
             this.currentMaterialCache.startTime = Math.random();
+            this.currentMaterialCache.time = 0;
             // this.LineMaterial =
             this.currentMaterialCache.lineMaterial =
                 this.materialsHolder.makeMaterial(this, this.assetsPath + textures[0], materials[0]);
@@ -1901,8 +1930,7 @@ export class PaintingToolManager {
             this.currentPaintingToolMeshLine.setGeometry(geo, function (p) {
                 return p;
             });
-        }
-        else {
+        } else {
             this.currentstrokecount = this.strokecount;
             // create new stroke
             var linethreemesh = this.makeLine(this.geo);
@@ -1945,26 +1973,54 @@ export class PaintingToolManager {
                 if (drawingdistance) {
                     //add some drawingdistance from body
                     var _position = new THREE.Vector3(position.x, position.y, position.z);
-                    let norml = new THREE.Vector3(node.normal.x, node.normal.y, node.normal.z);//$this.stringToVector3(node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
+                    let norml = new THREE.Vector3(node.normal.x, node.normal.y, node.normal.z);
                     _position.add(norml.multiplyScalar(0.01));
                     geometry.vertices.push(_position);
                     //add some drawingdistance from body
                 } else {
                     if (int_counter == $this.NodeRangeEnding - 2) {
                         var _position = new THREE.Vector3(position.x, position.y, position.z);
-                        console.log("position: " + _position.x + ", " + _position.y + ", " + _position.z);
+                        //console.log("position: " + _position.x + ", " + _position.y + ", " + _position.z);
                     }
                     geometry.vertices.push(position);
                 }
             }
             int_counter++;
         });
+        //---add dummy position---
+        if ($this.NodeRangeEnding - $this.NodeRangeBegining > 2) {
+            let _position = new THREE.Vector3($this.Temp_PaintingNode.position.x, $this.Temp_PaintingNode.position.y, $this.Temp_PaintingNode.position.z);
+            let norml = new THREE.Vector3($this.Temp_PaintingNode.normal.x, $this.Temp_PaintingNode.normal.y, $this.Temp_PaintingNode.normal.z);
+            _position.add(norml.multiplyScalar(0.01));
+            geometry.vertices.push(_position);
+            int_counter++;
+        }
+        //---add dummy position---
         return geometry;
     }
-
+    updateLineLength(pointerDown) {
+        let $this = this;
+        let retrunValue = false;
+        if (pointerDown) {
+            var lineLength = ($this.NodeRangeEnding - $this.NodeRangeBegining) / ($this.geoCount - 1);
+            if (lineLength > 1.0) retrunValue = true;
+            $this.currentMaterialCache.lineLength = THREE.Math.clamp(lineLength * 0.9, 0.01, 1.0);
+            // $this.currentMaterialCache.pressures = $this.GetPressure();
+            //console.log($this.materialsCache.length + ":$this.materialsCache[i].lineLength: " + $this.currentMaterialCache.lineLength);
+        }
+        return retrunValue;
+    }
     runAnimation(scene, pointerDown) {
         let $this = this;
-        var retrunValue = false;
+        var delta = $this.clock.getDelta();// * 20.0;
+        $this.currentTime += delta;
+        let slowUpdate = true;
+        if ($this.currentTime - $this.lastTime > 0.06) {
+            $this.lastTime = $this.currentTime;
+            slowUpdate = true;
+        } else {
+            slowUpdate = false;
+        }
         ////get camera position--------
         // var scene = this.el.sceneEl;
         var cameraEl = scene.camera;
@@ -1972,7 +2028,6 @@ export class PaintingToolManager {
         worldPos.setFromMatrixPosition(cameraEl.matrixWorld);
         // ////get camera position--------
         //--------run timer---------
-        var delta = $this.clock.getDelta();// * 20.0;
         $this.timer += delta * 0.1;// * $this.animationSpeed;
         if ($this.timer >= 1.0)
             $this.timer -= 1.0;
@@ -1981,28 +2036,37 @@ export class PaintingToolManager {
         //--------run timer---------
         // //-------Update the line materials------
         //------need to find some way to pass pressuers into the mesh line (probably with vertext), not this way.
-        if (pointerDown) {
-            var lineLength = ($this.NodeRangeEnding - $this.NodeRangeBegining) / ($this.geoCount - 1);
-            if (lineLength > 1.0) retrunValue = true;
-            // $this.forceTouchUp();//
-            $this.currentMaterialCache.lineLength = THREE.Math.clamp(lineLength * 0.9, 0.01, 1.0);
-            // $this.currentMaterialCache.pressures = $this.GetPressure();
-            //console.log($this.materialsCache.length + ":$this.materialsCache[i].lineLength: " + $this.currentMaterialCache.lineLength);
-        }
+        // if (pointerDown) {
+        //     var lineLength = ($this.NodeRangeEnding - $this.NodeRangeBegining) / ($this.geoCount - 1);
+        //     if (lineLength > 1.0) retrunValue = true;
+        //     // $this.forceTouchUp();//
+        //     $this.currentMaterialCache.lineLength = THREE.Math.clamp(lineLength * 0.9, 0.01, 1.0);
+        //     // $this.currentMaterialCache.pressures = $this.GetPressure();
+        //     //console.log($this.materialsCache.length + ":$this.materialsCache[i].lineLength: " + $this.currentMaterialCache.lineLength);
+        // }
         //------need to find some way to pass pressuers into the mesh line (probably with vertext), not this way.
 
         for (var i = 0; i < $this.materialsCache.length; i++) {
             if ($this.materialsCache[i].lineMaterial) {
                 if ($this.materialsCache[i].lineMaterial.name != "No custom Shader") {
                     if ($this.materialsCache[i].lineMaterial.uniforms.time) {
-                        var _time = ($this.timer + $this.materialsCache[i].startTime) % 1.0;
-                        $this.materialsCache[i].lineMaterial.uniforms.time.value = _time;
-                        $this.materialsCache[i].lineMaterial.uniforms.lineWidth.value = $this.materialsCache[i].lineWidth;
-                        //$this.materialsCache[i].lineMaterial.uniforms.color.value = new THREE.Color(Math.random(), Math.random(), Math.random() );
-                        $this.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = $this.materialsCache[i].lineLength;
-                        // if($this.materialsCache[i].lineMaterial.uniforms.pressures)
-                        //   $this.materialsCache[i].lineMaterial.uniforms.pressures.value = $this.materialsCache[i].pressures;
-                        $this.materialsCache[i].lineMaterial.needsUpdate = true;
+                        let shouldUpdate = slowUpdate;
+                        if (i == $this.materialsCache.length - 1) shouldUpdate = true;
+                        if (shouldUpdate) {
+                            $this.materialsCache[i].time += delta * 0.1;
+                            if ($this.materialsCache[i].time >= 1.0)
+                                $this.materialsCache[i].time -= 1.0;
+                            if ($this.materialsCache[i].time <= -1.0)
+                                $this.materialsCache[i].time += 1.0;
+                            var _time = ($this.materialsCache[i].time + $this.materialsCache[i].startTime) % 1.0;//($this.timer + $this.materialsCache[i].startTime) % 1.0;
+                            $this.materialsCache[i].lineMaterial.uniforms.time.value = _time;
+                            $this.materialsCache[i].lineMaterial.uniforms.lineWidth.value = $this.materialsCache[i].lineWidth;
+                            //$this.materialsCache[i].lineMaterial.uniforms.color.value = new THREE.Color(Math.random(), Math.random(), Math.random() );
+                            $this.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = $this.materialsCache[i].lineLength;
+                            // if($this.materialsCache[i].lineMaterial.uniforms.pressures)
+                            //   $this.materialsCache[i].lineMaterial.uniforms.pressures.value = $this.materialsCache[i].pressures;
+                            $this.materialsCache[i].lineMaterial.needsUpdate = true;
+                        }
                     }
                 } else {
                     if (i == $this.materialsCache.length - 1) {//only update the curently painting lineMaterial
@@ -2023,7 +2087,6 @@ export class PaintingToolManager {
             });
         }
         //-------Update the decal objects(BillboardObjects)------
-        return retrunValue;
     }
     addDecals() {
         let $this = this;
@@ -2035,7 +2098,7 @@ export class PaintingToolManager {
             var counter = 0;
             for (var j = $this.NodeRangeBegining; j < nodes.length; j++) {
                 if (counter-- == 0) {
-                    var vec3 = AFRAME.utils.coordinates.parse(nodes[j].position);
+                    var vec3 = nodes[j].position;
                     var originalPos = nodes[j].position;
                     nodes[j].position = vec3;
                     var _DecalElement = new DecalElement($this.ObjectsMaterial, nodes[j], paintingToolManager, $this.materialsCache[$this.materialsCache.length - 1]);
@@ -2051,12 +2114,12 @@ export class PaintingToolManager {
         }
         else {
             for (var j = $this.NodeRangeBegining; j < nodes.length; j++) {
-                var vec3 = AFRAME.utils.coordinates.parse(nodes[j].position);
+                var vec3 = nodes[j].position;
                 vec3 = new THREE.Vector3(vec3.x, vec3.y, vec3.z);
-                var vec3target = AFRAME.utils.coordinates.parse(nodes[j].position);
+                var vec3target = nodes[j].position;
                 vec3target = new THREE.Vector3(vec3target.x, vec3target.y, vec3target.z);
                 if (j + 1 < nodes.length) {
-                    vec3target = AFRAME.utils.coordinates.parse(nodes[j + 1].position);
+                    vec3target = nodes[j + 1].position;
                     vec3target = new THREE.Vector3(vec3target.x, vec3target.y, vec3target.z);
                 }
                 var distance = vec3.distanceTo(vec3target);
@@ -2122,7 +2185,7 @@ export class DecalElement {
         this.Node = _node;
         this._position = new THREE.Vector3(_node.position.x, _node.position.y, _node.position.z);
         //add some drawingdistance from body
-        var norml = _node.norma;//this.stringToVector3(_node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
+        var norml = _node.normal;//this.stringToVector3(_node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
         this._position.add(norml.multiplyScalar(0.01));
         //add some drawingdistance from body
 
