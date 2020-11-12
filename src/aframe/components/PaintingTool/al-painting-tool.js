@@ -105,15 +105,14 @@ AFRAME.registerComponent("al-painting-tool", {
       paintingToolManager.ResetCurrentBrush();
     });
 
-    rightController.addEventListener(EVENTS.ABUTTONDOWN, evt => {
-      paintingToolManager.NextPreset();
+    // rightController.addEventListener(EVENTS.ABUTTONDOWN, evt => {
+    //   paintingToolManager.NextPreset();
+    // });
 
-    });
 
-
-    addEventListener('thumbstickmoved', function (evt) {
-      paintingToolManager.changeCurrentWidth(evt.detail.y);
-    });
+    // addEventListener('thumbstickmoved', function (evt) {
+    //   paintingToolManager.changeCurrentWidth(evt.detail.y);
+    // });
 
     this.debouncedGetIntersection = AFRAME.utils.throttle(
       this.getIntersection,
@@ -208,6 +207,9 @@ AFRAME.registerComponent("al-painting-tool", {
       }
       //--
       if (distance >= this.data.minBrushSegmentLength) {
+        //change the size of the brush based on ray intersection distance
+        paintingToolManager.changeCurrentWidthDirectly(intersection.distance);
+        //change the size of the brush based on ray intersection distance
         this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume + 0.06, 0.0, 1.0);
         const nodeSpawnedEvent = new CustomEvent(EVENTS.UPDATE_BRUSH_NODE, {
           detail: {

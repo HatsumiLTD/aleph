@@ -207,8 +207,9 @@ export class ShaderHolder {
                 "    vec4 c = vec4(1.0);",
                 "    vec2 finnaluvpos = vUV * repeat ;",
                 "vec2 p = finnaluvpos - vec2(0.5, 0.5);",
+                //  float rocks = pow( snoise( float2(finnaluvpos.x*0.5,i.vUV.y)*0.1),4.f)*4.0f;
 
-                "float rocks = pow(snoise(finnaluvpos * vec2(6.,4.0) ),4.)*4.0;",
+                "float rocks = pow( snoise( vec2(finnaluvpos.x*0.5,vUV.y)*1.6),4.0)*4.0;//pow(snoise(finnaluvpos * vec2(6.,4.0) ),4.)*4.0;",
                 THREE.ShaderChunk.Line_Width_ends,
                 "if( distance(vUV.y,0.5)*2.0 > endswidth ) discard;",
                 "rocks = clamp(rocks+(1.0-endswidth), 0.0,1.0);",
@@ -328,7 +329,7 @@ export class ShaderHolder {
                 "    finnaluvpos.x += time ;",
                 "    vec4 colourmap = texture2D( map, finnaluvpos );",
                 "    colourmap.a *= _noise;",
-                "    if(colourmap.a < 0.05)discard;",
+                // "    if(colourmap.a < 0.05)discard;",
                 "   c = colourmap * vec4(color.rgb,1.0);",
                 THREE.ShaderChunk.Line_ends,
                 "    gl_FragColor = c;",
@@ -671,9 +672,11 @@ export class ShaderHolder {
                 "}else{",
                 "prg = 2.0;",
                 "}",
-                "float rtime =  mod( (time*(2.0+prg)), 1.0);",
+
+                "float ttime =  mod( (time*2.0), 1.0);",
+                "float rtime =  mod( (ttime*(2.0+prg)), 1.0);",
                 "float fwdtime =  mod( (rtime+0.1), 1.0);",
-                "float rrtime =  mod(time*(2.0), 1.0);",
+                "float rrtime =  mod(ttime*(2.0), 1.0);",
                 "float fwdrrtime =  mod( (rrtime+0.1), 1.0);",
 
                 //"finnaluvpos.x -= time;",
@@ -717,15 +720,17 @@ export class ShaderHolder {
                 THREE.ShaderChunk.logdepthbuf_fragment,
                 // THREE.ShaderChunk.Line_pressure,
                 "float speed = 2.0;",
-                "float gtime =  mod( 0.2+(time*speed), 1.0);",
-                "float ltime =  mod( (time*4.), 1.0);",
+
+                "float ttime =  mod( (time*4.0), 1.0);",
+                "float gtime =  mod( 0.2+(ttime*speed), 1.0);",
+                "float ltime =  mod( (ttime*4.), 1.0);",
                 "vec2 uv = vUV;",
                 // "vec2 finnaluvpos = vUV * repeat ;",
                 "vec2 finnaluvpos = vUV * repeat+((1.0-lwidth)*30.0);",
-                "float flipper = mod( (time*3.), 1.0)-0.5;",
+                "float flipper = mod( (ttime*3.), 1.0)-0.5;",
                 "if(flipper>0.0)finnaluvpos.y = 1.0-finnaluvpos.y;",
-                "if(time>0.8)finnaluvpos.x -= 0.5;",
-                "if(time>0.1)finnaluvpos.x += 0.5;",
+                "if(ttime>0.8)finnaluvpos.x -= 0.5;",
+                "if(ttime>0.1)finnaluvpos.x += 0.5;",
                 //'finnaluvpos.y -= sin((finnaluvpos.x*5.)+floor(ltime*3.141*2.0))*0.1;',
                 "vec4 colourmap = texture2D( map, finnaluvpos );",
                 "float grey = (colourmap.r+colourmap.b+colourmap.g) / 3.0;",
@@ -1082,6 +1087,9 @@ class MaterialsHolder {
             var mcolour = new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
             // var lcolour = new THREE.Color(_BrushVariablesInput.lineColour.r, _BrushVariablesInput.lineColour.g, _BrushVariablesInput.lineColour.b);
             // mcolour.lerp(lcolour, 0.5);
+            var isBlack = (mcolour.r < 0.1 && mcolour.g < 0.1 && mcolour.b < 0.1);
+            var BelndingMode = THREE.AdditiveBlending;
+            if (isBlack) BelndingMode = THREE.NormalBlending;
             return new PaintingToolMeshLineMaterial({
                 name: _materialName,
                 color: mcolour,
@@ -1094,7 +1102,7 @@ class MaterialsHolder {
                 lineWidth: _BrushVariablesInput.maxlineWidth,
                 // depthTest: false,
                 // depthWrite: true,
-                // blending: THREE.AdditiveBlending,//NormalBlending,
+                blending: BelndingMode,//THREE.AdditiveBlending,//NormalBlending,
                 repeat: new THREE.Vector2(_BrushVariablesInput.repeatingAmount + 1.0, 1),
                 fragmentShader: _ShaderHolder.fragmentShader
             });
@@ -1381,8 +1389,8 @@ class MaterialsHolder {
             // newcolour.g = _BrushVariablesInput.mainColour.g;
             // newcolour.b = _BrushVariablesInput.mainColour.b;
             var mcolour = new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
-            var lcolour = new THREE.Color(_BrushVariablesInput.decalColour.r, _BrushVariablesInput.decalColour.g, _BrushVariablesInput.decalColour.b);
-            mcolour.lerp(lcolour, 0.5);
+            // var lcolour = new THREE.Color(_BrushVariablesInput.decalColour.r, _BrushVariablesInput.decalColour.g, _BrushVariablesInput.decalColour.b);
+            // mcolour.lerp(lcolour, 0.5);
             var uniforms = {
                 map: { type: "t", value: texture },
                 colour: { type: "c", value: mcolour },
@@ -1548,7 +1556,7 @@ export class PaintingToolManager {
          * @param {Float} n.dynamicPressureOpacity the amount pressure effects opacity.
          * @param {Float} n.dynamicPressureSpecial the amount a special variable is effected.
          */
-
+        this.DistanceFromBody = 0.03;
         this.clock = new THREE.Clock();
         this.currentTime = 0;
         this.lastTime = 0;
@@ -1900,7 +1908,13 @@ export class PaintingToolManager {
     changeCurrentWidth(delta) {
         var value = delta;
         this.CurrentWidth -= value * 0.01;
-        this.CurrentWidth = THREE.Math.clamp(this.CurrentWidth, 0.1, 1.0);
+        this.CurrentWidth = THREE.Math.clamp(this.CurrentWidth, 0.2, 1.0);
+        var _scaler = this.maxlineWidth;
+        this.currentMaterialCache.lineWidth = _scaler * this.CurrentWidth;
+    }
+    changeCurrentWidthDirectly(value) {
+        this.CurrentWidth = value;
+        this.CurrentWidth = THREE.Math.clamp(this.CurrentWidth, 0.2, 1.0);
         var _scaler = this.maxlineWidth;
         this.currentMaterialCache.lineWidth = _scaler * this.CurrentWidth;
     }
@@ -1974,7 +1988,7 @@ export class PaintingToolManager {
                     //add some drawingdistance from body
                     var _position = new THREE.Vector3(position.x, position.y, position.z);
                     let norml = new THREE.Vector3(node.normal.x, node.normal.y, node.normal.z);
-                    _position.add(norml.multiplyScalar(0.01));
+                    _position.add(norml.multiplyScalar($this.DistanceFromBody));
                     geometry.vertices.push(_position);
                     //add some drawingdistance from body
                 } else {
@@ -1991,7 +2005,7 @@ export class PaintingToolManager {
         if ($this.NodeRangeEnding - $this.NodeRangeBegining > 2) {
             let _position = new THREE.Vector3($this.Temp_PaintingNode.position.x, $this.Temp_PaintingNode.position.y, $this.Temp_PaintingNode.position.z);
             let norml = new THREE.Vector3($this.Temp_PaintingNode.normal.x, $this.Temp_PaintingNode.normal.y, $this.Temp_PaintingNode.normal.z);
-            _position.add(norml.multiplyScalar(0.01));
+            _position.add(norml.multiplyScalar($this.DistanceFromBody));
             geometry.vertices.push(_position);
             int_counter++;
         }
@@ -2009,6 +2023,15 @@ export class PaintingToolManager {
             //console.log($this.materialsCache.length + ":$this.materialsCache[i].lineLength: " + $this.currentMaterialCache.lineLength);
         }
         return retrunValue;
+    }
+    changeBlendingModeBasedOnColour(lineMaterial, colour) {
+        if (lineMaterial.name == "LineCloud") {
+            var mcolour = colour;//new THREE.Color(_BrushVariablesInput.mainColour.r, _BrushVariablesInput.mainColour.g, _BrushVariablesInput.mainColour.b);
+            var isBlack = (mcolour.r < 0.1 && mcolour.g < 0.1 && mcolour.b < 0.1);
+            var BelndingMode = THREE.AdditiveBlending;
+            if (isBlack) BelndingMode = THREE.NormalBlending;
+            lineMaterial.blending = BelndingMode;
+        }
     }
     runAnimation(scene, pointerDown) {
         let $this = this;
@@ -2074,6 +2097,7 @@ export class PaintingToolManager {
                         $this.materialsCache[i].lineMaterial.uniforms.lineWidth.value = $this.materialsCache[i].lineWidth;
                         $this.materialsCache[i].lineMaterial.uniforms.lengthNormal.value = $this.materialsCache[i].lineLength;
                         $this.materialsCache[i].lineMaterial.needsUpdate = true;
+                        $this.changeBlendingModeBasedOnColour($this.materialsCache[i].lineMaterial, $this.materialsCache[i].colour);
                     }
                 }
             }
@@ -2088,6 +2112,7 @@ export class PaintingToolManager {
         }
         //-------Update the decal objects(BillboardObjects)------
     }
+
     addDecals() {
         let $this = this;
         // console.log("add decals");
@@ -2185,8 +2210,8 @@ export class DecalElement {
         this.Node = _node;
         this._position = new THREE.Vector3(_node.position.x, _node.position.y, _node.position.z);
         //add some drawingdistance from body
-        var norml = _node.normal;//this.stringToVector3(_node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
-        this._position.add(norml.multiplyScalar(0.01));
+        let norml = _node.normal.clone();
+        this._position.add(norml.multiplyScalar(paintingToolManager.DistanceFromBody));
         //add some drawingdistance from body
 
         this._pressure = 1.0; //_node.pressure;
