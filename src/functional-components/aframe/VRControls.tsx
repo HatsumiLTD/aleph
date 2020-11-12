@@ -13,7 +13,7 @@ export const VRControls: FunctionalComponent<VRControlsProps> = _children =>
           id="left-controller"
         >
           <a-entity>
-{/* outer circle starting from bottom and third button on the clockwise  */}
+            {/* outer circle starting from bottom and third button on the clockwise  */}
             <a-cylinder
               visible="false"
               al-palette-option="optionIndex: 0"
@@ -87,7 +87,7 @@ export const VRControls: FunctionalComponent<VRControlsProps> = _children =>
               color="#000000"
             ></a-cylinder>
 
-{/* bottom three buttons (clockwise)  */}
+            {/* bottom three buttons (clockwise)  */}
             <a-cylinder
               visible="false"
               al-palette-option="optionIndex: 9"
@@ -113,173 +113,172 @@ export const VRControls: FunctionalComponent<VRControlsProps> = _children =>
               color="#000000"
             ></a-cylinder>
 
-{/* inner bottom and goes clockwise round  */}
+            {/* inner bottom and goes clockwise round  */}
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 12"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="0.00 0.011 0.079"
-             rotation="0 90 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 12"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="0.00 0.011 0.079"
+              rotation="0 90 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 13"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="-0.04 0.011 0.069"
-             rotation="0 58 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 13"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="-0.04 0.011 0.069"
+              rotation="0 58 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 14"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="-0.066 0.011 0.038"
-             rotation="0 31 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 14"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="-0.066 0.011 0.038"
+              rotation="0 31 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 15"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="-0.079 0.011 0.0"
-             rotation="0 0 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 15"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="-0.079 0.011 0.0"
+              rotation="0 0 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 16"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="-0.068 0.011 -0.04"
-             rotation="0 -25.8 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 16"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="-0.068 0.011 -0.04"
+              rotation="0 -25.8 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 17"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="-0.04 0.011 -0.07"
-             rotation="0 -59.20 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 17"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="-0.04 0.011 -0.07"
+              rotation="0 -59.20 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 18"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="0.00 0.011 -0.079"
-             rotation="0 90 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 18"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="0.00 0.011 -0.079"
+              rotation="0 90 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 19"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="0.04 0.011 -0.068"
-             rotation="0 58 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 19"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="0.04 0.011 -0.068"
+              rotation="0 58 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 20"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="0.07 0.011 -0.041"
-             rotation="0 31 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 20"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="0.07 0.011 -0.041"
+              rotation="0 31 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 21"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="0.079 0.011 0.0"
-             rotation="0 0 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 21"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="0.079 0.011 0.0"
+              rotation="0 0 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 22"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="0.068 0.011 0.038"
-             rotation="0 -25.8 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 22"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="0.068 0.011 0.038"
+              rotation="0 -25.8 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 23"
-             segments-radial="6"
-             data-raycastable
-             scale="0.024 0.021 0.017"
-             position="0.04 0.011 0.069"
-             rotation="0 -59.2 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 23"
+              segments-radial="6"
+              data-raycastable
+              scale="0.024 0.021 0.017"
+              position="0.04 0.011 0.069"
+              rotation="0 -59.2 0"
+              color="crimson"
             ></a-cylinder>
 
-{/* center buttons  */}
+            {/* center buttons  */}
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 24"
-             segments-radial="3"
-             data-raycastable
-             scale="0.036 0.025 0.023"
-             position="0.006 0.0 0.023"
-             rotation="0 -167.82 0"
-             color="crimson"
-            ></a-cylinder>
-
-            <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 25"
-             segments-radial="3"
-             data-raycastable
-             scale="0.036 0.025 0.023"
-             position="-0.023 0.0 -0.009"
-             rotation="0 70 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 24"
+              segments-radial="3"
+              data-raycastable
+              scale="0.036 0.025 0.023"
+              position="0.006 0.0 0.023"
+              rotation="0 -167.82 0"
+              color="crimson"
             ></a-cylinder>
 
             <a-cylinder
-             visible="false"
-             al-palette-option="optionIndex: 26"
-             segments-radial="3"
-             data-raycastable
-             scale="0.036 0.025 0.023"
-             position="0.019 0.0 -0.017"
-             rotation="0 -51.01 0"
-             color="crimson"
+              visible="false"
+              al-palette-option="optionIndex: 25"
+              segments-radial="3"
+              data-raycastable
+              scale="0.036 0.025 0.023"
+              position="-0.023 0.0 -0.009"
+              rotation="0 70 0"
+              color="crimson"
             ></a-cylinder>
 
+            <a-cylinder
+              visible="false"
+              al-palette-option="optionIndex: 26"
+              segments-radial="3"
+              data-raycastable
+              scale="0.036 0.025 0.023"
+              position="0.019 0.0 -0.017"
+              rotation="0 -51.01 0"
+              color="crimson"
+            ></a-cylinder>
 
             <a-gltf-model
               src="url(https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2Fnew-palette-transparent.glb?v=1605025292884)"

@@ -1,7 +1,7 @@
 import { Constants } from "../Constants";
 import { ControlsType } from "../enums";
 import { AlCamera } from "../interfaces";
-import { MathUtils as THREEMath } from "three";
+import { Math as THREEMath } from "three";
 
 type Entity = import("aframe").Entity;
 

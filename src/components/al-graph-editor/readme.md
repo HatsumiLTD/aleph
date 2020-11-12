@@ -7,16 +7,17 @@
 
 ## Properties
 
-| Property       | Attribute       | Description | Type                                | Default     |
-| -------------- | --------------- | ----------- | ----------------------------------- | ----------- |
-| `angles`       | --              |             | `Map<string, AlAngle>`              | `null`      |
-| `edges`        | --              |             | `Map<string, AlEdge>`               | `null`      |
-| `graphEnabled` | `graph-enabled` |             | `boolean`                           | `undefined` |
-| `graphVisible` | `graph-visible` |             | `boolean`                           | `undefined` |
-| `node`         | --              |             | `[string, AlNode]`                  | `undefined` |
-| `nodes`        | --              |             | `Map<string, AlNode>`               | `null`      |
-| `selected`     | `selected`      |             | `string`                            | `null`      |
-| `units`        | `units`         |             | `Units.METERS \| Units.MILLIMETERS` | `undefined` |
+| Property          | Attribute          | Description | Type                                | Default     |
+| ----------------- | ------------------ | ----------- | ----------------------------------- | ----------- |
+| `angles`          | --                 |             | `Map<string, AlAngle>`              | `null`      |
+| `edges`           | --                 |             | `Map<string, AlEdge>`               | `null`      |
+| `graphEnabled`    | `graph-enabled`    |             | `boolean`                           | `undefined` |
+| `graphVisible`    | `graph-visible`    |             | `boolean`                           | `undefined` |
+| `node`            | --                 |             | `[string, AlNode]`                  | `undefined` |
+| `nodes`           | --                 |             | `Map<string, AlNode>`               | `null`      |
+| `paintingEnabled` | `painting-enabled` |             | `boolean`                           | `undefined` |
+| `selected`        | `selected`         |             | `string`                            | `null`      |
+| `units`           | `units`            |             | `Units.METERS \| Units.MILLIMETERS` | `undefined` |
 
 
 ## Dependencies

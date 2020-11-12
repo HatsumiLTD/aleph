@@ -19,6 +19,7 @@
 | `graphTabEnabled`        | `graph-tab-enabled`         |             | `boolean`                                                          | `true`      |
 | `nodes`                  | --                          |             | `Map<string, AlNode>`                                              | `null`      |
 | `orientation`            | `orientation`               |             | `Orientation.AXIAL \| Orientation.CORONAL \| Orientation.SAGGITAL` | `undefined` |
+| `paintingEnabled`        | `painting-enabled`          |             | `boolean`                                                          | `undefined` |
 | `selected`               | `selected`                  |             | `string`                                                           | `null`      |
 | `settingsTabEnabled`     | `settings-tab-enabled`      |             | `boolean`                                                          | `true`      |
 | `slicesBrightness`       | `slices-brightness`         |             | `number`                                                           | `undefined` |
