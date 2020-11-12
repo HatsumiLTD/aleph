@@ -7,19 +7,21 @@
 
 ## Properties
 
-| Property       | Attribute       | Description | Type                                | Default     |
-| -------------- | --------------- | ----------- | ----------------------------------- | ----------- |
-| `graphEnabled` | `graph-enabled` |             | `boolean`                           | `undefined` |
-| `graphVisible` | `graph-visible` |             | `boolean`                           | `undefined` |
-| `units`        | `units`         |             | `Units.METERS \| Units.MILLIMETERS` | `undefined` |
+| Property          | Attribute          | Description | Type                                | Default     |
+| ----------------- | ------------------ | ----------- | ----------------------------------- | ----------- |
+| `graphEnabled`    | `graph-enabled`    |             | `boolean`                           | `undefined` |
+| `graphVisible`    | `graph-visible`    |             | `boolean`                           | `undefined` |
+| `paintingEnabled` | `painting-enabled` |             | `boolean`                           | `undefined` |
+| `units`           | `units`            |             | `Units.METERS \| Units.MILLIMETERS` | `undefined` |
 
 
 ## Events
 
-| Event                 | Description | Type               |
-| --------------------- | ----------- | ------------------ |
-| `graphEnabledChanged` |             | `CustomEvent<any>` |
-| `unitsChanged`        |             | `CustomEvent<any>` |
+| Event                    | Description | Type               |
+| ------------------------ | ----------- | ------------------ |
+| `graphEnabledChanged`    |             | `CustomEvent<any>` |
+| `paintingEnabledChanged` |             | `CustomEvent<any>` |
+| `unitsChanged`           |             | `CustomEvent<any>` |
 
 
 ## CSS Custom Properties
@@ -29,6 +31,7 @@
 | `--bounding-box-enabled-display` | Bounding Box Enabled Toggle Display |
 | `--display-mode-display`         | Display Mode Toggle Display         |
 | `--graph-enabled-display`        | Graph Enabled Toggle Display        |
+| `--painting-enabled-display`     | Drawing Enabled Toggle Display      |
 | `--slices-index-display`         | Slices Index Range Display          |
 | `--slices-orientation-display`   | Slices Orientation Select Display   |
 | `--slices-window-center-display` | Slices Window Center Range Display  |

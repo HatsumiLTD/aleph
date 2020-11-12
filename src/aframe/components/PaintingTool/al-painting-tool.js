@@ -28,7 +28,7 @@ AFRAME.registerComponent("al-painting-tool", {
     raycasterEnabled: { type: "boolean" }
   },
 
-  init: function () {
+  init: function() {
     this.state = {
       pointerDown: false,
       firstpointerDownIntersection: 0
@@ -73,7 +73,7 @@ AFRAME.registerComponent("al-painting-tool", {
     // vr controller listeners
     const rightController = document.getElementById("right-controller");
     this.VRMode = false;
-    this.el.sceneEl.addEventListener("enter-vr", function () {
+    this.el.sceneEl.addEventListener("enter-vr", function() {
       console.log("ENTERED VR");
       this.VRMode = true;
       // if (!this.sfx_Startedbrush) {
@@ -81,7 +81,7 @@ AFRAME.registerComponent("al-painting-tool", {
       // this.sfx_Startedbrush = true;
       // }
     });
-    this.el.sceneEl.addEventListener("exit-vr", function () {
+    this.el.sceneEl.addEventListener("exit-vr", function() {
       console.log("EXIT VR");
       this.VRMode = false;
     });
@@ -105,11 +105,9 @@ AFRAME.registerComponent("al-painting-tool", {
 
     rightController.addEventListener(EVENTS.ABUTTONDOWN, evt => {
       paintingToolManager.NextPreset();
-
     });
 
-
-    addEventListener('thumbstickmoved', function (evt) {
+    addEventListener("thumbstickmoved", function(evt) {
       paintingToolManager.changeCurrentWidth(evt.detail.y);
     });
 
@@ -126,19 +124,18 @@ AFRAME.registerComponent("al-painting-tool", {
     this.clock = new THREE.Clock();
     paintingToolManager.parentGroup = this.group;
     console.log("add skybox");
-
   },
-  forceTouchUp: function () {
+  forceTouchUp: function() {
     this.state.pointerDown = false;
     this.state.firstpointerDownIntersection = -999;
     paintingToolManager.ResetCurrentBrush();
   },
-  forceTouchDown: function () {
+  forceTouchDown: function() {
     this.state.pointerDown = true;
     this.state.firstpointerDownIntersection = -999;
     paintingToolManager.ResetCurrentBrush();
   },
-  makeSceneElements: function () {
+  makeSceneElements: function() {
     // add a plane with 'shadow'----should be placed somewhere else when I have time
     var geometry = new THREE.PlaneGeometry(30, 30, 30);
     var _ShaderHolder = new ShaderHolder("ShadedDot");
@@ -161,17 +158,26 @@ AFRAME.registerComponent("al-painting-tool", {
     this.el.sceneEl.object3D.add(plane);
     // add a plane with 'shadow'----should be placed somewhere else when I have time
     //add a background sphere-----
-    var backgroundSphere = new THREE.Mesh(new THREE.SphereGeometry(30, 10, 10), new THREE.MeshBasicMaterial({
-      map: (new THREE.TextureLoader).load("https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FFinalHatsumiBackGround.png?v=1602267351065"),
-    }));
+    var backgroundSphere = new THREE.Mesh(
+      new THREE.SphereGeometry(30, 10, 10),
+      new THREE.MeshBasicMaterial({
+        map: new THREE.TextureLoader().load(
+          "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FFinalHatsumiBackGround.png?v=1602267351065"
+        )
+      })
+    );
     backgroundSphere.geometry.scale(-1, 1, 1);
     this.el.sceneEl.object3D.add(backgroundSphere);
     //add a background sphere-----
   },
-  getIntersection: function () {
+  getIntersection: function() {
     //console.log("get intersection");
     if (!this.data.enabled || !this.state.pointerDown) {
-      this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume - 0.1, 0.0, 1.0);
+      this.sfx_brushVolume = THREE.Math.clamp(
+        this.sfx_brushVolume - 0.1,
+        0.0,
+        1.0
+      );
       return;
     }
     const intersection = this.raycaster.components.raycaster.getIntersection(
@@ -183,18 +189,25 @@ AFRAME.registerComponent("al-painting-tool", {
     //   this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume - 0.1, 0.0, 1.0);
     // }
     if (!intersection) {
-      this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume - 0.1, 0.0, 1.0);
+      this.sfx_brushVolume = THREE.Math.clamp(
+        this.sfx_brushVolume - 0.1,
+        0.0,
+        1.0
+      );
       return;
     }
 
     if (this.state.lastIntersection) {
-
       const distance = this.state.lastIntersection.point.distanceTo(
         intersection.point
       );
 
       if (distance >= this.data.minLineSegmentLength) {
-        this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume + 0.06, 0.0, 1.0);
+        this.sfx_brushVolume = THREE.Math.clamp(
+          this.sfx_brushVolume + 0.06,
+          0.0,
+          1.0
+        );
         this.el.sceneEl.emit(
           EVENTS.ADD_NODE,
           {
@@ -210,18 +223,24 @@ AFRAME.registerComponent("al-painting-tool", {
 
         this.state.lastIntersection = intersection;
       } else {
-        this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume - 0.1, 0.0, 1.0);
+        this.sfx_brushVolume = THREE.Math.clamp(
+          this.sfx_brushVolume - 0.1,
+          0.0,
+          1.0
+        );
       }
     } else {
       this.state.lastIntersection = intersection;
     }
   },
 
-  tick: function (t, dt) {
-    if (this.data.raycasterEnabled &&
+  tick: function(t, dt) {
+    if (
+      this.data.raycasterEnabled &&
       this.raycaster &&
-      (this.state.firstpointerDownIntersection < 2)) {
-      this.getIntersection();//debouncedGetIntersection();
+      this.state.firstpointerDownIntersection < 2
+    ) {
+      this.getIntersection(); //debouncedGetIntersection();
     } else {
       if (this.state.firstpointerDownIntersection > -999)
         this.state.firstpointerDownIntersection++;
@@ -229,16 +248,20 @@ AFRAME.registerComponent("al-painting-tool", {
 
     if (this.sfx_oldbrushVolume != this.sfx_brushVolume) {
       const rightController = document.getElementById("right-controller");
-      rightController.components.sound.pool.children[0].setVolume(this.sfx_brushVolume * this.sfx_brushMasterVolume);
+      rightController.components.sound.pool.children[0].setVolume(
+        this.sfx_brushVolume * this.sfx_brushMasterVolume
+      );
       this.sfx_oldbrushVolume = this.sfx_brushVolume;
     }
 
-    if (paintingToolManager.runAnimation(this.el.sceneEl, this.state.pointerDown)) {
+    if (
+      paintingToolManager.runAnimation(this.el.sceneEl, this.state.pointerDown)
+    ) {
       this.forceTouchUp();
       this.forceTouchDown();
     }
   },
-  remove: function () {
+  remove: function() {
     this.el.removeObject3D("group");
   }
 });
