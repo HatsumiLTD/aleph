@@ -1496,7 +1496,21 @@ class MaterialsHolder {
         }
     }
 }
-
+class PaintingNode {
+    /*
+export interface AlNode extends AlGraphEntry {
+  normal?: string;
+  position?: string;
+  scale?: number;
+  targetId?: string;
+}
+*/
+    constructor(_position, _normal, _pressure) {
+        this.position = new THREE.Vector3(_position.x, _position.y, _position.z);
+        this.normal = new THREE.Vector3(_normal.x, _normal.y, _normal.z);
+        this.pressure = _pressure;
+    }
+}
 export class PaintingToolManager {
     constructor(assetsPath) {
         //     var coordinates = AFRAME.utils.coordinates;
@@ -1582,9 +1596,58 @@ export class PaintingToolManager {
         });
 
         document.addEventListener("al-node-spawned", e => {
-            this.nodes = e.detail.nodes;
+            // this.nodes = e.detail.nodes;
+            let position = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].position);
+            let normal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].normal);
+            let paintingNode = new PaintingNode(position, normal, 0.0);
+            this.nodes.push(paintingNode);//e.detail.nodes[e.detail.nodes.length - 1]);
             this.updateStroke();
         });
+        // document.addEventListener("al-node-spawned", e => {
+        //     if (e.detail.nodes.length < 3) {
+        //         // this.nodes = e.detail.nodes;
+        //         let nodepos = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].position);
+        //         let normal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].normal);
+
+        //         const paintingNode = new PaintingNode(nodepos, normal, 0.0);
+        //         this.nodes.push(paintingNode);
+
+        //     } else {
+        //         let _startpos = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 2].position);
+        //         let _endpos = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].position);
+        //         let _snormal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 2].normal);
+        //         let _enormal = AFRAME.utils.coordinates.parse(e.detail.nodes[e.detail.nodes.length - 1].normal);
+
+        //         let startpos = new THREE.Vector3(_startpos.x, _startpos.y, _startpos.z);
+        //         let endpos = new THREE.Vector3(_endpos.x, _endpos.y, _endpos.z);
+        //         let snormal = new THREE.Vector3(_snormal.x, _snormal.y, _snormal.z);
+        //         let enormal = new THREE.Vector3(_enormal.x, _enormal.y, _enormal.z);
+
+        //         let distance = startpos.distanceTo(endpos);
+        //         // console.log("distance: " + distance);
+        //         var minDistance = 0.0001;
+        //         var maxDistance = 0.01;
+        //         if (distance > minDistance) {
+
+        //         if (distance > maxDistance) {
+        //             var count = ((minDistance*1000.0)/(distance*1000.0))/1000.0;
+        //             console.log("count: " + count);
+        //             for (var i = 0; i <= count; i++) {
+        //                 let perc = parseFloat(i) / parseFloat(Math.floor(count + 1.0));
+        //                 let newpos = startpos;
+        //                 newpos.lerp(endpos, perc);
+        //                 let newNorm = snormal;
+        //                 newNorm.lerp(enormal, perc);
+        //                 const paintingNode = new PaintingNode(newpos, newNorm, 0.0);
+        //                 this.nodes.push(paintingNode);
+        //             }
+        //         }else{
+        //             this.nodes[this.nodes.length - 1].position = endpos;
+        //         }
+        //         }
+        //     }
+        //     this.updateStroke();
+        // });
     }
     stringToVector3(vec) {
         const res = vec.split(" ");
@@ -1875,13 +1938,14 @@ export class PaintingToolManager {
         //add some drawingdistance from body if in VR mode
         var drawingdistance = true;//!this.VRMode;disabled for now
         var int_counter = 0;
+
         _nodes.forEach(function (node) {
             if ((int_counter > $this.NodeRangeBegining) && (int_counter < $this.NodeRangeEnding)) {
-                const position = AFRAME.utils.coordinates.parse(node.position);
+                const position = node.position;//AFRAME.utils.coordinates.parse(node.position);
                 if (drawingdistance) {
                     //add some drawingdistance from body
                     var _position = new THREE.Vector3(position.x, position.y, position.z);
-                    var norml = $this.stringToVector3(node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
+                    let norml = new THREE.Vector3(node.normal.x, node.normal.y, node.normal.z);//$this.stringToVector3(node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
                     _position.add(norml.multiplyScalar(0.01));
                     geometry.vertices.push(_position);
                     //add some drawingdistance from body
@@ -1897,6 +1961,7 @@ export class PaintingToolManager {
         });
         return geometry;
     }
+
     runAnimation(scene, pointerDown) {
         let $this = this;
         var retrunValue = false;
@@ -1907,8 +1972,8 @@ export class PaintingToolManager {
         worldPos.setFromMatrixPosition(cameraEl.matrixWorld);
         // ////get camera position--------
         //--------run timer---------
-        var delta = $this.clock.getDelta() * 20.0;
-        $this.timer += delta * $this.animationSpeed;
+        var delta = $this.clock.getDelta();// * 20.0;
+        $this.timer += delta * 0.1;// * $this.animationSpeed;
         if ($this.timer >= 1.0)
             $this.timer -= 1.0;
         if ($this.timer <= -1.0)
@@ -1973,7 +2038,7 @@ export class PaintingToolManager {
                     var vec3 = AFRAME.utils.coordinates.parse(nodes[j].position);
                     var originalPos = nodes[j].position;
                     nodes[j].position = vec3;
-                    var _DecalElement = new DecalElement($this.ObjectsMaterial, nodes[j], paintingToolManager);
+                    var _DecalElement = new DecalElement($this.ObjectsMaterial, nodes[j], paintingToolManager, $this.materialsCache[$this.materialsCache.length - 1]);
                     if (_DecalElement.mesh && !nodes[j].nodeAttached) {
                         $this.parentGroup.add(_DecalElement.mesh);
                         $this.BillboardObjects.push(_DecalElement);
@@ -2006,7 +2071,7 @@ export class PaintingToolManager {
                         var _direction = direction.clone();
                         lerpedpos.addVectors(vec3, _direction.multiplyScalar(distance * perc));
                         nodes[j].position = lerpedpos;
-                        var _DecalElement = new DecalElement($this.ObjectsMaterial, nodes[j], paintingToolManager); //createDecal(nnodes[j]);
+                        var _DecalElement = new DecalElement($this.ObjectsMaterial, nodes[j], paintingToolManager, $this.materialsCache[$this.materialsCache.length - 1]); //createDecal(nnodes[j]);
 
                         if (_DecalElement.mesh) {
                             $this.parentGroup.add(_DecalElement.mesh);
@@ -2047,23 +2112,24 @@ class BrushInputs {
 }
 
 export class DecalElement {
-    constructor(_ObjectsMaterial, _node, _BrushVariablesInput) {
+    constructor(_ObjectsMaterial, _node, _BrushVariablesInput, _parentMaterialCache) {
         if (!_ObjectsMaterial) {
             return;
         }
+        this.parentMaterialCache = _parentMaterialCache;
         this.group = new THREE.Group();
         this.type = _BrushVariablesInput.objects;
         this.Node = _node;
         this._position = new THREE.Vector3(_node.position.x, _node.position.y, _node.position.z);
         //add some drawingdistance from body
-        var norml = this.stringToVector3(_node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
+        var norml = _node.norma;//this.stringToVector3(_node.normal); //should be "ThreeUtils.stringToVector3(node.normal)", but I cannot find how to call it
         this._position.add(norml.multiplyScalar(0.01));
         //add some drawingdistance from body
 
         this._pressure = 1.0; //_node.pressure;
         this._speed = _node.speed;
         this.Material = _ObjectsMaterial;
-        this._scale = _BrushVariablesInput.maxelementWidth * 0.4;
+        this._scale = _BrushVariablesInput.maxelementWidth * this.parentMaterialCache.lineWidth;
         // _BrushVariablesInput.maxelementWidth *
         // (this._pressure ? this._pressure : 0.25);
         this._shouldCreateObject = true;
@@ -2135,7 +2201,7 @@ export class DecalElement {
         //console.log("_CameraworldPos: " + vec3.x);
         // var vec3 = AFRAME.utils.coordinates.parse(_CameraworldPos);
         // console.log("_CameraworldPos: " + _CameraworldPos);
-        this._BrushVariablesInput.facing = "Camera"; //temp for now
+        //this._BrushVariablesInput.facing = "Camera"; //temp for now
         if (this._BrushVariablesInput.facing == "Camera") {
             this.LookAt(cameraworldPos);
             this.mesh.rotateZ(this.rotationZ);
@@ -2177,6 +2243,10 @@ export class DecalElement {
         if (this.Material) {
             if (this.Material.name != "No custom Shader") {
                 this.Material.uniforms.time.value = this.delta;
+                this.Material.needsUpdate = true;
+            }
+            if (this.Material.uniforms.color) {
+                this.Material.uniforms.color.value = this.parentMaterialCache.colour;
                 this.Material.needsUpdate = true;
             }
         }

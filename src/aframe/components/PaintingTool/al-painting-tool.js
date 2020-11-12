@@ -17,7 +17,6 @@ const EVENTS = {
   RAYCASTER_CLEARED: "raycaster-intersected-cleared",
   ADD_NODE: "al-add-node"
 };
-
 AFRAME.registerComponent("al-painting-tool", {
   schema: {
     enabled: { default: true },
@@ -35,6 +34,10 @@ AFRAME.registerComponent("al-painting-tool", {
       firstpointerDownIntersection: 0
     };
 
+    this.sfx_brushMasterVolume = 0.6;
+    this.sfx_brushVolume = 0;
+    this.sfx_oldbrushVolume = -1;
+    this.sfx_Startedbrush = false;
     // Use events to figure out what raycaster is listening so we don't have to
     // hardcode the raycaster.
     this.el.addEventListener(EVENTS.RAYCASTER_INTERSECTED, evt => {
@@ -69,12 +72,28 @@ AFRAME.registerComponent("al-painting-tool", {
 
     // vr controller listeners
     const rightController = document.getElementById("right-controller");
-
+    this.VRMode = false;
+    this.el.sceneEl.addEventListener("enter-vr", function () {
+      console.log("ENTERED VR");
+      this.VRMode = true;
+      // if (!this.sfx_Startedbrush) {
+      rightController.components.sound.playSound();
+      // this.sfx_Startedbrush = true;
+      // }
+    });
+    this.el.sceneEl.addEventListener("exit-vr", function () {
+      console.log("EXIT VR");
+      this.VRMode = false;
+    });
     this.el.addEventListener(EVENTS.MOUSEDOWN, evt => {
       //console.log("trigger down");
       this.state.pointerDown = true;
       this.state.firstpointerDownIntersection = -999;
       paintingToolManager.ResetCurrentBrush();
+      if (!this.sfx_Startedbrush) {
+        rightController.components.sound.playSound();
+        this.sfx_Startedbrush = true;
+      }
     });
 
     this.el.addEventListener(EVENTS.MOUSEUP, evt => {
@@ -86,7 +105,9 @@ AFRAME.registerComponent("al-painting-tool", {
 
     rightController.addEventListener(EVENTS.ABUTTONDOWN, evt => {
       paintingToolManager.NextPreset();
+
     });
+
 
     addEventListener('thumbstickmoved', function (evt) {
       paintingToolManager.changeCurrentWidth(evt.detail.y);
@@ -97,6 +118,8 @@ AFRAME.registerComponent("al-painting-tool", {
       this.data.minFrameMS,
       this
     );
+    this.tick = AFRAME.utils.throttleTick(this.tick, 20, this);
+
     this.group = new THREE.Group();
     this.el.setObject3D("group", this.group);
     this.makeSceneElements();
@@ -107,6 +130,11 @@ AFRAME.registerComponent("al-painting-tool", {
   },
   forceTouchUp: function () {
     this.state.pointerDown = false;
+    this.state.firstpointerDownIntersection = -999;
+    paintingToolManager.ResetCurrentBrush();
+  },
+  forceTouchDown: function () {
+    this.state.pointerDown = true;
     this.state.firstpointerDownIntersection = -999;
     paintingToolManager.ResetCurrentBrush();
   },
@@ -143,21 +171,30 @@ AFRAME.registerComponent("al-painting-tool", {
   getIntersection: function () {
     //console.log("get intersection");
     if (!this.data.enabled || !this.state.pointerDown) {
+      this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume - 0.1, 0.0, 1.0);
       return;
     }
     const intersection = this.raycaster.components.raycaster.getIntersection(
       this.el
     );
+    // if (intersection) {
+    //   this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume + 0.01, 0.0, 1.0);
+    // } else {
+    //   this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume - 0.1, 0.0, 1.0);
+    // }
     if (!intersection) {
+      this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume - 0.1, 0.0, 1.0);
       return;
     }
 
     if (this.state.lastIntersection) {
+
       const distance = this.state.lastIntersection.point.distanceTo(
         intersection.point
       );
 
       if (distance >= this.data.minLineSegmentLength) {
+        this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume + 0.06, 0.0, 1.0);
         this.el.sceneEl.emit(
           EVENTS.ADD_NODE,
           {
@@ -172,35 +209,36 @@ AFRAME.registerComponent("al-painting-tool", {
         );
 
         this.state.lastIntersection = intersection;
+      } else {
+        this.sfx_brushVolume = THREE.Math.clamp(this.sfx_brushVolume - 0.1, 0.0, 1.0);
       }
     } else {
       this.state.lastIntersection = intersection;
     }
   },
 
-  tick: function () {
+  tick: function (t, dt) {
     if (this.data.raycasterEnabled &&
       this.raycaster &&
       (this.state.firstpointerDownIntersection < 2)) {
-      this.debouncedGetIntersection();
+      this.getIntersection();//debouncedGetIntersection();
     } else {
       if (this.state.firstpointerDownIntersection > -999)
         this.state.firstpointerDownIntersection++;
     }
 
-    if (paintingToolManager.runAnimation(this.el.sceneEl, this.state.pointerDown))
+    if (this.sfx_oldbrushVolume != this.sfx_brushVolume) {
+      const rightController = document.getElementById("right-controller");
+      rightController.components.sound.pool.children[0].setVolume(this.sfx_brushVolume * this.sfx_brushMasterVolume);
+      this.sfx_oldbrushVolume = this.sfx_brushVolume;
+    }
+
+    if (paintingToolManager.runAnimation(this.el.sceneEl, this.state.pointerDown)) {
       this.forceTouchUp();
+      this.forceTouchDown();
+    }
   },
   remove: function () {
     this.el.removeObject3D("group");
-
-    // for (var i = this.group.children.length - 1; i >= 0; i--) {
-    //   this.group.remove(this.group.children[i]);
-    // }
-    // this.BillboardObjects = [];
-    // this.refreshBrush = 2;
-
-    // this.LineMaterial.dispose();
-    // paintingToolManager.ObjectsMaterial.dispose();
   }
 });

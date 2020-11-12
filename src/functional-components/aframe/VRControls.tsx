@@ -282,7 +282,7 @@ export const VRControls: FunctionalComponent<VRControlsProps> = _children =>
 
 
             <a-gltf-model
-            src="url(https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2Fnew-palette-transparent.glb?v=1605025292884)"
+              src="url(https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2Fnew-palette-transparent.glb?v=1605025292884)"
               position="0 0 0"
             ></a-gltf-model>
           </a-entity>
@@ -290,6 +290,7 @@ export const VRControls: FunctionalComponent<VRControlsProps> = _children =>
         <a-entity
           laser-controls="hand: right"
           raycaster="objects: [data-raycastable];"
+          sound="src: url(https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FPaintBrushSoundLoop.wav?v=1605086943786); positional: true; loop: true;"
           id="right-controller"
         />
       </a-entity>

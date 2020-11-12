@@ -63,6 +63,9 @@ export const Src: FunctionalComponent<SrcProps> = (
               al-cube-env-map={`
                 path: ${envMapPath ? envMapPath : ""};
               `}
+              al-painting-tool-audio={`
+                enabled: ${paintingEnabled};
+              `}
               al-painting-tool={`
                 enabled: ${paintingEnabled};
                 nodesNum: ${nodes.size};
