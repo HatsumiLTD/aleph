@@ -1917,6 +1917,8 @@ export class PaintingToolManager {
         this.CurrentWidth = THREE.Math.clamp(this.CurrentWidth, 0.2, 1.0);
         var _scaler = this.maxlineWidth;
         this.currentMaterialCache.lineWidth = _scaler * this.CurrentWidth;
+
+        this.DistanceFromBody = 0.005+ (0.025 * this.CurrentWidth);
     }
     UpdateBrush(_group, _Geometry) {
         if (this.strokecount == this.currentstrokecount) {
