@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { PaintingToolMeshLineMaterial } from "./PaintingToolMeshLine";
 import { DecalElement, ShaderHolder } from "./PaintingToolManager";
+import { Vector3 } from "three";
 //import "./THREE.MeshLine";
 
 // import { EventUtils } from "../../utils";
@@ -22,7 +23,7 @@ AFRAME.registerComponent("al-painting-tool", {
   schema: {
     enabled: { default: true },
     minFrameMS: { type: "number", default: 15 },
-    minLineSegmentLength: { type: "number", default: 0.01 },
+    minLineSegmentLength: { type: "number", default: 0.005 },
     minBrushSegmentLength: { type: "number", default: 0.00005 },
     nodesNum: { type: "number" },
     dirty: { type: "string" },
@@ -141,7 +142,7 @@ AFRAME.registerComponent("al-painting-tool", {
   },
   makeSceneElements: function () {
     // add a plane with 'shadow'----should be placed somewhere else when I have time
-    var geometry = new THREE.PlaneGeometry(30, 30, 30);
+    var geometry = new THREE.PlaneGeometry(12, 12, 12);
     var _ShaderHolder = new ShaderHolder("ShadedDot");
     var loader = new THREE.TextureLoader();
     var mcolour = new THREE.Color(0, 0, 0.1);
@@ -168,6 +169,45 @@ AFRAME.registerComponent("al-painting-tool", {
     backgroundSphere.geometry.scale(-1, 1, 1);
     this.el.sceneEl.object3D.add(backgroundSphere);
     //add a background sphere-----
+    //add particles to scene------------
+    let amount = 1000;
+    let width = 40;
+    let maxSize = 2.0;
+    const colors = new Float32Array(amount);
+    const sizes = [];
+    const vertices = [];
+    for (let i = 0; i < amount; i++) {
+      const x = -width + Math.random() * width * 2.0;
+      const z = -width + Math.random() * width * 2.0;
+      const y = Math.random() * 0.4;
+      vertices.push(x, y, z);
+      //--
+      let cen = new Vector3(0, 0, 0);
+      let pos = new Vector3(x, y, z);
+      let distance = cen.distanceTo(pos);
+      let distanceNorm = distance / width;
+      let size = 0.2 + (distanceNorm*maxSize);
+      sizes.push(size);
+    }
+    const _geometry = new THREE.BufferGeometry();
+    _geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    _geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+    let _ParticelShaderHolder = new ShaderHolder("ParticelDot");
+    const _Mmaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        opacity: { type: "f", value: 0.6 },
+        color: { value: new THREE.Color(0x576282) },
+      },
+      vertexShader: _ParticelShaderHolder.vertexShader,
+      fragmentShader: _ParticelShaderHolder.fragmentShader,
+      transparent: true,
+      depthTest: false,
+      depthWrite: true,
+      blending: THREE.AdditiveBlending
+    });
+    const _points = new THREE.Points(_geometry, _Mmaterial);
+    this.el.sceneEl.object3D.add(_points);
+    //add particles to scene------------
   },
   getIntersection: function () {
     //console.log("get intersection");

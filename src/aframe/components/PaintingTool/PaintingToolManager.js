@@ -384,6 +384,27 @@ export class ShaderHolder {
                 "}"
             ].join("\n");
         }
+        if (_name == "BrushLine") {
+            this.fragmentShader = [
+                THREE.ShaderChunk.baseLinefragmentVars,
+                "void main() {",
+                "",
+                THREE.ShaderChunk.logdepthbuf_fragment,
+                "",
+                "    vec4 c = vColor;",
+                THREE.ShaderChunk.Line_Width_ends,
+                "    vec2 finnaluvpos = vUV * repeat * vec2(endswidth,1.0) ;",
+                // "    if( distance(vUV.y,0.5)*2.0 > endswidth ) discard;",
+                "    c *= texture2D( map, finnaluvpos );",
+                "    if( c.a < alphaTest ) discard;",
+                // THREE.ShaderChunk.Line_ends,
+                "    gl_FragColor = c;",
+                "    gl_FragColor.a *= step(vCounters, visibility);",
+                "",
+                THREE.ShaderChunk.fog_fragment,
+                "}"
+            ].join("\n");
+        }
         if (_name == "VineLine") {
             this.fragmentShader = [
                 THREE.ShaderChunk.baseLinefragmentVars,
@@ -862,6 +883,55 @@ export class ShaderHolder {
                 "}"
             ].join("\r\n");
         }
+        if (_name == "ParticelDot") {
+            this.fragmentShader = [
+                "",
+                THREE.ShaderChunk.fog_pars_fragment,
+                THREE.ShaderChunk.logdepthbuf_pars_fragment,
+                "",
+                "uniform sampler2D map;",
+                "uniform sampler2D alphaMap;",
+                "uniform float useMap;",
+                "uniform float useAlphaMap;",
+                "uniform float useDash;",
+                "uniform float dashArray;",
+                "uniform float dashOffset;",
+                "uniform float dashRatio;",
+                "uniform float visibility;",
+                "uniform float alphaTest;",
+                "uniform vec2 repeat;",
+                "uniform vec3 color;",
+                "uniform float opacity;",
+                "varying vec3 vColor;",
+                "float dist_circ(vec2 cent, float r, vec2 uv ){",
+                "float d = distance( cent, uv ) - r;",
+                "return d;",
+                "}",
+                "void main() {",
+                "",
+                // THREE.ShaderChunk.logdepthbuf_fragment,
+                "",
+                "vec4 bg = vec4(0.0,0.,0.,0.0); ",
+                " vec3 obc = color; ",
+                " float dc1 = dist_circ(vec2(0.5,0.5),0.08,gl_PointCoord); ",
+                "vec4 shape = vec4(obc,1.0 - smoothstep(0.0,0.49,dc1)); ",
+                "shape.a *= opacity;",
+                "gl_FragColor = mix(bg,shape,shape.a);",
+                "}"
+            ].join("\n");
+            this.vertexShader = [
+                "attribute float size;",
+                "attribute vec3 customColor;",
+                "varying vec3 vColor;",
+                "void main() {",
+                "vColor = customColor;",
+                "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+                "gl_PointSize = size * ( 300.0 / -mvPosition.z );",
+                "gl_Position = projectionMatrix * mvPosition;",
+                " }"
+            ].join("\r\n");
+        }
+
     }
 }
 class MaterialsCache {
@@ -889,7 +959,7 @@ class MaterialsHolder {
     constructor() { }
     makeMaterial(_BrushVariablesInput, _textureName, _materialName) {
         if (_materialName == "LineTexturedMaterial") {
-            var _ShaderHolder = new ShaderHolder("LineMaterial");
+            var _ShaderHolder = new ShaderHolder("BrushLine");
             var texture = new THREE.TextureLoader().load(_textureName);
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
@@ -900,12 +970,12 @@ class MaterialsHolder {
             return new PaintingToolMeshLineMaterial({
                 name: "No custom Shader",
                 color: mcolour,
-                // map: texture,
+                map: texture,
                 // useMap: 1,
-                alphaMap: texture,
-                useAlphaMap: true,
+                // alphaMap: texture,
+                // useAlphaMap: true,
                 transparent: true,
-                opacity: 1,
+                // opacity: 1,
                 alphaTest: 0.1,
                 lineWidth: _BrushVariablesInput.maxlineWidth,
                 // depthTest: false,
@@ -1757,13 +1827,16 @@ export class PaintingToolManager {
             _colour = new THREE.Color("rgb(255, 0, 49)");
         }
         //-----
-        if (index == 24) {//black
+        //white button 26
+        //grey button 24
+        //black button 25
+        if (index == 26) {//white
             _colour = new THREE.Color("rgb(255, 255, 255)");
         }
-        if (index == 25) {//white
+        if (index == 25) {//black
             _colour = new THREE.Color("rgb(0, 0, 0)");
         }
-        if (index == 26) {//grey
+        if (index == 24) {//grey
             _colour = new THREE.Color("rgb(127, 127, 127)");
         }
         //-----
@@ -1853,18 +1926,18 @@ export class PaintingToolManager {
         console.log("setup materials", textures);
         var noMaterialFound = true;
         //cache the materials-----
-        // for (var i = 0; i < this.materialsCache.length; i++) {
-        //   if (this.materialsCache[i].textureName == this.texture
-        //     && this.materialsCache[i].materialName == this.materials
-        //     ) {
-        //       this.currentMaterialCache = this.materialsCache[i];
-        //     if (textures[1]) {
-        //       this.ObjectsMaterial = this.materialsCache[i].objMaterial;
-        //     }
-        //     noMaterialFound = false;
-        //     break;
-        //   }
-        // }
+        for (var i = 0; i < this.materialsCache.length; i++) {
+            if (this.materialsCache[i].textureName == this.texture
+                && this.materialsCache[i].materialName == this.materials
+            ) {
+                this.currentMaterialCache = this.materialsCache[i];
+                if (textures[1]) {
+                    this.ObjectsMaterial = this.materialsCache[i].objMaterial;
+                }
+                noMaterialFound = false;
+                break;
+            }
+        }
         //cache the materials-----
         if (noMaterialFound) {
             this.currentMaterialCache = new MaterialsCache(this.texture, this.materials);
@@ -1918,7 +1991,7 @@ export class PaintingToolManager {
         var _scaler = this.maxlineWidth;
         this.currentMaterialCache.lineWidth = _scaler * this.CurrentWidth;
 
-        this.DistanceFromBody = 0.005+ (0.025 * this.CurrentWidth);
+        this.DistanceFromBody = 0.005 + (0.025 * this.CurrentWidth);
     }
     UpdateBrush(_group, _Geometry) {
         if (this.strokecount == this.currentstrokecount) {
