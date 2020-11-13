@@ -216,10 +216,10 @@ export const jsonpreset = {
     "BUGS": {
       "0": {
         "lineType": 51,
-        "mainColour": 7998,
+        "mainColour": 0,
         "paintDecals": false,
         "paintLine": true,
-        "texture": "AntSqr.png,wind.jpg,",
+        "texture": "Hatsumi_AntSqr.png,wind.jpg,",
         "textureAlt": "null",
         "materials": "LineMaterialAnimatedBugs,AnimatedMaterialWind",
         "objects": "plain",

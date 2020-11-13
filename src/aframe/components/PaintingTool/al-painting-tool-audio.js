@@ -20,7 +20,7 @@ AFRAME.registerComponent("al-painting-tool-audio", {
     // --
     const BackgroundMusic = new THREE.Audio(listener);
     audioLoader.load(
-      "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FConstellationshrt.mp3?v=1605092737200",
+      "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FBackground%20Loop%202%20and%205%20V9.mp3?v=1605294633993",
       function(buffer) {
         BackgroundMusic.setBuffer(buffer);
         BackgroundMusic.setLoop(true);
@@ -29,7 +29,7 @@ AFRAME.registerComponent("al-painting-tool-audio", {
     );
     const VoiceOverIntro = new THREE.Audio(listener);
     audioLoader.load(
-      "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FGoAlltheWay.mp3?v=1605095715762",
+      "https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FHatsumi%20Drawing%20v5.mp3?v=1605294612644",
       function(buffer) {
         VoiceOverIntro.setBuffer(buffer);
         VoiceOverIntro.setLoop(false);

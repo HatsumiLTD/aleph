@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { PaintingToolMeshLineMaterial } from "./PaintingToolMeshLine";
 import { DecalElement, ShaderHolder } from "./PaintingToolManager";
-import { Vector3 } from "three";
+import { Vector2, Vector3 } from "three";
 //import "./THREE.MeshLine";
 
 // import { EventUtils } from "../../utils";
@@ -140,6 +140,76 @@ AFRAME.registerComponent("al-painting-tool", {
     this.state.firstpointerDownIntersection = -999;
     paintingToolManager.ResetCurrentBrush();
   },
+  addParticleArray: function (blendingMode, colourHue, colourHueRandom, colourLum, feildSize, amount, width, maxSize) {
+    const colors = new Float32Array(amount * 3);
+    const sizes = [];
+    const vertices = [];
+    const color = new THREE.Color(0xffffff);
+    for (let i = 0; i < amount; i++) {
+      var perc = Math.random();//parseFloat(i) / parseFloat(amount + 1.0);
+      let _random = Math.random();
+      let center = new Vector2(Math.sin(6.284 * perc) * width * feildSize.x * _random, Math.cos(6.284 * perc) * width * feildSize.z * _random);
+      const x = center.x;
+      const z = center.y - 0.8;//match model position
+      const y = Math.random() * width * feildSize.y;
+      vertices.push(x, y, z);
+      //--
+      let cen = new Vector3(0, 0, 0);
+      let pos = new Vector3(x, y, z);
+      let distance = cen.distanceTo(pos);
+      let distanceNorm = distance / width;
+      let size = (distanceNorm * maxSize);
+      sizes.push(size);
+
+      color.setHSL(colourHue + colourHueRandom * Math.random(), 0.9, colourLum);
+
+      color.toArray(colors, i * 3);
+
+    }
+    const _geometry = new THREE.BufferGeometry();
+    _geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    _geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+    _geometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
+    let _ParticelShaderHolder = new ShaderHolder("ParticelDot");
+    const _Mmaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        opacity: { type: "f", value: 0.6 }
+      },
+      vertexShader: _ParticelShaderHolder.vertexShader,
+      fragmentShader: _ParticelShaderHolder.fragmentShader,
+      transparent: true,
+      depthTest: false,
+      depthWrite: true,
+      blending: blendingMode
+    });
+    let _points = new THREE.Points(_geometry, _Mmaterial);
+    this.el.sceneEl.object3D.add(_points);
+  },
+  addHatsumiLogoElement: function (texture, amount) {
+    const width = 50;
+    const vertices = [];
+    for (let i = 0; i < amount; i++) {
+      let perc = Math.random();//parseFloat(i) / parseFloat(amount + 1.0);
+      let _random = Math.random();
+      let center = new Vector2(Math.sin(6.284 * perc) * 50 + (width * _random), Math.cos(6.284 * perc) * 50 + (width * _random));
+      const x = center.x;
+      const z = center.y - 0.8;//match model position
+      const y = Math.random() * width * 0.5;
+      vertices.push(x, y, z);
+    }
+
+    const _geometry = new THREE.BufferGeometry();
+    _geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    const material = new THREE.PointsMaterial({
+      transparent: true,
+      map: texture,
+      alphaMap: texture,
+      // sizeAttenuation: false,
+      size: 20
+    });
+    let _points = new THREE.Points(_geometry, material);
+    this.el.sceneEl.object3D.add(_points);
+  },
   makeSceneElements: function () {
     // add a plane with 'shadow'----should be placed somewhere else when I have time
     var geometry = new THREE.PlaneGeometry(12, 12, 12);
@@ -163,51 +233,74 @@ AFRAME.registerComponent("al-painting-tool", {
     this.el.sceneEl.object3D.add(plane);
     // add a plane with 'shadow'----should be placed somewhere else when I have time
     //add a background sphere-----
-    var backgroundSphere = new THREE.Mesh(new THREE.SphereGeometry(30, 10, 10), new THREE.MeshBasicMaterial({
+    var backgroundSphere = new THREE.Mesh(new THREE.SphereGeometry(100, 6, 6), new THREE.MeshBasicMaterial({
       map: (new THREE.TextureLoader).load("https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FFinalHatsumiBackGround.png?v=1602267351065"),
     }));
     backgroundSphere.geometry.scale(-1, 1, 1);
     this.el.sceneEl.object3D.add(backgroundSphere);
     //add a background sphere-----
+    //---add some plants to the scene----(bad idea)
+    // const gltfLoader = new THREE.GLTFLoader();
+    // gltfLoader.load('https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FPlantsTest.glb?v=1605289238491', (gltf) => {
+    //   const root = gltf.scene;
+    //   root.position.set(-2, 0, 0);
+    //   this.el.sceneEl.object3D.add(root);
+    // });
+    //---add some plants to the scene----(bad idea)
+    var _CameraworldPos = new THREE.Vector3();
+    var cameraEl = this.el.sceneEl.camera;
+    _CameraworldPos.setFromMatrixPosition(cameraEl.matrixWorld);
+
+    let textureA = (new THREE.TextureLoader).load("https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FHatsumi_logo_0.png?v=1605293414505");
+    let textureB = (new THREE.TextureLoader).load("https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FHatsumi_logo_1.png?v=1605293414603");
+    let textureC = (new THREE.TextureLoader).load("https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FHatsumi_logo_2.png?v=1605293414686");
+    // this.addHatsumiLogoElement(textureA, 20);
+    // this.addHatsumiLogoElement(textureB, 20);
+    // this.addHatsumiLogoElement(textureC, 20);
+    const HatsumiLogoElementScale = 10;
+    for (let i = 0; i < 40; i++) {
+      let _geometry = new THREE.PlaneGeometry(HatsumiLogoElementScale, HatsumiLogoElementScale, 2);
+      let texts = [textureA, textureB, textureC],
+        textsToUse = texts[Math.floor(Math.random() * texts.length)];
+      let _material = new THREE.MeshBasicMaterial({
+        map: textsToUse,
+        // useMap: 1,
+        alphaMap: textsToUse,
+        useAlphaMap: true,
+        transparent: true,
+        opacity: 0.1,
+        // alphaTest: 0.1,
+        // lineWidth: _BrushVariablesInput.maxlineWidth,
+        depthTest: false,
+        depthWrite: false,
+      });
+      let mesh = new THREE.Mesh(_geometry, _material);
+      this.el.sceneEl.object3D.add(mesh);
+      let width = 80;
+      var perc = Math.random();//parseFloat(i) / parseFloat(amount + 1.0);
+      let _random = Math.random();
+      let center = new Vector2(Math.sin(6.284 * perc) * (width), Math.cos(6.284 * perc) * (width));
+      const x = center.x;
+      const z = center.y - 0.8;//match model position
+      const y = Math.random() * width ;
+
+      mesh.position.set(x, y, z);
+      let cameraworldPos = AFRAME.utils.coordinates.parse(_CameraworldPos);
+      mesh.lookAt(cameraworldPos);
+    }
     //add particles to scene------------
     let amount = 1000;
-    let width = 40;
-    let maxSize = 2.0;
-    const colors = new Float32Array(amount);
-    const sizes = [];
-    const vertices = [];
-    for (let i = 0; i < amount; i++) {
-      const x = -width + Math.random() * width * 2.0;
-      const z = -width + Math.random() * width * 2.0;
-      const y = Math.random() * 0.4;
-      vertices.push(x, y, z);
-      //--
-      let cen = new Vector3(0, 0, 0);
-      let pos = new Vector3(x, y, z);
-      let distance = cen.distanceTo(pos);
-      let distanceNorm = distance / width;
-      let size = 0.2 + (distanceNorm*maxSize);
-      sizes.push(size);
-    }
-    const _geometry = new THREE.BufferGeometry();
-    _geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    _geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
-    let _ParticelShaderHolder = new ShaderHolder("ParticelDot");
-    const _Mmaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        opacity: { type: "f", value: 0.6 },
-        color: { value: new THREE.Color(0x576282) },
-      },
-      vertexShader: _ParticelShaderHolder.vertexShader,
-      fragmentShader: _ParticelShaderHolder.fragmentShader,
-      transparent: true,
-      depthTest: false,
-      depthWrite: true,
-      blending: THREE.AdditiveBlending
-    });
-    const _points = new THREE.Points(_geometry, _Mmaterial);
-    this.el.sceneEl.object3D.add(_points);
-    //add particles to scene------------
+    let width = 50;
+    let maxSize = 1.0;
+    let colourLum = 0.2;
+    let feildSize = new Vector3(2.0, 0.01, 2.0);
+    this.addParticleArray(THREE.AdditiveBlending, 0.5, 0.2, colourLum, feildSize, amount, width, maxSize);
+    amount = 1000;
+    width = 5.0;
+    maxSize = 0.06;
+    colourLum = 0.6;
+    feildSize = new Vector3(1, 1.1, 1.0);
+    this.addParticleArray(THREE.AdditiveBlending, 0, 0.1, colourLum, feildSize, amount, width, maxSize);
   },
   getIntersection: function () {
     //console.log("get intersection");

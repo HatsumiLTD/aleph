@@ -685,7 +685,7 @@ export class ShaderHolder {
                 "",
                 THREE.ShaderChunk.logdepthbuf_fragment,
                 " vec2 uv = vUV;",
-                " vec3 col = color.rgb;",
+                // " vec3 col = color.rgb;",
                 "vec2 finnaluvpos = vUV * repeat;",
                 "float prg = 2.0;",
                 "if (mod(finnaluvpos.x, 2.0)>1.0){",
@@ -721,7 +721,7 @@ export class ShaderHolder {
                 "if(newUV.y<0.0)discard;",
 
                 "vec4 colourmap = texture2D( map, newUV );",
-                "if(colourmap.a<0.3)discard;",
+                "if(colourmap.a<0.2)discard;",
 
                 "vec4 c = vec4(color.rgb*colourmap.rgb, 1.0);",
                 "gl_FragColor = c;",
@@ -912,7 +912,7 @@ export class ShaderHolder {
                 // THREE.ShaderChunk.logdepthbuf_fragment,
                 "",
                 "vec4 bg = vec4(0.0,0.,0.,0.0); ",
-                " vec3 obc = color; ",
+                " vec3 obc = vColor; ",
                 " float dc1 = dist_circ(vec2(0.5,0.5),0.08,gl_PointCoord); ",
                 "vec4 shape = vec4(obc,1.0 - smoothstep(0.0,0.49,dc1)); ",
                 "shape.a *= opacity;",
