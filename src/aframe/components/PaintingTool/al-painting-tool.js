@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { PaintingToolMeshLineMaterial } from "./PaintingToolMeshLine";
 import { DecalElement, ShaderHolder } from "./PaintingToolManager";
-import { Vector2, Vector3 } from "three";
+import { Color, Vector2, Vector3 } from "three";
 //import "./THREE.MeshLine";
 
 // import { EventUtils } from "../../utils";
@@ -147,14 +147,14 @@ AFRAME.registerComponent("al-painting-tool", {
     const color = new THREE.Color(0xffffff);
     for (let i = 0; i < amount; i++) {
       var perc = Math.random();//parseFloat(i) / parseFloat(amount + 1.0);
-      let _random = Math.random();
+      let _random = 0.1 + Math.random();
       let center = new Vector2(Math.sin(6.284 * perc) * width * feildSize.x * _random, Math.cos(6.284 * perc) * width * feildSize.z * _random);
       const x = center.x;
       const z = center.y - 0.8;//match model position
       const y = Math.random() * width * feildSize.y;
       vertices.push(x, y, z);
       //--
-      let cen = new Vector3(0, 0, 0);
+      let cen = new Vector3(0, y, - 0.8);
       let pos = new Vector3(x, y, z);
       let distance = cen.distanceTo(pos);
       let distanceNorm = distance / width;
@@ -235,6 +235,7 @@ AFRAME.registerComponent("al-painting-tool", {
     //add a background sphere-----
     var backgroundSphere = new THREE.Mesh(new THREE.SphereGeometry(100, 6, 6), new THREE.MeshBasicMaterial({
       map: (new THREE.TextureLoader).load("https://cdn.glitch.com/2455c8e2-7d7f-4dcf-9c98-41176d86971f%2FFinalHatsumiBackGround.png?v=1602267351065"),
+      color: new THREE.Color(0.25, 0.25, 0.25),
     }));
     backgroundSphere.geometry.scale(-1, 1, 1);
     this.el.sceneEl.object3D.add(backgroundSphere);
@@ -268,7 +269,7 @@ AFRAME.registerComponent("al-painting-tool", {
         alphaMap: textsToUse,
         useAlphaMap: true,
         transparent: true,
-        opacity: 0.1,
+        opacity: 0.05,
         // alphaTest: 0.1,
         // lineWidth: _BrushVariablesInput.maxlineWidth,
         depthTest: false,
@@ -282,25 +283,28 @@ AFRAME.registerComponent("al-painting-tool", {
       let center = new Vector2(Math.sin(6.284 * perc) * (width), Math.cos(6.284 * perc) * (width));
       const x = center.x;
       const z = center.y - 0.8;//match model position
-      const y = Math.random() * width ;
+      const y = Math.random() * width;
 
       mesh.position.set(x, y, z);
       let cameraworldPos = AFRAME.utils.coordinates.parse(_CameraworldPos);
       mesh.lookAt(cameraworldPos);
     }
     //add particles to scene------------
+    //ground
     let amount = 1000;
     let width = 50;
-    let maxSize = 1.0;
-    let colourLum = 0.2;
+    let maxSize = 5.0;
+    let colourLum = 0.3;
     let feildSize = new Vector3(2.0, 0.01, 2.0);
     this.addParticleArray(THREE.AdditiveBlending, 0.5, 0.2, colourLum, feildSize, amount, width, maxSize);
+    //body
     amount = 1000;
-    width = 5.0;
+    width = 2.0;
     maxSize = 0.06;
-    colourLum = 0.6;
-    feildSize = new Vector3(1, 1.1, 1.0);
-    this.addParticleArray(THREE.AdditiveBlending, 0, 0.1, colourLum, feildSize, amount, width, maxSize);
+    colourLum = 0.7;
+    feildSize = new Vector3(1, 2, 1.0);
+    this.addParticleArray(THREE.AdditiveBlending, 0, 0.3, colourLum, feildSize, amount, width, maxSize);
+    //add particles to scene------------
   },
   getIntersection: function () {
     //console.log("get intersection");
