@@ -931,6 +931,74 @@ export class ShaderHolder {
                 " }"
             ].join("\r\n");
         }
+        if (_name == "AnimatedParticelDot") {
+            this.fragmentShader = [
+                "",
+                THREE.ShaderChunk.fog_pars_fragment,
+                THREE.ShaderChunk.logdepthbuf_pars_fragment,
+                "",
+                "uniform float time;",
+                // "uniform sampler2D map;",
+                // "uniform sampler2D alphaMap;",
+                "uniform float useMap;",
+                "uniform float useAlphaMap;",
+                "uniform float useDash;",
+                "uniform float dashArray;",
+                "uniform float dashOffset;",
+                "uniform float dashRatio;",
+                "uniform float visibility;",
+                "uniform float alphaTest;",
+                "uniform vec2 repeat;",
+                "uniform vec3 color;",
+                "uniform float opacity;",
+                "varying vec3 vColor;",
+                "varying vec3 wrldpos;",
+                THREE.ShaderChunk.MathRand,
+                "float circle(vec2 U, vec2 pos, float r) {",
+                "    return smoothstep(r, 0.0, length(U-pos));",
+                "}",
+                "float dist_circ(vec2 cent, float r, vec2 uv ){",
+                "float d = distance( cent, uv ) - r;",
+                "return d;",
+                "}",
+                "void main() {",
+                "",
+                // THREE.ShaderChunk.logdepthbuf_fragment,
+                "vec2 U = gl_PointCoord.xy - vec2(0.5,0.5);",
+                "float randPos = Rand(vec2(wrldpos.z,wrldpos.y), vec2(200.8, 120.5));",
+                "float _time = mod(randPos + (time), 1.0);",
+                "float _ttime = mod(randPos + (time*2.0), 1.0);",
+                "float shapef = circle(U, vec2(0.0,0.0), .3);",
+                "for (int t = 0; t < 20; t++)",
+                "{",
+                "    float tt = sin(float(t)*3.434)*6.42;",
+                "    float posx = sin(tt +(_ttime*6.284))*0.2;",
+                "    float posy = cos(tt +_time*6.284)*0.2;",
+                "    shapef += circle(U, vec2(posx,posy), 0.2)*0.1;",
+                "}",
+                "vec4 bg = vec4(0.0,0.,0.,0.0); ",
+                " vec3 obc = vColor; ",
+                " float dc1 = dist_circ(vec2(0.5,0.5),0.08,gl_PointCoord); ",
+                "vec4 shape = vec4(obc,1.0); ",
+                "shape.a *= opacity*shapef;",
+                "gl_FragColor = mix(bg,shape,shape.a);",
+                "}"
+            ].join("\n");
+            this.vertexShader = [
+                "attribute float size;",
+                "attribute vec3 customColor;",
+                "varying vec3 vColor;",
+                "varying vec3 wrldpos;",
+                "void main() {",
+                "vColor = customColor;",
+                "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+                "  vec4 worldPosition = (modelMatrix * vec4(position, 1.));",
+                "  wrldpos = worldPosition.xyz;",
+                "gl_PointSize = size * ( 300.0 / -mvPosition.z );",
+                "gl_Position = projectionMatrix * mvPosition;",
+                " }"
+            ].join("\r\n");
+        }
 
     }
 }

@@ -140,7 +140,7 @@ AFRAME.registerComponent("al-painting-tool", {
     this.state.firstpointerDownIntersection = -999;
     paintingToolManager.ResetCurrentBrush();
   },
-  addParticleArray: function (blendingMode, colourHue, colourHueRandom, colourLum, feildSize, amount, width, maxSize) {
+  addParticleArray: function (animated, blendingMode, colourHue, colourHueRandom, colourLum, feildSize, amount, width, maxSize) {
     const colors = new Float32Array(amount * 3);
     const sizes = [];
     const vertices = [];
@@ -170,20 +170,25 @@ AFRAME.registerComponent("al-painting-tool", {
     _geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
     _geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
     _geometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
-    let _ParticelShaderHolder = new ShaderHolder("ParticelDot");
-    const _Mmaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        opacity: { type: "f", value: 0.6 }
-      },
-      vertexShader: _ParticelShaderHolder.vertexShader,
-      fragmentShader: _ParticelShaderHolder.fragmentShader,
-      transparent: true,
-      depthTest: false,
-      depthWrite: true,
-      blending: blendingMode
-    });
-    let _points = new THREE.Points(_geometry, _Mmaterial);
-    this.el.sceneEl.object3D.add(_points);
+    if (animated == false) {
+      let _ParticelShaderHolder = new ShaderHolder("ParticelDot");
+      const _Mmaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          opacity: { type: "f", value: 0.6 }
+        },
+        vertexShader: _ParticelShaderHolder.vertexShader,
+        fragmentShader: _ParticelShaderHolder.fragmentShader,
+        transparent: true,
+        depthTest: false,
+        depthWrite: true,
+        blending: blendingMode
+      });
+      let _points = new THREE.Points(_geometry, _Mmaterial);
+      this.el.sceneEl.object3D.add(_points);
+    } else {
+      let _points = new THREE.Points(_geometry, this.particlesMaterial);
+      this.el.sceneEl.object3D.add(_points);
+    }
   },
   addHatsumiLogoElement: function (texture, amount) {
     const width = 50;
@@ -290,20 +295,36 @@ AFRAME.registerComponent("al-painting-tool", {
       mesh.lookAt(cameraworldPos);
     }
     //add particles to scene------------
+    this.particlesMaterialDelta = 1.0;
+    let _ParticelShaderHolder = new ShaderHolder("AnimatedParticelDot");
+    this.particlesMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        opacity: { type: "f", value: 0.4 },
+        time: { type: "f", value: 1.0 }
+      },
+      vertexShader: _ParticelShaderHolder.vertexShader,
+      fragmentShader: _ParticelShaderHolder.fragmentShader,
+      transparent: true,
+      depthTest: false,
+      depthWrite: true,
+      blending: THREE.AdditiveBlending
+    });
     //ground
     let amount = 1000;
     let width = 50;
     let maxSize = 5.0;
     let colourLum = 0.3;
     let feildSize = new Vector3(2.0, 0.01, 2.0);
-    this.addParticleArray(THREE.AdditiveBlending, 0.5, 0.2, colourLum, feildSize, amount, width, maxSize);
+    let animated = false;
+    this.addParticleArray(animated, THREE.AdditiveBlending, 0.5, 0.2, colourLum, feildSize, amount, width, maxSize);
     //body
     amount = 1000;
     width = 2.0;
-    maxSize = 0.06;
+    maxSize = 0.1;
     colourLum = 0.7;
     feildSize = new Vector3(1, 2, 1.0);
-    this.addParticleArray(THREE.AdditiveBlending, 0, 0.3, colourLum, feildSize, amount, width, maxSize);
+    animated = true;
+    this.addParticleArray(animated, THREE.AdditiveBlending, 0, 0.2, colourLum, feildSize, amount, width, maxSize);
     //add particles to scene------------
   },
   getIntersection: function () {
@@ -384,7 +405,12 @@ AFRAME.registerComponent("al-painting-tool", {
       this.forceTouchDown();
     }
     paintingToolManager.runAnimation(this.el.sceneEl, this.state.pointerDown);
-
+    this.particlesMaterialDelta += 0.001;
+    if (this.particlesMaterialDelta > 1.0) this.particlesMaterialDelta -= 1.0;
+    if (this.particlesMaterial) {
+      this.particlesMaterial.uniforms.time.value = this.particlesMaterialDelta;
+      this.particlesMaterial.needsUpdate = true;
+    }
   },
   remove: function () {
     this.el.removeObject3D("group");
