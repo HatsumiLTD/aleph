@@ -310,7 +310,7 @@ AFRAME.registerComponent("al-painting-tool", {
       blending: THREE.AdditiveBlending
     });
     //ground
-    let amount = 1000;
+    let amount = 5000;
     let width = 50;
     let maxSize = 5.0;
     let colourLum = 0.3;
@@ -318,7 +318,7 @@ AFRAME.registerComponent("al-painting-tool", {
     let animated = false;
     this.addParticleArray(animated, THREE.AdditiveBlending, 0.5, 0.2, colourLum, feildSize, amount, width, maxSize);
     //body
-    amount = 1000;
+    amount = 500;
     width = 2.0;
     maxSize = 0.1;
     colourLum = 0.7;

@@ -38,6 +38,25 @@ export class ShaderHolder {
             "_pressure += pressures[i]*(arryDist);",
             "}"
         ].join("\r\n");
+        THREE.ShaderChunk["BillboardVert"] = [
+            "varying vec2 vUV;",
+            "uniform float rotation;",
+            "uniform vec2 center;",
+            "void main(void) {",
+            "vec4 mvPosition = modelViewMatrix * vec4( 0.0, 0.0, 0.0, 1.0 );",
+            "vec2 scale;",
+            "scale.x = length( vec3( modelMatrix[ 0 ].x, modelMatrix[ 0 ].y, modelMatrix[ 0 ].z ) );",
+            "scale.y = length( vec3( modelMatrix[ 1 ].x, modelMatrix[ 1 ].y, modelMatrix[ 1 ].z ) );",
+            "vec2 alignedPosition = ( position.xy ) * scale;",
+            "vec2 rotatedPosition;",
+            "rotatedPosition.x = cos( rotation ) * alignedPosition.x - sin( rotation ) * alignedPosition.y;",
+            "rotatedPosition.y = sin( rotation ) * alignedPosition.x + cos( rotation ) * alignedPosition.y;",
+            "mvPosition.xy += rotatedPosition;",
+            "gl_Position = projectionMatrix * mvPosition;",
+            //---
+            "  vUV = uv;",
+            "}"
+        ].join("\r\n");
         THREE.ShaderChunk["Line_ends"] = [
             "float lineEnds = smoothstep(0.0,0.1, vUV.x);",
             "lineEnds *= smoothstep( 1.,0.8, clamp(vUV.x/lengthNormal, 0.0, 1.));",
@@ -338,7 +357,7 @@ export class ShaderHolder {
                 "}"
             ].join("\n");
         }
-        if (_name == "TransparentCutout") {
+        if (_name == "TransparentCutoutLookAt") {
             this.fragmentShader = [
                 THREE.ShaderChunk.basefragmentVars,
                 "void main() {",
@@ -347,6 +366,7 @@ export class ShaderHolder {
                 "gl_FragColor = vec4(tex.rgb * colour.rgb, tex.a);",
                 "}"
             ].join("\n");
+            this.vertexShader = THREE.ShaderChunk.BillboardVert;
         }
         if (_name == "Transparent") {
             this.fragmentShader = [
@@ -805,6 +825,36 @@ export class ShaderHolder {
                 "",
                 "}"
             ].join("\n");
+
+            this.vertexShader = [
+                "varying vec2 vUV;",
+                "varying vec3 zdist;",
+                "varying vec3 wrldpos;",
+                "varying vec3 _normal;",
+                "varying vec3 _wrldNormal;",
+                "uniform float rotation;",
+                "uniform vec2 center;",
+                "void main(void) {",
+                "vec4 mvPosition = modelViewMatrix * vec4( 0.0, 0.0, 0.0, 1.0 );",
+                "vec2 scale;",
+                "scale.x = length( vec3( modelMatrix[ 0 ].x, modelMatrix[ 0 ].y, modelMatrix[ 0 ].z ) );",
+                "scale.y = length( vec3( modelMatrix[ 1 ].x, modelMatrix[ 1 ].y, modelMatrix[ 1 ].z ) );",
+                "vec2 alignedPosition = ( position.xy ) * scale;",
+                "vec2 rotatedPosition;",
+                "rotatedPosition.x = cos( rotation ) * alignedPosition.x - sin( rotation ) * alignedPosition.y;",
+                "rotatedPosition.y = sin( rotation ) * alignedPosition.x + cos( rotation ) * alignedPosition.y;",
+                "mvPosition.xy += rotatedPosition;",
+                "gl_Position = projectionMatrix * mvPosition;",
+                //---
+                "  vUV = uv;",
+                "  vec4 worldPosition = (modelMatrix * vec4(position, 1.));",
+                "  wrldpos = worldPosition.xyz;",
+                "  zdist = gl_Position.xyz;",
+                "_normal = normal.xyz;// * vec4(position, 1.0);",
+                "_wrldNormal = normalMatrix * normalize(normal);",
+                "}"
+            ].join("\r\n");
+
         }
         if (_name == "LineAnimatedStatic") {
             this.fragmentShader = [
@@ -1003,19 +1053,12 @@ export class ShaderHolder {
     }
 }
 class MaterialsCache {
-    constructor() {
-        this.textureName;
-        this.materialName;
+    constructor(_textureName, _materialName) {
         this.lineMaterial;
         this.objMaterial;
         this.colour;
-        this.lineWidth;
         this.lineLength;
-        this.startTime;
         this.pressures = [];
-        this.time;
-    }
-    MaterialsCache(_textureName, _materialName) {
         this.textureName = _textureName;
         this.materialName = _materialName;
         this.lineWidth = 1.0;
@@ -1516,7 +1559,7 @@ class MaterialsHolder {
             });
         }
         if (_materialName == "leaf") {
-            var _ShaderHolder = new ShaderHolder("TransparentCutout");
+            var _ShaderHolder = new ShaderHolder("TransparentCutoutLookAt");
             var texture = new THREE.TextureLoader().load(_textureName);
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
@@ -1546,7 +1589,7 @@ class MaterialsHolder {
             });
         }
         if (_materialName == "cloud") {
-            var _ShaderHolder = new ShaderHolder("Transparent");
+            var _ShaderHolder = new ShaderHolder("TransparentCutoutLookAt");
             var texture = new THREE.TextureLoader().load(_textureName);
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
@@ -1555,7 +1598,8 @@ class MaterialsHolder {
             // mcolour.lerp(lcolour, 0.5);
             var uniforms = {
                 map: { type: "t", value: texture },
-                colour: { type: "c", value: mcolour }
+                colour: { type: "c", value: mcolour },
+                threshhold: { type: "f", value: 0.01 }
             };
             return new THREE.ShaderMaterial({
                 uniforms: uniforms,
@@ -1569,7 +1613,7 @@ class MaterialsHolder {
             });
         }
         if (_materialName == "spike") {
-            var _ShaderHolder = new ShaderHolder("TransparentCutout");
+            var _ShaderHolder = new ShaderHolder("TransparentCutoutLookAt");
             var texture = new THREE.TextureLoader().load(_textureName);
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
@@ -1994,18 +2038,20 @@ export class PaintingToolManager {
         console.log("setup materials", textures);
         var noMaterialFound = true;
         //cache the materials-----
-        for (var i = 0; i < this.materialsCache.length; i++) {
-            if (this.materialsCache[i].textureName == this.texture
-                && this.materialsCache[i].materialName == this.materials
-            ) {
-                this.currentMaterialCache = this.materialsCache[i];
-                if (textures[1]) {
-                    this.ObjectsMaterial = this.materialsCache[i].objMaterial;
-                }
-                noMaterialFound = false;
-                break;
-            }
-        }
+        // for (var i = 0; i < this.materialsCache.length; i++) {
+        //     console.log("looking for material");
+        //     if (this.materialsCache[i].textureName == this.texture
+        //         && this.materialsCache[i].materialName == this.materials
+        //     ) {
+        //         this.currentMaterialCache = this.materialsCache[i];
+        //         if (textures[1]) {
+        //             this.ObjectsMaterial = this.materialsCache[i].objMaterial;
+        //         }
+        //         console.log("Found material");
+        //         noMaterialFound = false;
+        //         break;
+        //     }
+        // }
         //cache the materials-----
         if (noMaterialFound) {
             this.currentMaterialCache = new MaterialsCache(this.texture, this.materials);
@@ -2062,6 +2108,7 @@ export class PaintingToolManager {
         this.DistanceFromBody = 0.005 + (0.025 * this.CurrentWidth);
     }
     UpdateBrush(_group, _Geometry) {
+        if(!this.paintLine) return;
         if (this.strokecount == this.currentstrokecount) {
             //add to exsisting stroke
             const geo = new THREE.Geometry();
@@ -2433,10 +2480,10 @@ export class DecalElement {
         // var vec3 = AFRAME.utils.coordinates.parse(_CameraworldPos);
         // console.log("_CameraworldPos: " + _CameraworldPos);
         //this._BrushVariablesInput.facing = "Camera"; //temp for now
-        if (this._BrushVariablesInput.facing == "Camera") {
-            this.LookAt(cameraworldPos);
-            this.mesh.rotateZ(this.rotationZ);
-        }
+        // if (this._BrushVariablesInput.facing == "Camera") {
+        //     this.LookAt(cameraworldPos);
+        //     this.mesh.rotateZ(this.rotationZ);
+        // }
         if (this._BrushVariablesInput.facing == "Body") {
             var lookatposition = new THREE.Vector3(this.Node.normal.x, this.Node.normal.y, this.Node.normal.z); //undefiended, why???
             this.LookAt(lookatposition);
