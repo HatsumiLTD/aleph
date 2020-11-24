@@ -36,7 +36,7 @@ AFRAME.registerComponent("al-painting-tool", {
       pointerDown: false,
       firstpointerDownIntersection: 0
     };
-
+    this.PlayBrushAudioWhileDrawing = false;
     this.sfx_brushMasterVolume = 0.6;
     this.sfx_brushVolume = 0;
     this.sfx_oldbrushVolume = -1;
@@ -74,13 +74,12 @@ AFRAME.registerComponent("al-painting-tool", {
     );
 
     // vr controller listeners
-    const rightController = document.getElementById("right-controller");
     this.VRMode = false;
     this.el.sceneEl.addEventListener("enter-vr", function () {
       console.log("ENTERED VR");
       this.VRMode = true;
       // if (!this.sfx_Startedbrush) {
-      rightController.components.sound.playSound();
+      if (this.PlayBrushAudioWhileDrawing) document.getElementById("right-controller").components.sound.playSound();
       // this.sfx_Startedbrush = true;
       // }
     });
@@ -93,9 +92,11 @@ AFRAME.registerComponent("al-painting-tool", {
       this.state.pointerDown = true;
       this.state.firstpointerDownIntersection = -999;
       paintingToolManager.ResetCurrentBrush();
-      if (!this.sfx_Startedbrush) {
-        rightController.components.sound.playSound();
-        this.sfx_Startedbrush = true;
+      if (this.PlayBrushAudioWhileDrawing) {
+        if (!this.sfx_Startedbrush) {
+          document.getElementById("right-controller").components.sound.playSound();
+          this.sfx_Startedbrush = true;
+        }
       }
     });
 
@@ -394,11 +395,12 @@ AFRAME.registerComponent("al-painting-tool", {
       if (this.state.firstpointerDownIntersection > -999)
         this.state.firstpointerDownIntersection++;
     }
-
-    if (this.sfx_oldbrushVolume != this.sfx_brushVolume) {
-      const rightController = document.getElementById("right-controller");
-      rightController.components.sound.pool.children[0].setVolume(this.sfx_brushVolume * this.sfx_brushMasterVolume);
-      this.sfx_oldbrushVolume = this.sfx_brushVolume;
+    if (this.PlayBrushAudioWhileDrawing) {
+      if (this.sfx_oldbrushVolume != this.sfx_brushVolume) {
+        const rightController = document.getElementById("right-controller");
+        rightController.components.sound.pool.children[0].setVolume(this.sfx_brushVolume * this.sfx_brushMasterVolume);
+        this.sfx_oldbrushVolume = this.sfx_brushVolume;
+      }
     }
     if (paintingToolManager.updateLineLength(this.state.pointerDown)) {
       this.forceTouchUp();
