@@ -2100,7 +2100,8 @@ export class PaintingToolManager {
         this.currentMaterialCache.lineWidth = _scaler * this.CurrentWidth;
     }
     changeCurrentWidthDirectly(value) {
-        this.CurrentWidth = value;
+        let multiplyr = 2.0;
+        this.CurrentWidth = value * multiplyr;
         this.CurrentWidth = THREE.Math.clamp(this.CurrentWidth, 0.2, 1.0);
         var _scaler = this.maxlineWidth;
         this.currentMaterialCache.lineWidth = _scaler * this.CurrentWidth;
@@ -2461,6 +2462,12 @@ export class DecalElement {
         this.rotationZ =
             _BrushVariablesInput.rotation +
             (-0.5 + Math.random()) * 2.0 * _BrushVariablesInput.rotationjitter;
+
+        if (this.Material.name == "ice") {
+            this.mesh.rotateX(randomAmoutx);
+            this.mesh.rotateY(randomAmouty);
+            this.mesh.rotateZ(randomAmoutz);
+        }
     }
     stringToVector3(vec) {
         const res = vec.split(" ");

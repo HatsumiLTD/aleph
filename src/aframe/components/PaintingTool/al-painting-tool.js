@@ -311,7 +311,7 @@ AFRAME.registerComponent("al-painting-tool", {
       blending: THREE.AdditiveBlending
     });
     //ground
-    let amount = 5000;
+    let amount = 1000;
     let width = 50;
     let maxSize = 5.0;
     let colourLum = 0.3;
